@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Smoke form success">
+  <rect width="1280" height="720" fill="#ffffff"/>
+  <rect x="320" y="132" width="640" height="456" rx="10" fill="#f7faf9" stroke="#d9e0e2"/>
+  <circle cx="394" cy="202" r="28" fill="#e8f5ef" stroke="#0c7a53"/>
+  <path d="M380 202l10 10 20-24" fill="none" stroke="#0c7a53" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="440" y="213" fill="#0c7a53" font-family="Arial, sans-serif" font-size="36" font-weight="700">Invoice saved</text>
+  <text x="380" y="304" fill="#687276" font-family="Arial, sans-serif" font-size="18">Vendor</text>
+  <text x="380" y="340" fill="#111619" font-family="Arial, sans-serif" font-size="28" font-weight="700">Acme Labs</text>
+  <text x="380" y="414" fill="#687276" font-family="Arial, sans-serif" font-size="18">Amount</text>
+  <text x="380" y="450" fill="#111619" font-family="Arial, sans-serif" font-size="28" font-weight="700">1200</text>
+</svg>
+

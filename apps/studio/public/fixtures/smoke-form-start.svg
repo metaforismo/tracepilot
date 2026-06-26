@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Smoke form before input">
+  <rect width="1280" height="720" fill="#ffffff"/>
+  <rect x="320" y="104" width="640" height="512" rx="10" fill="#f7faf9" stroke="#d9e0e2"/>
+  <text x="380" y="178" fill="#111619" font-family="Arial, sans-serif" font-size="34" font-weight="700">Vendor Invoice Intake</text>
+  <text x="380" y="220" fill="#687276" font-family="Arial, sans-serif" font-size="18">Enter a vendor invoice for the local smoke eval.</text>
+  <text x="380" y="294" fill="#111619" font-family="Arial, sans-serif" font-size="17" font-weight="700">Vendor name</text>
+  <rect x="380" y="314" width="420" height="44" rx="5" fill="#ffffff" stroke="#bcc7cb"/>
+  <text x="380" y="408" fill="#111619" font-family="Arial, sans-serif" font-size="17" font-weight="700">Invoice amount</text>
+  <rect x="380" y="428" width="420" height="44" rx="5" fill="#ffffff" stroke="#bcc7cb"/>
+  <rect x="380" y="512" width="126" height="42" rx="6" fill="#0c7a53"/>
+  <text x="407" y="538" fill="#ffffff" font-family="Arial, sans-serif" font-size="16" font-weight="700">Save invoice</text>
+</svg>
+

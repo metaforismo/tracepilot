@@ -101,13 +101,13 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - deterministic `ScriptedDriver` for offline evals;
 - env-gated Anthropic driver boundary for future paid computer-use calls;
 - orchestrator loop for observe, decide, safety-check, act, verify, trace, and measure;
+- Next.js Studio UI with run launcher, metrics strip, screenshot panel, timeline, and inspector;
 - real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`.
 
 Next build slices:
 
-1. Studio UI trace viewer.
-2. Invoice workflow.
-3. Eval runner and public report.
+1. Invoice workflow.
+2. Eval runner and public report.
 
 ## Run Locally
 
@@ -115,6 +115,7 @@ Next build slices:
 corepack pnpm@9.15.4 install
 corepack pnpm@9.15.4 run ci
 corepack pnpm@9.15.4 run eval -- --suite smoke
+corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
 Expected smoke output:
