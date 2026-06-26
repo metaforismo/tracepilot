@@ -8,8 +8,8 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "corepack pnpm@9.15.4 -r build",
-    "typecheck": "corepack pnpm@9.15.4 -r typecheck",
-    "test": "corepack pnpm@9.15.4 -r test",
+    "typecheck": "corepack pnpm@9.15.4 -r typecheck && tsc -p tsconfig.evals.json --noEmit",
+    "test": "corepack pnpm@9.15.4 -r test && vitest run evals/*.test.ts",
     "eval": "tsx evals/run-evals.ts",
     "dev:targets": "corepack pnpm@9.15.4 --filter @tracepilot/targets dev",
     "dev:studio": "corepack pnpm@9.15.4 --filter @tracepilot/studio dev",

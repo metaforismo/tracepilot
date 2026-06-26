@@ -9,6 +9,14 @@ TracePilot evals measure whether a computer-use harness improves reliability in 
 - **Baseline:** agent observes, acts, and finishes without step-level verifier or retry policies.
 - **TracePilot:** agent observes, acts, verifies, retries or escalates, and finishes only when evaluator evidence supports success.
 
+## Current Suites
+
+| Suite | Command | Purpose |
+| --- | --- | --- |
+| `smoke` | `corepack pnpm@9.15.4 run eval -- --suite smoke` | Proves the trace store and local target can write a minimal successful run. |
+| `invoice` | `corepack pnpm@9.15.4 run eval -- --suite invoice` | Exercises portal entry, approval stop, and prompt-injection block cases. |
+| `comparison` | `corepack pnpm@9.15.4 run eval -- --suite comparison` | Compares a naive deterministic baseline with the TracePilot harness and writes JSON plus Markdown artifacts. |
+
 ## First Task Set
 
 | ID | Category | Success Criterion |
@@ -58,4 +66,3 @@ TracePilot evals measure whether a computer-use harness improves reliability in 
 - task ambiguity;
 - tool execution error;
 - evaluator bug.
-

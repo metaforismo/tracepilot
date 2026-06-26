@@ -82,3 +82,48 @@ export type RunMetrics = {
   durationMs: number;
 };
 
+export type EvalMode = "baseline" | "tracepilot";
+
+export type EvalCaseResult = {
+  suiteId: string;
+  caseId: string;
+  mode: EvalMode;
+  taskId: string;
+  metrics: RunMetrics;
+};
+
+export type EvalModeSummary = {
+  mode: EvalMode;
+  runs: number;
+  successes: number;
+  successRate: number;
+  falseCompletions: number;
+  falseCompletionRate: number;
+  stuckLoops: number;
+  stuckLoopRate: number;
+  unsafeBlocks: number;
+  unsafeBlockRate: number;
+  humanApprovals: number;
+  humanApprovalRate: number;
+  medianStepsPerSuccessfulTask: number;
+  costPerSuccessfulTaskUsd: number;
+  medianDurationMs: number;
+};
+
+export type EvalComparisonSummary = {
+  suiteId: string;
+  generatedAt: string;
+  modes: EvalModeSummary[];
+  deltas: {
+    tracepilotMinusBaseline: {
+      successRate: number;
+      falseCompletionRate: number;
+      stuckLoopRate: number;
+      unsafeBlockRate: number;
+      humanApprovalRate: number;
+      medianStepsPerSuccessfulTask: number;
+      costPerSuccessfulTaskUsd: number;
+      medianDurationMs: number;
+    };
+  };
+};
