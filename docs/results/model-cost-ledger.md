@@ -49,3 +49,5 @@ cost-ledger model_runs=1 scripted_controls=1 total_cost_usd=0.30975 source=model
 No paid model call was made.
 
 This is intentionally a fixture/dry-run estimate. Real `model_api` results must be run, logged, and reported separately with exact provider, model, usage, pricing, cost, and task outcome metadata.
+
+Use [Model Run Readiness](model-readiness.md) to verify the env gate before attempting a paid run.

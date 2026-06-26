@@ -1,6 +1,7 @@
 export { createTraceStore } from "./trace-store.js";
 export { buildCostLedger, computeTokenCostUsd } from "./cost-ledger.js";
 export { diagnoseEvalResults } from "./failure-diagnosis.js";
+export { buildModelRunManifest } from "./model-run-manifest.js";
 export { summarizeEvalComparison } from "./eval-summary.js";
 export { isStuckLoop } from "./loop-detector.js";
 export { inspectUntrustedContent, validateSensitiveAction } from "./safety-policy.js";
@@ -24,6 +25,9 @@ export type {
   FailureOutcome,
   FailureSeverity,
   InterventionOwner,
+  ModelRunManifest,
+  ModelRunResult,
+  ModelRunStatus,
   ModelPricing,
   ModelProvider,
   Observation,

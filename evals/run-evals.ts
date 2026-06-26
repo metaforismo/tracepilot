@@ -17,6 +17,7 @@ import {
 } from "./tasks/invoice-to-portal.js";
 import { runComparisonSuite } from "./comparison-suite.js";
 import { runCostLedgerSuite } from "./cost-ledger-suite.js";
+import { runModelReadinessSuite } from "./model-readiness-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -30,12 +31,20 @@ if (
   values.suite !== "smoke" &&
   values.suite !== "invoice" &&
   values.suite !== "comparison" &&
-  values.suite !== "cost-ledger"
+  values.suite !== "cost-ledger" &&
+  values.suite !== "model-readiness"
 ) {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-if (values.suite === "cost-ledger") {
+if (values.suite === "model-readiness") {
+  const result = await runModelReadinessSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "model-readiness")
+  });
+  console.log(
+    `model-readiness status=${result.manifest.status} source=${result.manifest.source} paid_call=${result.manifest.paidCall} manifest=${result.artifacts.manifestPath} report=${result.artifacts.reportPath}`
+  );
+} else if (values.suite === "cost-ledger") {
   const result = await runCostLedgerSuite({
     runsDir: join(process.cwd(), "runs", "latest", "cost-ledger")
   });

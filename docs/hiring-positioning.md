@@ -29,6 +29,7 @@ The project also maps directly to computer-use post-training work:
 - comparison reports that turn qualitative failures into measurable deltas;
 - failure diagnosis casebook that maps traces to model-behavior hypotheses and intervention owners;
 - source-aware cost ledger for separating scripted controls, fixtures, dry runs, and paid `model_api` results;
+- credential-safe model readiness manifest for env-gated paid run attempts;
 - clear separation between scripted-driver results and future model-driver results.
 
 ## Application Summary
@@ -45,19 +46,20 @@ Current foundation:
 - baseline-vs-TracePilot comparison report;
 - failure diagnosis report with post-training and harness follow-ups;
 - model cost ledger with explicit fixture-versus-paid reporting boundary;
+- model readiness manifest that records paid-run gates without leaking credentials;
 - exact verification commands and artifacts.
 
 ## Anthropic DM Draft
 
 Hi, I am interested in Product Engineer, Computer Use. I am building TracePilot, a reliability studio for computer-use agents: a sandboxed browser harness with trace replay, eval tasks, step-level verification, stuck-loop detection, prompt-injection tests, and an invoice-to-legacy-portal workflow.
 
-The project focuses on the part of computer use I find most important: turning raw model capability into a measurable, debuggable, safe product loop. I am including a video walkthrough, eval report, before/after metrics comparing a baseline agent to a verifier/retry layer, and source-aware cost accounting for future model-driver runs.
+The project focuses on the part of computer use I find most important: turning raw model capability into a measurable, debuggable, safe product loop. I am including a video walkthrough, eval report, before/after metrics comparing a baseline agent to a verifier/retry layer, source-aware cost accounting, and a credential-safe readiness manifest for future model-driver runs.
 
 I would be excited to work on agent harness reliability, evals, browser-control product surfaces, and knowledge-worker workflows.
 
 ## OpenAI Application Draft
 
-I am interested in Agent Post-Training, Computer Use. I am building TracePilot, a local eval and diagnostics harness for browser-based computer-use agents. It includes production-like target environments, grader-style success criteria, trace artifacts, prompt-injection and approval-gate cases, a reproducible baseline-vs-TracePilot comparison report, a source-aware model cost ledger, and a failure diagnosis casebook.
+I am interested in Agent Post-Training, Computer Use. I am building TracePilot, a local eval and diagnostics harness for browser-based computer-use agents. It includes production-like target environments, grader-style success criteria, trace artifacts, prompt-injection and approval-gate cases, a reproducible baseline-vs-TracePilot comparison report, a source-aware model cost ledger, a credential-safe model readiness manifest, and a failure diagnosis casebook.
 
 The project is meant to show how I move from a vague behavior problem to a concrete experiment: define the failure mode, build the environment, add a grader, run the comparison, inspect the trace, classify the failure, and decide what should become a model, data, or product-harness fix.
 
