@@ -1,7 +1,7 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { buildModelRunManifest } from "../packages/core/src/model-run-manifest.js";
-import type { ModelRunManifest } from "../packages/core/src/types.js";
+import type { ModelProvider, ModelRunManifest } from "../packages/core/src/types.js";
 
 export type ModelReadinessSuiteOptions = {
   runsDir: string;
@@ -18,7 +18,6 @@ export type ModelReadinessSuiteResult = {
 };
 
 const paidRunsFlag = "TRACEPILOT_ENABLE_PAID_MODEL_RUNS";
-const apiKeyEnvVar = "ANTHROPIC_API_KEY";
 
 export async function runModelReadinessSuite(
   options: ModelReadinessSuiteOptions
@@ -27,17 +26,19 @@ export async function runModelReadinessSuite(
   await mkdir(options.runsDir, { recursive: true });
 
   const env = options.env ?? process.env;
+  const provider = providerConfig(env);
   const manifest = buildModelRunManifest({
-    runId: "anthropic-model-readiness",
+    runId: `${provider.provider}-model-readiness`,
     suiteId: "model-readiness",
     taskId: "invoice-portal-acme-1200",
     generatedAt: options.generatedAt ?? new Date().toISOString(),
-    provider: "anthropic",
-    model: "claude-sonnet-4-20250514",
-    apiKeyEnvVar,
+    provider: provider.provider,
+    model: provider.model,
+    apiKeyEnvVar: provider.apiKeyEnvVar,
     paidRunsEnabled: env[paidRunsFlag] === "1",
-    apiKeyPresent: Boolean(env[apiKeyEnvVar]),
-    clientConfigured: false
+    apiKeyPresent: Boolean(env[provider.apiKeyEnvVar]),
+    clientConfigured: false,
+    ...(provider.reasoningEffort === undefined ? {} : { request: { reasoningEffort: provider.reasoningEffort } })
   });
   const artifacts = {
     manifestPath: join(options.runsDir, "model-run-manifest.json"),
@@ -72,6 +73,7 @@ No paid model call was made.
 - Paid call: \`${manifest.paidCall}\`
 - Provider: \`${manifest.provider}\`
 - Model: \`${manifest.model}\`
+${manifest.request?.reasoningEffort ? `- Reasoning effort: \`${manifest.request.reasoningEffort}\`\n` : ""}
 
 ## Environment Gate
 
@@ -96,4 +98,26 @@ ${warningRows.length > 0 ? warningRows.join("\n") : "- None."}
 
 function formatUsd(value: number): string {
   return `$${value.toFixed(6)}`;
+}
+
+function providerConfig(env: NodeJS.ProcessEnv): {
+  provider: Extract<ModelProvider, "anthropic" | "openai">;
+  model: string;
+  apiKeyEnvVar: string;
+  reasoningEffort?: string;
+} {
+  if (env.TRACEPILOT_MODEL_PROVIDER === "openai") {
+    return {
+      provider: "openai",
+      model: env.TRACEPILOT_OPENAI_MODEL ?? "gpt-5.4-nano",
+      apiKeyEnvVar: "OPENAI_API_KEY",
+      reasoningEffort: env.TRACEPILOT_OPENAI_REASONING_EFFORT ?? "low"
+    };
+  }
+
+  return {
+    provider: "anthropic",
+    model: env.TRACEPILOT_ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514",
+    apiKeyEnvVar: "ANTHROPIC_API_KEY"
+  };
 }

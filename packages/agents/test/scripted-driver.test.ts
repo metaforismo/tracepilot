@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MissingAnthropicApiKeyError, AnthropicComputerUseDriver, ScriptedDriver } from "../src/index.js";
+import {
+  MissingAnthropicApiKeyError,
+  MissingOpenAIApiKeyError,
+  AnthropicComputerUseDriver,
+  OpenAIResponsesDriver,
+  ScriptedDriver
+} from "../src/index.js";
 import type { AgentDriverContext } from "../src/agent-driver.js";
 
 const context: AgentDriverContext = {
@@ -70,3 +76,33 @@ describe("AnthropicComputerUseDriver", () => {
   });
 });
 
+describe("OpenAIResponsesDriver", () => {
+  it("requires an API key before enabling paid API calls", () => {
+    expect(() => new OpenAIResponsesDriver({ apiKey: "" })).toThrow(MissingOpenAIApiKeyError);
+  });
+
+  it("delegates to an injected decision client when configured", async () => {
+    let observedModel = "";
+    let observedReasoningEffort = "";
+    const driver = new OpenAIResponsesDriver({
+      apiKey: "test-key",
+      model: "gpt-5.2",
+      reasoningEffort: "low",
+      client: {
+        async decide(_context, options) {
+          observedModel = options.model;
+          observedReasoningEffort = options.reasoningEffort ?? "";
+          return {
+            action: { kind: "wait", ms: 5 },
+            reasoning: "Injected OpenAI client decision.",
+            confidence: 0.8
+          };
+        }
+      }
+    });
+
+    await expect(driver.decide(context)).resolves.toMatchObject({ action: { kind: "wait", ms: 5 } });
+    expect(observedModel).toBe("gpt-5.2");
+    expect(observedReasoningEffort).toBe("low");
+  });
+});

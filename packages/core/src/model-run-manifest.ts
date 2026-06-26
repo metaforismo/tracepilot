@@ -12,6 +12,9 @@ export type BuildModelRunManifestParams = {
   paidRunsEnabled: boolean;
   apiKeyPresent: boolean;
   clientConfigured: boolean;
+  request?: {
+    reasoningEffort?: string;
+  };
   result?: ModelRunResult;
 };
 
@@ -28,7 +31,8 @@ export function buildModelRunManifest(params: BuildModelRunManifestParams): Mode
       apiKeyPresent: params.apiKeyPresent,
       clientConfigured: params.clientConfigured,
       paidRunsEnabled: params.paidRunsEnabled
-    }
+    },
+    ...(params.request === undefined ? {} : { request: params.request })
   };
 
   if (!params.paidRunsEnabled) {

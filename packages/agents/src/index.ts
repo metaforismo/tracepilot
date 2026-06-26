@@ -4,8 +4,15 @@ export {
   AnthropicComputerUseDriver,
   MissingAnthropicApiKeyError
 } from "./anthropic-computer-use-driver.js";
+export {
+  MissingOpenAIApiKeyError,
+  OpenAIResponsesDriver
+} from "./openai-responses-driver.js";
 export type {
   AnthropicComputerUseDriverOptions,
   AnthropicDecisionClient
 } from "./anthropic-computer-use-driver.js";
-
+export type {
+  OpenAIDecisionClient,
+  OpenAIResponsesDriverOptions
+} from "./openai-responses-driver.js";

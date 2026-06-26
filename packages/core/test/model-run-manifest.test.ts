@@ -64,7 +64,7 @@ describe("buildModelRunManifest", () => {
         paidRunsEnabled: true
       }
     });
-    expect(JSON.stringify(manifest)).not.toContain("sk-ant");
+    expect(JSON.stringify(manifest)).not.toContain("test-secret-value");
     expect(manifest.warnings).toContain("ANTHROPIC_API_KEY is required before a model_api run can execute.");
   });
 
@@ -90,6 +90,32 @@ describe("buildModelRunManifest", () => {
     expect(manifest.warnings).toContain(
       "A model decision client is required before TracePilot can execute a model_api run."
     );
+  });
+
+  test("preserves provider request metadata without treating it as secret state", () => {
+    const manifest = buildModelRunManifest({
+      runId: "openai-readiness",
+      suiteId: "model-readiness",
+      taskId: "invoice-portal-acme-1200",
+      generatedAt: "2026-06-26T00:00:00.000Z",
+      provider: "openai",
+      model: "gpt-5.4-nano",
+      apiKeyEnvVar: "OPENAI_API_KEY",
+      paidRunsEnabled: false,
+      apiKeyPresent: true,
+      clientConfigured: false,
+      request: {
+        reasoningEffort: "low"
+      }
+    });
+
+    expect(manifest).toMatchObject({
+      provider: "openai",
+      model: "gpt-5.4-nano",
+      request: {
+        reasoningEffort: "low"
+      }
+    });
   });
 
   test("requires a measured result when a paid model client is configured", () => {

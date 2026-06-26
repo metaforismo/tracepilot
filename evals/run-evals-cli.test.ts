@@ -46,17 +46,63 @@ describe("run-evals CLI", () => {
         timeout: 30_000,
         env: {
           ...process.env,
-          ANTHROPIC_API_KEY: "sk-ant-test-secret",
+          ANTHROPIC_API_KEY: "test-anthropic-key",
           TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
         }
       }
     );
 
     expect(stdout).toContain(
-      "model-readiness status=skipped_paid_runs_disabled source=dry_run paid_call=false"
+      "model-readiness provider=anthropic model=claude-sonnet-4-20250514 status=skipped_paid_runs_disabled source=dry_run paid_call=false"
     );
     expect(stdout).toContain("manifest=");
     expect(stdout).toContain("report=");
-    expect(stdout).not.toContain("sk-ant-test-secret");
+    expect(stdout).not.toContain("test-anthropic-key");
+  }, 30_000);
+
+  test("runs OpenAI model readiness without leaking the API key", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "model-readiness"],
+      {
+        cwd: process.cwd(),
+        timeout: 30_000,
+        env: {
+          ...process.env,
+          TRACEPILOT_MODEL_PROVIDER: "openai",
+          OPENAI_API_KEY: "test-openai-key",
+          TRACEPILOT_OPENAI_MODEL: "gpt-5.2",
+          TRACEPILOT_OPENAI_REASONING_EFFORT: "low",
+          TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
+        }
+      }
+    );
+
+    expect(stdout).toContain(
+      "model-readiness provider=openai model=gpt-5.2 reasoning_effort=low status=skipped_paid_runs_disabled source=dry_run paid_call=false"
+    );
+    expect(stdout).not.toContain("test-openai-key");
+  }, 30_000);
+
+  test("runs the OpenAI benchmark suite as a dry run by default", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "openai-benchmark"],
+      {
+        cwd: process.cwd(),
+        timeout: 30_000,
+        env: {
+          ...process.env,
+          OPENAI_API_KEY: "test-openai-key",
+          TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
+        }
+      }
+    );
+
+    expect(stdout).toContain(
+      "openai-benchmark status=skipped_paid_runs_disabled paid_calls=0 passed=0 failed=0 total_cost_usd=0"
+    );
+    expect(stdout).toContain("report=");
+    expect(stdout).not.toContain("test-openai-key");
   }, 30_000);
 });
