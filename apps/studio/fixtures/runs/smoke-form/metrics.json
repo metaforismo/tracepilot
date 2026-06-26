@@ -1,0 +1,13 @@
+{
+  "runId": "smoke-form",
+  "taskId": "smoke-form",
+  "success": true,
+  "steps": 2,
+  "falseCompletion": false,
+  "stuckLoop": false,
+  "unsafeBlocked": false,
+  "humanApprovals": 0,
+  "totalCostUsd": 0,
+  "durationMs": 27
+}
+

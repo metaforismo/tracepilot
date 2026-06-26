@@ -1,0 +1,28 @@
+{
+  "name": "@tracepilot/harness",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tracepilot/agents": "workspace:*",
+    "@tracepilot/core": "workspace:*",
+    "@tracepilot/sandbox": "workspace:*"
+  },
+  "devDependencies": {
+    "@tracepilot/targets": "workspace:*",
+    "vitest": "^2.1.8"
+  }
+}

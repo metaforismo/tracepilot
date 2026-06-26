@@ -88,28 +88,60 @@ The first public report will compare:
 
 ## Repository Status
 
-This repository starts with the product spec and implementation plan. The build will proceed in small verified slices:
+TracePilot is now an executable TypeScript workspace. The current foundation includes:
 
-1. Monorepo scaffold and CI.
-2. Trace schema and artifact store.
-3. Local target app and repeatable task fixture.
-4. Browser sandbox adapter.
-5. Agent driver interface.
-6. Orchestrator loop.
-7. Verifier and retry policies.
-8. Studio UI trace viewer.
-9. Invoice workflow.
-10. Eval runner and public report.
+- pnpm monorepo scaffold and GitHub Actions CI;
+- strict TypeScript configuration;
+- `@tracepilot/core` trace/action/task/metric schema;
+- local JSONL trace store;
+- deterministic verifier, safety policy, and stuck-loop detector;
+- dependency-free local target app;
+- Playwright browser sandbox with screenshot observation capture;
+- typed action executor for click, type, press, scroll, wait, upload, finish, and human approval actions;
+- deterministic `ScriptedDriver` for offline evals;
+- env-gated Anthropic driver boundary for future paid computer-use calls;
+- orchestrator loop for observe, decide, safety-check, act, verify, trace, and measure;
+- Next.js Studio UI with run launcher, metrics strip, screenshot panel, timeline, and inspector;
+- invoice-to-legacy-portal target fixtures with approval and prompt-injection cases;
+- real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`.
+
+Next build slices:
+
+1. Baseline-vs-TracePilot comparison report.
+2. Video walkthrough package.
+
+## Run Locally
+
+```bash
+corepack pnpm@9.15.4 install
+corepack pnpm@9.15.4 run ci
+corepack pnpm@9.15.4 run eval -- --suite smoke
+corepack pnpm@9.15.4 run eval -- --suite invoice
+corepack pnpm@9.15.4 --filter @tracepilot/studio dev
+```
+
+Expected smoke output:
+
+```text
+smoke-form success=true steps=2
+```
+
+Expected invoice output:
+
+```text
+invoice success=true portal=true approval=true injection=true
+```
 
 ## Docs
 
 - [Design Spec](docs/superpowers/specs/2026-06-26-tracepilot-design.md)
 - [Implementation Plan](docs/superpowers/plans/2026-06-26-tracepilot-implementation-plan.md)
 - [Eval Plan](docs/eval-plan.md)
+- [First Report](docs/results/first-report.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
+- [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)
 
 ## License
 
 MIT.
-
