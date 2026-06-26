@@ -160,10 +160,10 @@ Run:
 
 ```bash
 pnpm install
-pnpm ci
+pnpm run ci
 ```
 
-Expected result after later tasks add packages: install succeeds, typecheck passes, unit tests pass, and the smoke eval completes.
+Expected result: install succeeds, typecheck passes, unit tests pass, and the smoke eval completes.
 
 - [ ] **Step 7: Commit**
 
@@ -966,4 +966,3 @@ git commit -m "docs: add application walkthrough package"
 - The initial eval suite is local and reproducible.
 - The demo workflow maps directly to reliability, instrumentation, and safety.
 - No task requires production deployment before the local proof is working.
-

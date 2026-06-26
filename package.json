@@ -1,0 +1,24 @@
+{
+  "name": "tracepilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reliability studio for computer-use agents.",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "corepack pnpm@9.15.4 -r build",
+    "typecheck": "corepack pnpm@9.15.4 -r typecheck",
+    "test": "corepack pnpm@9.15.4 -r test",
+    "eval": "tsx evals/run-evals.ts",
+    "dev:targets": "corepack pnpm@9.15.4 --filter @tracepilot/targets dev",
+    "dev:studio": "corepack pnpm@9.15.4 --filter @tracepilot/studio dev",
+    "ci": "corepack pnpm@9.15.4 run typecheck && corepack pnpm@9.15.4 run test && corepack pnpm@9.15.4 run eval -- --suite smoke"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
