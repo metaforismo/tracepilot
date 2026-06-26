@@ -15,7 +15,16 @@ TracePilot evals measure whether a computer-use harness improves reliability in 
 | --- | --- | --- |
 | `smoke` | `corepack pnpm@9.15.4 run eval -- --suite smoke` | Proves the trace store and local target can write a minimal successful run. |
 | `invoice` | `corepack pnpm@9.15.4 run eval -- --suite invoice` | Exercises portal entry, approval stop, and prompt-injection block cases. |
-| `comparison` | `corepack pnpm@9.15.4 run eval -- --suite comparison` | Compares a naive deterministic baseline with the TracePilot harness and writes JSON plus Markdown artifacts. |
+| `comparison` | `corepack pnpm@9.15.4 run eval -- --suite comparison` | Compares a naive deterministic baseline with the TracePilot harness and writes JSON, Markdown, and failure-diagnosis artifacts. |
+
+## Diagnosis Artifacts
+
+The comparison suite writes a failure diagnosis casebook with:
+
+- failure category per case;
+- severity and pass/fail/blocked outcome;
+- model-behavior hypothesis;
+- recommended intervention owners across `post_training_data`, `grader_or_eval`, `agent_harness`, `safety_policy`, and `product_workflow`.
 
 ## First Task Set
 

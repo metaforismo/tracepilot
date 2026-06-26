@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, Play, ShieldCheck } from "lucide-react";
+import { Activity, Play, ShieldCheck, TriangleAlert } from "lucide-react";
 import { listRuns } from "../lib/trace-fixtures";
 
 export default async function HomePage() {
@@ -43,13 +43,18 @@ export default async function HomePage() {
             <h1>Run launcher</h1>
             <p>Start from a saved trace fixture, then inspect verifier evidence step by step.</p>
           </div>
-          <Link className="ghostButton" href="/runs/smoke-form">
-            <ShieldCheck size={15} />
-            Latest smoke run
-          </Link>
+          <div className="buttonRow">
+            <Link className="ghostButton" href="/diagnostics">
+              <TriangleAlert size={15} />
+              Diagnostics
+            </Link>
+            <Link className="ghostButton" href="/runs/smoke-form">
+              <ShieldCheck size={15} />
+              Latest smoke run
+            </Link>
+          </div>
         </div>
       </section>
     </main>
   );
 }
-

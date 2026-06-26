@@ -26,6 +26,7 @@ The project also maps directly to computer-use post-training work:
 - deterministic control runs before introducing paid model calls;
 - run artifacts that make behavior analysis concrete;
 - comparison reports that turn qualitative failures into measurable deltas;
+- failure diagnosis casebook that maps traces to model-behavior hypotheses and intervention owners;
 - clear separation between scripted-driver results and future model-driver results.
 
 ## Application Summary
@@ -40,6 +41,7 @@ Current foundation:
 - approval-gated invoice workflow;
 - Next.js trace replay Studio;
 - baseline-vs-TracePilot comparison report;
+- failure diagnosis report with post-training and harness follow-ups;
 - exact verification commands and artifacts.
 
 ## Anthropic DM Draft
@@ -52,9 +54,9 @@ I would be excited to work on agent harness reliability, evals, browser-control 
 
 ## OpenAI Application Draft
 
-I am interested in Agent Post-Training, Computer Use. I am building TracePilot, a local eval and diagnostics harness for browser-based computer-use agents. It includes production-like target environments, grader-style success criteria, trace artifacts, prompt-injection and approval-gate cases, and a reproducible baseline-vs-TracePilot comparison report.
+I am interested in Agent Post-Training, Computer Use. I am building TracePilot, a local eval and diagnostics harness for browser-based computer-use agents. It includes production-like target environments, grader-style success criteria, trace artifacts, prompt-injection and approval-gate cases, a reproducible baseline-vs-TracePilot comparison report, and a failure diagnosis casebook.
 
-The project is meant to show how I move from a vague behavior problem to a concrete experiment: define the failure mode, build the environment, add a grader, run the comparison, inspect the trace, and decide what should become a model, data, or product-harness fix.
+The project is meant to show how I move from a vague behavior problem to a concrete experiment: define the failure mode, build the environment, add a grader, run the comparison, inspect the trace, classify the failure, and decide what should become a model, data, or product-harness fix.
 
 ## Walkthrough Narrative
 

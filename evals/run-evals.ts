@@ -35,7 +35,7 @@ if (values.suite === "comparison") {
   });
   const delta = result.summary.deltas.tracepilotMinusBaseline;
   console.log(
-    `comparison success_delta=${formatPercent(delta.successRate)} false_completion_delta=${formatPercent(delta.falseCompletionRate)} report=${result.artifacts.reportPath}`
+    `comparison success_delta=${formatPercent(delta.successRate)} false_completion_delta=${formatPercent(delta.falseCompletionRate)} report=${result.artifacts.reportPath} diagnosis=${result.artifacts.diagnosisReportPath}`
   );
 } else if (values.suite === "invoice") {
   const summary = await runInvoiceSuite();

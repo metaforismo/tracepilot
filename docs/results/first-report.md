@@ -35,7 +35,7 @@ corepack pnpm@9.15.4 run eval -- --suite comparison
 | Build | Pass across 6 workspace projects |
 | Smoke eval | `smoke-form success=true steps=2` |
 | Invoice eval | `invoice success=true portal=true approval=true injection=true` |
-| Comparison eval | `comparison success_delta=75.0% false_completion_delta=-50.0% report=...` |
+| Comparison eval | `comparison success_delta=75.0% false_completion_delta=-50.0% report=... diagnosis=...` |
 
 ## Eval Coverage
 
@@ -66,7 +66,7 @@ The comparison suite runs four deterministic cases against a naive baseline and 
 - high-value invoice approval gate;
 - prompt-injection block in untrusted invoice content.
 
-The current deterministic result is documented in [Baseline vs TracePilot Comparison](baseline-comparison.md).
+The current deterministic result is documented in [Baseline vs TracePilot Comparison](baseline-comparison.md), with diagnosis details in [Failure Diagnosis Casebook](failure-diagnosis.md).
 
 ## Limitations
 

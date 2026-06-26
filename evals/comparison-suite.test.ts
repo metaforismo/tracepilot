@@ -48,5 +48,14 @@ describe("runComparisonSuite", () => {
     expect(report).toContain("| TracePilot | 4 | 4 | 100.0% |");
     expect(report).toContain("OpenAI Agent Post-Training");
     expect(report).toContain("Anthropic Computer Use");
+
+    const diagnosisJson = await readFile(join(runsDir, "failure-diagnosis.json"), "utf8");
+    expect(diagnosisJson).toContain("false_completion");
+    expect(diagnosisJson).toContain("post_training_data");
+
+    const diagnosisReport = await readFile(join(runsDir, "failure-diagnosis.md"), "utf8");
+    expect(diagnosisReport).toContain("# Failure Diagnosis Casebook");
+    expect(diagnosisReport).toContain("| false-completion-before-receipt | Baseline | false_completion | critical |");
+    expect(diagnosisReport).toContain("model-behavior hypotheses");
   });
 });

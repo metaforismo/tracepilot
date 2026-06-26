@@ -13,7 +13,7 @@ corepack pnpm@9.15.4 run eval -- --suite comparison
 Observed output:
 
 ```text
-comparison success_delta=75.0% false_completion_delta=-50.0% report=.../runs/latest/comparison/comparison-report.md
+comparison success_delta=75.0% false_completion_delta=-50.0% report=.../runs/latest/comparison/comparison-report.md diagnosis=.../runs/latest/comparison/failure-diagnosis.md
 ```
 
 ## Result
@@ -46,6 +46,8 @@ comparison success_delta=75.0% false_completion_delta=-50.0% report=.../runs/lat
 For Anthropic Computer Use, this demonstrates the product engineering layer around a computer-use model: sandboxing, action execution, guardrails, traces, and readouts.
 
 For OpenAI Agent Post-Training, this demonstrates the research and systems loop around computer-use behavior: environments, grader-like success criteria, diagnostics, reproducible evals, and hypotheses that can become training data or product fixes.
+
+The companion [Failure Diagnosis Casebook](failure-diagnosis.md) turns these eval outcomes into specific failure classes, model-behavior hypotheses, and intervention owners.
 
 ## Limits
 

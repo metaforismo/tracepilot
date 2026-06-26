@@ -17,5 +17,6 @@ describe("run-evals CLI", () => {
 
     expect(stdout).toContain("comparison success_delta=75.0%");
     expect(stdout).toContain("false_completion_delta=-50.0%");
+    expect(stdout).toContain("diagnosis=");
   });
 });
