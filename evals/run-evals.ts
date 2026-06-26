@@ -23,11 +23,13 @@ import { runModelReadinessSuite } from "./model-readiness-suite.js";
 import { runOpenAIBenchmarkSuite } from "./openai-benchmark-suite.js";
 import { runModelBrowserSuite } from "./model-browser-suite.js";
 import { runAnthropicComputerUseSuite } from "./anthropic-computer-use-suite.js";
+import { runReliabilityScorecardSuite } from "./reliability-scorecard-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
   options: {
-    suite: { type: "string", default: "smoke" }
+    suite: { type: "string", default: "smoke" },
+    repetitions: { type: "string" }
   },
   allowPositionals: true
 });
@@ -36,6 +38,7 @@ if (
   values.suite !== "smoke" &&
   values.suite !== "invoice" &&
   values.suite !== "comparison" &&
+  values.suite !== "reliability-scorecard" &&
   values.suite !== "cost-ledger" &&
   values.suite !== "model-readiness" &&
   values.suite !== "openai-benchmark" &&
@@ -92,6 +95,14 @@ if (values.suite === "anthropic-computer-use") {
   console.log(
     `comparison success_delta=${formatPercent(delta.successRate)} false_completion_delta=${formatPercent(delta.falseCompletionRate)} report=${result.artifacts.reportPath} diagnosis=${result.artifacts.diagnosisReportPath}`
   );
+} else if (values.suite === "reliability-scorecard") {
+  const result = await runReliabilityScorecardSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "reliability-scorecard"),
+    ...(values.repetitions === undefined ? {} : { repetitions: parsePositiveInteger("repetitions", values.repetitions) })
+  });
+  console.log(
+    `reliability-scorecard runs=${result.summary.totalRuns} repetitions=${result.summary.repetitions} success_rate=${formatPercent(result.summary.successRate)} false_completion_rate=${formatPercent(result.summary.falseCompletionRate)} stuck_loop_rate=${formatPercent(result.summary.stuckLoopRate)} report=${result.artifacts.reportPath} diagnosis=${result.artifacts.diagnosisReportPath}`
+  );
 } else if (values.suite === "invoice") {
   const summary = await runInvoiceSuite();
   console.log(
@@ -108,6 +119,14 @@ function normalizeArgs(args: string[]): string[] {
 
 function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+function parsePositiveInteger(name: string, value: string): number {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${name} must be a positive integer, got ${value}`);
+  }
+  return parsed;
 }
 
 async function runSmokeSuite(): Promise<RunMetrics> {

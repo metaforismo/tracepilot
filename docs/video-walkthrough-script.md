@@ -46,6 +46,16 @@ corepack pnpm@9.15.4 run eval -- --suite comparison
 
 Show that the baseline gets stuck on `modal-interruption-blocking-form`, while TracePilot dismisses the portal notice, continues the form, and records the failure as `modal_interruption_miss` for diagnosis.
 
+Then run the reliability scorecard:
+
+```bash
+corepack pnpm@9.15.4 run eval -- --suite reliability-scorecard
+```
+
+Show the scorecard report: five harder browser cases, successful policy outcomes, zero false completions, zero stuck loops, one approval stop, and one prompt-injection block. Explain that this is the bridge from a one-off demo to repeated operational reliability measurement.
+
+Mention that longer local runs can use `--repetitions 3` or higher before comparing paid provider-backed scorecards.
+
 ## 5. Reliability Story
 
 Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic and OpenAI adapter boundaries are behind explicit API-key and paid-run gates because paid model calls should be measured separately from local harness correctness.
