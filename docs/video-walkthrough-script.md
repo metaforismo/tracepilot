@@ -39,16 +39,19 @@ Show the three outcomes:
 
 ## 5. Reliability Story
 
-Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic adapter is behind an explicit API-key gate because paid model calls should be measured separately from local harness correctness.
+Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic and OpenAI adapter boundaries are behind explicit API-key and paid-run gates because paid model calls should be measured separately from local harness correctness.
 
 Run:
 
 ```bash
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
+corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 ```
 
 Point out that this is a fixture estimate and a dry-run readiness manifest, not a paid API result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently, and API key presence is recorded without leaking the key.
+
+For the paid OpenAI benchmark, show only the sanitized report. The key point is that real model calls exposed a brittle grader and a prompt/schema ambiguity, both were fixed with tests, and the final 15-call run passed all validators while recording estimated cost and reasoning tokens.
 
 ## 6. Why It Fits Computer Use
 

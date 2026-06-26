@@ -270,6 +270,9 @@ export type ModelRunManifest = {
     clientConfigured: boolean;
     paidRunsEnabled: boolean;
   };
+  request?: {
+    reasoningEffort?: string;
+  };
   ledger?: CostLedger;
   warnings: string[];
 };

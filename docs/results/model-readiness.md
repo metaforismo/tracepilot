@@ -13,7 +13,7 @@ corepack pnpm@9.15.4 run eval -- --suite model-readiness
 Observed default output:
 
 ```text
-model-readiness status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...
+model-readiness provider=anthropic model=claude-sonnet-4-20250514 status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...
 ```
 
 ## What It Proves
@@ -33,6 +33,25 @@ model-readiness status=skipped_paid_runs_disabled source=dry_run paid_call=false
 | Provider | `anthropic` |
 | Model | `claude-sonnet-4-20250514` |
 | API key env var | `ANTHROPIC_API_KEY` |
+
+## OpenAI Readiness
+
+Use the OpenAI provider without exposing a key value:
+
+```bash
+TRACEPILOT_MODEL_PROVIDER=openai \
+TRACEPILOT_OPENAI_MODEL=gpt-5.4-nano \
+TRACEPILOT_OPENAI_REASONING_EFFORT=low \
+corepack pnpm@9.15.4 run eval -- --suite model-readiness
+```
+
+Expected OpenAI dry-run output:
+
+```text
+model-readiness provider=openai model=gpt-5.4-nano reasoning_effort=low status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...
+```
+
+The manifest uses `OPENAI_API_KEY` as the configured env var and records only whether it is present. `gpt-5.4-nano` is the default OpenAI readiness model for low-budget smoke tests, `TRACEPILOT_OPENAI_MODEL` can override it, and `TRACEPILOT_OPENAI_REASONING_EFFORT` defaults to `low`.
 
 ## Reporting Boundary
 

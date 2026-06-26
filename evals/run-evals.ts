@@ -18,6 +18,7 @@ import {
 import { runComparisonSuite } from "./comparison-suite.js";
 import { runCostLedgerSuite } from "./cost-ledger-suite.js";
 import { runModelReadinessSuite } from "./model-readiness-suite.js";
+import { runOpenAIBenchmarkSuite } from "./openai-benchmark-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -32,17 +33,28 @@ if (
   values.suite !== "invoice" &&
   values.suite !== "comparison" &&
   values.suite !== "cost-ledger" &&
-  values.suite !== "model-readiness"
+  values.suite !== "model-readiness" &&
+  values.suite !== "openai-benchmark"
 ) {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-if (values.suite === "model-readiness") {
+if (values.suite === "openai-benchmark") {
+  const result = await runOpenAIBenchmarkSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "openai-benchmark")
+  });
+  console.log(
+    `openai-benchmark status=${result.summary.status} paid_calls=${result.summary.paidCalls} passed=${result.summary.passed} failed=${result.summary.failed} total_cost_usd=${result.summary.totalCostUsd} report=${result.artifacts.reportPath}`
+  );
+} else if (values.suite === "model-readiness") {
   const result = await runModelReadinessSuite({
     runsDir: join(process.cwd(), "runs", "latest", "model-readiness")
   });
+  const reasoningEffort = result.manifest.request?.reasoningEffort
+    ? ` reasoning_effort=${result.manifest.request.reasoningEffort}`
+    : "";
   console.log(
-    `model-readiness status=${result.manifest.status} source=${result.manifest.source} paid_call=${result.manifest.paidCall} manifest=${result.artifacts.manifestPath} report=${result.artifacts.reportPath}`
+    `model-readiness provider=${result.manifest.provider} model=${result.manifest.model}${reasoningEffort} status=${result.manifest.status} source=${result.manifest.source} paid_call=${result.manifest.paidCall} manifest=${result.artifacts.manifestPath} report=${result.artifacts.reportPath}`
   );
 } else if (values.suite === "cost-ledger") {
   const result = await runCostLedgerSuite({

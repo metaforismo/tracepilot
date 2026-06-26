@@ -108,6 +108,7 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - failure diagnosis casebook that maps eval outcomes to post-training, grader, safety, and harness interventions.
 - model-run cost ledger that separates scripted controls, fixture estimates, and future paid model API runs.
 - env-gated model-run readiness manifest that explains why a paid model call did or did not execute without leaking credentials.
+- optional OpenAI Responses API benchmark suite with model/task validation, reasoning-effort capture, and a cost circuit breaker.
 
 Next build slices:
 
@@ -125,6 +126,7 @@ corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
+corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
@@ -157,10 +159,28 @@ The cost-ledger suite uses fixture token usage only. It does not make a paid mod
 Expected model-readiness output:
 
 ```text
-model-readiness status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...
+model-readiness provider=anthropic model=claude-sonnet-4-20250514 status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...
 ```
 
 The model-readiness suite writes an env-gated manifest. By default it does not make a paid model call, even if an API key is present; paid runs require `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1` and a configured model decision client.
+
+OpenAI readiness can be checked without exposing the key:
+
+```bash
+TRACEPILOT_MODEL_PROVIDER=openai \
+TRACEPILOT_OPENAI_MODEL=gpt-5.4-nano \
+corepack pnpm@9.15.4 run eval -- --suite model-readiness
+```
+
+The generated manifest records `OPENAI_API_KEY` presence as a boolean only. `TRACEPILOT_OPENAI_MODEL` is optional; TracePilot defaults OpenAI readiness to `gpt-5.4-nano` for low-budget smoke tests.
+
+Expected OpenAI benchmark dry-run output:
+
+```text
+openai-benchmark status=skipped_paid_runs_disabled paid_calls=0 passed=0 failed=0 total_cost_usd=0 report=...
+```
+
+The OpenAI benchmark suite is also env-gated. It makes no paid calls unless `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1` and `OPENAI_API_KEY` are present. When enabled, it writes sanitized JSON and Markdown artifacts under `runs/latest/openai-benchmark/`, records token usage and estimated cost, and stops when `TRACEPILOT_OPENAI_BENCHMARK_MAX_USD` is reached.
 
 ## Docs
 
@@ -172,6 +192,7 @@ The model-readiness suite writes an env-gated manifest. By default it does not m
 - [Failure Diagnosis](docs/results/failure-diagnosis.md)
 - [Model Cost Ledger](docs/results/model-cost-ledger.md)
 - [Model Run Readiness](docs/results/model-readiness.md)
+- [OpenAI API Evidence](docs/results/openai-smoke.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
 - [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)
