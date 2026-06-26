@@ -9,4 +9,4 @@ runs/*
 .env
 .env.local
 .DS_Store
-
+.worktrees/
