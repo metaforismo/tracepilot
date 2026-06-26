@@ -5,6 +5,16 @@ import { createTraceStore } from "../packages/core/src/trace-store.js";
 import type { Observation, RunMetrics, TraceStep } from "../packages/core/src/types.js";
 import { startTargetServer } from "../apps/targets/src/server.js";
 import { createSmokeFormTask, evaluateSmokeForm } from "./tasks/smoke-form.js";
+import { ScriptedDriver } from "../packages/agents/src/scripted-driver.js";
+import { runTask } from "../packages/harness/src/orchestrator.js";
+import {
+  approvalDriverDecisions,
+  createApprovalTask,
+  createMaliciousInvoiceTask,
+  createPortalTask,
+  maliciousDriverDecisions,
+  portalDriverDecisions
+} from "./tasks/invoice-to-portal.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -14,12 +24,19 @@ const { values } = parseArgs({
   allowPositionals: true
 });
 
-if (values.suite !== "smoke") {
+if (values.suite !== "smoke" && values.suite !== "invoice") {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-const metrics = await runSmokeSuite();
-console.log(`smoke-form success=${metrics.success} steps=${metrics.steps}`);
+if (values.suite === "invoice") {
+  const summary = await runInvoiceSuite();
+  console.log(
+    `invoice success=${summary.success} portal=${summary.portalSuccess} approval=${summary.approvalStopped} injection=${summary.injectionBlocked}`
+  );
+} else {
+  const metrics = await runSmokeSuite();
+  console.log(`smoke-form success=${metrics.success} steps=${metrics.steps}`);
+}
 
 function normalizeArgs(args: string[]): string[] {
   return args[0] === "--" ? args.slice(1) : args;
@@ -117,6 +134,48 @@ async function runSmokeSuite(): Promise<RunMetrics> {
     await store.writeMetrics(metrics);
     await writeFile(join(latestDir, "metrics.json"), `${JSON.stringify(metrics, null, 2)}\n`, "utf8");
     return metrics;
+  } finally {
+    await target.close();
+  }
+}
+
+async function runInvoiceSuite(): Promise<{
+  success: boolean;
+  portalSuccess: boolean;
+  approvalStopped: boolean;
+  injectionBlocked: boolean;
+}> {
+  const target = await startTargetServer();
+  const latestDir = join(process.cwd(), "runs", "latest");
+  await rm(latestDir, { recursive: true, force: true });
+  await mkdir(latestDir, { recursive: true });
+
+  try {
+    const portal = await runTask({
+      runsDir: latestDir,
+      task: createPortalTask(target.origin),
+      driver: new ScriptedDriver(portalDriverDecisions())
+    });
+    const approval = await runTask({
+      runsDir: latestDir,
+      task: createApprovalTask(target.origin),
+      driver: new ScriptedDriver(approvalDriverDecisions())
+    });
+    const injection = await runTask({
+      runsDir: latestDir,
+      task: createMaliciousInvoiceTask(target.origin),
+      driver: new ScriptedDriver(maliciousDriverDecisions())
+    });
+
+    const summary = {
+      success: portal.metrics.success && approval.metrics.humanApprovals === 1 && injection.metrics.unsafeBlocked,
+      portalSuccess: portal.metrics.success,
+      approvalStopped: approval.metrics.humanApprovals === 1,
+      injectionBlocked: injection.metrics.unsafeBlocked
+    };
+
+    await writeFile(join(latestDir, "invoice-summary.json"), `${JSON.stringify(summary, null, 2)}\n`, "utf8");
+    return summary;
   } finally {
     await target.close();
   }
