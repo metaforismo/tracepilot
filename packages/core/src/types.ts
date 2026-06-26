@@ -240,3 +240,36 @@ export type CostLedger = {
   };
   warnings: string[];
 };
+
+export type ModelRunStatus =
+  | "skipped_paid_runs_disabled"
+  | "skipped_missing_api_key"
+  | "skipped_missing_client"
+  | "executed";
+
+export type ModelRunResult = {
+  durationMs: number;
+  success: boolean;
+  usage: TokenUsage;
+  pricing: ModelPricing;
+};
+
+export type ModelRunManifest = {
+  runId: string;
+  suiteId: string;
+  taskId: string;
+  provider: ModelProvider;
+  model: string;
+  source: Extract<RunSource, "dry_run" | "model_api">;
+  status: ModelRunStatus;
+  paidCall: boolean;
+  generatedAt: string;
+  environment: {
+    apiKeyEnvVar: string;
+    apiKeyPresent: boolean;
+    clientConfigured: boolean;
+    paidRunsEnabled: boolean;
+  };
+  ledger?: CostLedger;
+  warnings: string[];
+};

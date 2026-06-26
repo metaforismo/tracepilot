@@ -45,9 +45,10 @@ Run:
 
 ```bash
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
+corepack pnpm@9.15.4 run eval -- --suite model-readiness
 ```
 
-Point out that this is a fixture estimate, not a paid API result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently.
+Point out that this is a fixture estimate and a dry-run readiness manifest, not a paid API result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently, and API key presence is recorded without leaking the key.
 
 ## 6. Why It Fits Computer Use
 

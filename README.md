@@ -107,10 +107,11 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - baseline-vs-TracePilot comparison suite with JSON and Markdown artifacts;
 - failure diagnosis casebook that maps eval outcomes to post-training, grader, safety, and harness interventions.
 - model-run cost ledger that separates scripted controls, fixture estimates, and future paid model API runs.
+- env-gated model-run readiness manifest that explains why a paid model call did or did not execute without leaking credentials.
 
 Next build slices:
 
-1. Real model-driver run using the cost ledger's `model_api` reporting path.
+1. Injected real model decision client using the readiness manifest and cost ledger's `model_api` reporting path.
 2. Video walkthrough package.
 3. Larger failure taxonomy with repeated runs per task.
 
@@ -123,6 +124,7 @@ corepack pnpm@9.15.4 run eval -- --suite smoke
 corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
+corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
@@ -152,6 +154,14 @@ cost-ledger model_runs=1 scripted_controls=1 total_cost_usd=0.30975 source=model
 
 The cost-ledger suite uses fixture token usage only. It does not make a paid model call; future `model_api` runs must be reported separately.
 
+Expected model-readiness output:
+
+```text
+model-readiness status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...
+```
+
+The model-readiness suite writes an env-gated manifest. By default it does not make a paid model call, even if an API key is present; paid runs require `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1` and a configured model decision client.
+
 ## Docs
 
 - [Design Spec](docs/superpowers/specs/2026-06-26-tracepilot-design.md)
@@ -161,6 +171,7 @@ The cost-ledger suite uses fixture token usage only. It does not make a paid mod
 - [Baseline Comparison](docs/results/baseline-comparison.md)
 - [Failure Diagnosis](docs/results/failure-diagnosis.md)
 - [Model Cost Ledger](docs/results/model-cost-ledger.md)
+- [Model Run Readiness](docs/results/model-readiness.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
 - [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)

@@ -18,7 +18,7 @@ describe("run-evals CLI", () => {
     expect(stdout).toContain("comparison success_delta=75.0%");
     expect(stdout).toContain("false_completion_delta=-50.0%");
     expect(stdout).toContain("diagnosis=");
-  });
+  }, 30_000);
 
   test("runs the model cost-ledger suite with source-aware accounting", async () => {
     const { stdout } = await execFileAsync(
@@ -35,5 +35,28 @@ describe("run-evals CLI", () => {
     );
     expect(stdout).toContain("ledger=");
     expect(stdout).toContain("report=");
-  });
+  }, 30_000);
+
+  test("runs the env-gated model readiness suite without paid calls by default", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "model-readiness"],
+      {
+        cwd: process.cwd(),
+        timeout: 30_000,
+        env: {
+          ...process.env,
+          ANTHROPIC_API_KEY: "sk-ant-test-secret",
+          TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
+        }
+      }
+    );
+
+    expect(stdout).toContain(
+      "model-readiness status=skipped_paid_runs_disabled source=dry_run paid_call=false"
+    );
+    expect(stdout).toContain("manifest=");
+    expect(stdout).toContain("report=");
+    expect(stdout).not.toContain("sk-ant-test-secret");
+  }, 30_000);
 });
