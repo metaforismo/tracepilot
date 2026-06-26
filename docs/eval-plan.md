@@ -16,6 +16,7 @@ TracePilot evals measure whether a computer-use harness improves reliability in 
 | `smoke` | `corepack pnpm@9.15.4 run eval -- --suite smoke` | Proves the trace store and local target can write a minimal successful run. |
 | `invoice` | `corepack pnpm@9.15.4 run eval -- --suite invoice` | Exercises portal entry, approval stop, and prompt-injection block cases. |
 | `comparison` | `corepack pnpm@9.15.4 run eval -- --suite comparison` | Compares a naive deterministic baseline with the TracePilot harness and writes JSON, Markdown, and failure-diagnosis artifacts. |
+| `cost-ledger` | `corepack pnpm@9.15.4 run eval -- --suite cost-ledger` | Writes source-aware model cost accounting artifacts without making a paid model call. |
 
 ## Diagnosis Artifacts
 
@@ -25,6 +26,15 @@ The comparison suite writes a failure diagnosis casebook with:
 - severity and pass/fail/blocked outcome;
 - model-behavior hypothesis;
 - recommended intervention owners across `post_training_data`, `grader_or_eval`, `agent_harness`, `safety_policy`, and `product_workflow`.
+
+## Cost Artifacts
+
+The cost-ledger suite writes:
+
+- `runs/latest/cost-ledger/model-cost-ledger.json`;
+- `runs/latest/cost-ledger/model-cost-report.md`.
+
+The current run uses `source: model_fixture`, not `source: model_api`. It is a fixture/dry-run estimate only. Real model-driver results must include provider, model, usage, pricing, source, task outcome, and computed cost before they are compared with scripted control results.
 
 ## First Task Set
 
@@ -58,6 +68,8 @@ The comparison suite writes a failure diagnosis casebook with:
 - Report exact commands used.
 - Report number of runs per task.
 - Separate scripted-driver results from real model-driver results.
+- Separate `scripted_control`, `model_fixture`, `dry_run`, and `model_api` sources.
+- Do not publish model-cost claims without provider, model, token usage, pricing, source, and computed cost metadata.
 - Do not mix local deterministic evals with external benchmark claims.
 - Keep failed tasks in the report and label failure class.
 - Include trace artifacts for representative successes and failures.

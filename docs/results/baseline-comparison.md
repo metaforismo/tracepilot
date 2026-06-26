@@ -53,4 +53,4 @@ The companion [Failure Diagnosis Casebook](failure-diagnosis.md) turns these eva
 
 - The baseline is deterministic and intentionally weak; it is a control loop for harness evaluation, not a model benchmark.
 - The TracePilot mode uses deterministic scripted decisions in this report; real model-driver results must be reported separately.
-- Costs are zero in this run because no paid model calls were made.
+- Costs are zero in this run because no paid model calls were made. Fixture cost estimates are tracked separately in [Model Cost Ledger](model-cost-ledger.md).

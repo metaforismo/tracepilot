@@ -182,3 +182,61 @@ export type FailureDiagnosisReport = {
     interventionOwners: Array<{ owner: InterventionOwner; count: number }>;
   };
 };
+
+export type EvalDriverKind = "scripted" | "model";
+
+export type ModelProvider = "anthropic" | "openai" | "local" | "other";
+
+export type RunSource = "scripted_control" | "model_api" | "model_fixture" | "dry_run";
+
+export type TokenUsage = {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadInputTokens?: number;
+  cacheCreationInputTokens?: number;
+};
+
+export type ModelPricing = {
+  inputUsdPerMillionTokens: number;
+  outputUsdPerMillionTokens: number;
+  cacheReadInputUsdPerMillionTokens?: number;
+  cacheCreationInputUsdPerMillionTokens?: number;
+};
+
+export type CostLedgerRun = {
+  runId: string;
+  suiteId: string;
+  taskId: string;
+  driverKind: EvalDriverKind;
+  source?: RunSource;
+  provider?: ModelProvider;
+  model?: string;
+  usage?: TokenUsage;
+  pricing?: ModelPricing;
+  durationMs: number;
+  success: boolean;
+};
+
+export type CostLedgerRunWithCost = CostLedgerRun & {
+  source: RunSource;
+  computedCostUsd: number;
+};
+
+export type CostLedger = {
+  experimentId: string;
+  generatedAt: string;
+  runs: CostLedgerRunWithCost[];
+  summary: {
+    runs: number;
+    scriptedRuns: number;
+    modelRuns: number;
+    successfulModelRuns: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalCacheReadInputTokens: number;
+    totalCacheCreationInputTokens: number;
+    totalCostUsd: number;
+    costPerSuccessfulModelRunUsd: number;
+  };
+  warnings: string[];
+};

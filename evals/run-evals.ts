@@ -16,6 +16,7 @@ import {
   portalDriverDecisions
 } from "./tasks/invoice-to-portal.js";
 import { runComparisonSuite } from "./comparison-suite.js";
+import { runCostLedgerSuite } from "./cost-ledger-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -25,11 +26,24 @@ const { values } = parseArgs({
   allowPositionals: true
 });
 
-if (values.suite !== "smoke" && values.suite !== "invoice" && values.suite !== "comparison") {
+if (
+  values.suite !== "smoke" &&
+  values.suite !== "invoice" &&
+  values.suite !== "comparison" &&
+  values.suite !== "cost-ledger"
+) {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-if (values.suite === "comparison") {
+if (values.suite === "cost-ledger") {
+  const result = await runCostLedgerSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "cost-ledger")
+  });
+  const modelRun = result.ledger.runs.find((run) => run.driverKind === "model");
+  console.log(
+    `cost-ledger model_runs=${result.ledger.summary.modelRuns} scripted_controls=${result.ledger.summary.scriptedRuns} total_cost_usd=${result.ledger.summary.totalCostUsd} source=${modelRun?.source ?? "none"} ledger=${result.artifacts.ledgerPath} report=${result.artifacts.reportPath}`
+  );
+} else if (values.suite === "comparison") {
   const result = await runComparisonSuite({
     runsDir: join(process.cwd(), "runs", "latest", "comparison")
   });

@@ -15,6 +15,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Orchestrator loop: observe, decide, safety-check, act, verify, trace, measure.
 - Local target app with smoke form, invoice fixtures, legacy portal, approval gate, and prompt-injection fixture.
 - Next.js Studio with run launcher, metrics strip, screenshot panel, timeline, and inspector.
+- Model cost ledger with explicit source labels for scripted controls, model fixtures, dry runs, and future paid API calls.
 
 ## Verification Commands
 
@@ -24,6 +25,7 @@ corepack pnpm@9.15.4 run build
 corepack pnpm@9.15.4 run eval -- --suite smoke
 corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
+corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 ```
 
 ## Current Results
@@ -36,6 +38,7 @@ corepack pnpm@9.15.4 run eval -- --suite comparison
 | Smoke eval | `smoke-form success=true steps=2` |
 | Invoice eval | `invoice success=true portal=true approval=true injection=true` |
 | Comparison eval | `comparison success_delta=75.0% false_completion_delta=-50.0% report=... diagnosis=...` |
+| Cost-ledger eval | `cost-ledger model_runs=1 scripted_controls=1 total_cost_usd=0.30975 source=model_fixture ledger=... report=...` |
 
 ## Eval Coverage
 
@@ -68,11 +71,23 @@ The comparison suite runs four deterministic cases against a naive baseline and 
 
 The current deterministic result is documented in [Baseline vs TracePilot Comparison](baseline-comparison.md), with diagnosis details in [Failure Diagnosis Casebook](failure-diagnosis.md).
 
+### Cost-Ledger Suite
+
+The cost-ledger suite writes `runs/latest/cost-ledger/model-cost-ledger.json` and `runs/latest/cost-ledger/model-cost-report.md`.
+
+It currently uses fixture token usage only and does not make a paid model call. The purpose is to enforce the accounting boundary before real model-driver runs:
+
+- model runs require provider, model, usage, pricing, and source metadata;
+- scripted controls are counted separately from model runs;
+- fixture/dry-run estimates emit an explicit warning;
+- future paid runs must use `source: model_api` and be reported separately.
+
 ## Limitations
 
 - This is a local deterministic suite, not an OSWorld-scale benchmark.
 - The Anthropic computer-use adapter is intentionally env-gated and does not make paid API calls yet.
 - The comparison report does not yet use a paid model driver.
+- The cost-ledger result is a fixture estimate, not a paid API measurement.
 - The invoice fixtures are HTML first; PDF and spreadsheet fixtures are planned after the browser workflow remains stable.
 
 ## Next Measurements
@@ -80,4 +95,4 @@ The current deterministic result is documented in [Baseline vs TracePilot Compar
 The next report should add:
 
 - repeated runs per task;
-- cost per successful task once model calls are enabled.
+- paid `model_api` cost per successful task once real model calls are enabled.

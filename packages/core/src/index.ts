@@ -1,4 +1,5 @@
 export { createTraceStore } from "./trace-store.js";
+export { buildCostLedger, computeTokenCostUsd } from "./cost-ledger.js";
 export { diagnoseEvalResults } from "./failure-diagnosis.js";
 export { summarizeEvalComparison } from "./eval-summary.js";
 export { isStuckLoop } from "./loop-detector.js";
@@ -8,9 +9,13 @@ export type { TraceStore } from "./trace-store.js";
 export type {
   ActionKind,
   AgentAction,
+  CostLedger,
+  CostLedgerRun,
+  CostLedgerRunWithCost,
   DriverDecision,
   EvalCaseResult,
   EvalComparisonSummary,
+  EvalDriverKind,
   EvalMode,
   EvalModeSummary,
   FailureCategory,
@@ -19,10 +24,14 @@ export type {
   FailureOutcome,
   FailureSeverity,
   InterventionOwner,
+  ModelPricing,
+  ModelProvider,
   Observation,
   RecommendedIntervention,
+  RunSource,
   RunMetrics,
   TaskSpec,
+  TokenUsage,
   TraceStep,
   VerifierResult,
   VerifierStatus

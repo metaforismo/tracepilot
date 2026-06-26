@@ -41,9 +41,16 @@ Show the three outcomes:
 
 Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic adapter is behind an explicit API-key gate because paid model calls should be measured separately from local harness correctness.
 
+Run:
+
+```bash
+corepack pnpm@9.15.4 run eval -- --suite cost-ledger
+```
+
+Point out that this is a fixture estimate, not a paid API result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently.
+
 ## 6. Why It Fits Computer Use
 
 Close with:
 
 TracePilot is not trying to train a model from scratch. It focuses on the product and harness layer that makes computer-use agents useful: instrumentation, evals, failure attribution, safety gates, and clean user-facing replay.
-
