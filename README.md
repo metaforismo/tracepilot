@@ -104,7 +104,8 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - Next.js Studio UI with run launcher, metrics strip, screenshot panel, timeline, and inspector;
 - invoice-to-legacy-portal target fixtures with approval and prompt-injection cases;
 - real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`;
-- baseline-vs-TracePilot comparison suite with JSON and Markdown artifacts.
+- baseline-vs-TracePilot comparison suite with JSON and Markdown artifacts;
+- failure diagnosis casebook that maps eval outcomes to post-training, grader, safety, and harness interventions.
 
 Next build slices:
 
@@ -138,7 +139,7 @@ invoice success=true portal=true approval=true injection=true
 Expected comparison output:
 
 ```text
-comparison success_delta=75.0% false_completion_delta=-50.0% report=...
+comparison success_delta=75.0% false_completion_delta=-50.0% report=... diagnosis=...
 ```
 
 ## Docs
@@ -148,6 +149,7 @@ comparison success_delta=75.0% false_completion_delta=-50.0% report=...
 - [Eval Plan](docs/eval-plan.md)
 - [First Report](docs/results/first-report.md)
 - [Baseline Comparison](docs/results/baseline-comparison.md)
+- [Failure Diagnosis](docs/results/failure-diagnosis.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
 - [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)

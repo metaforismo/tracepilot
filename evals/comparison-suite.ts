@@ -1,8 +1,15 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ScriptedDriver } from "../packages/agents/src/scripted-driver.js";
+import { diagnoseEvalResults } from "../packages/core/src/failure-diagnosis.js";
 import { summarizeEvalComparison } from "../packages/core/src/eval-summary.js";
-import type { EvalCaseResult, EvalComparisonSummary, RunMetrics, TaskSpec } from "../packages/core/src/types.js";
+import type {
+  EvalCaseResult,
+  EvalComparisonSummary,
+  FailureDiagnosisReport,
+  RunMetrics,
+  TaskSpec
+} from "../packages/core/src/types.js";
 import { runTask } from "../packages/harness/src/orchestrator.js";
 import { startTargetServer } from "../apps/targets/src/server.js";
 import {
@@ -22,11 +29,14 @@ export type ComparisonSuiteOptions = {
 
 export type ComparisonSuiteResult = {
   summary: EvalComparisonSummary;
+  diagnosis: FailureDiagnosisReport;
   results: EvalCaseResult[];
   artifacts: {
     resultsPath: string;
     summaryPath: string;
     reportPath: string;
+    diagnosisPath: string;
+    diagnosisReportPath: string;
   };
 };
 
@@ -65,18 +75,27 @@ export async function runComparisonSuite(options: ComparisonSuiteOptions): Promi
       generatedAt: options.generatedAt ?? new Date().toISOString(),
       results
     });
+    const diagnosis = diagnoseEvalResults({
+      suiteId,
+      generatedAt: summary.generatedAt,
+      results
+    });
 
     const artifacts = {
       resultsPath: join(options.runsDir, "comparison-results.json"),
       summaryPath: join(options.runsDir, "comparison-summary.json"),
-      reportPath: join(options.runsDir, "comparison-report.md")
+      reportPath: join(options.runsDir, "comparison-report.md"),
+      diagnosisPath: join(options.runsDir, "failure-diagnosis.json"),
+      diagnosisReportPath: join(options.runsDir, "failure-diagnosis.md")
     };
 
     await writeFile(artifacts.resultsPath, `${JSON.stringify(results, null, 2)}\n`, "utf8");
     await writeFile(artifacts.summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf8");
     await writeFile(artifacts.reportPath, renderComparisonMarkdown(summary), "utf8");
+    await writeFile(artifacts.diagnosisPath, `${JSON.stringify(diagnosis, null, 2)}\n`, "utf8");
+    await writeFile(artifacts.diagnosisReportPath, renderFailureDiagnosisMarkdown(diagnosis), "utf8");
 
-    return { summary, results, artifacts };
+    return { summary, diagnosis, results, artifacts };
   } finally {
     await target.close();
   }
@@ -252,6 +271,63 @@ This deterministic local suite compares a naive baseline loop against the TraceP
 
 - Anthropic Computer Use: demonstrates an agent harness with verifier-driven reliability, guardrails, traces, and external-user-style workflows.
 - OpenAI Agent Post-Training: demonstrates eval environments, grader-like success criteria, diagnostics, reproducible reports, and model-behavior hypotheses that can become training or product fixes.
+`;
+}
+
+export function renderFailureDiagnosisMarkdown(report: FailureDiagnosisReport): string {
+  const rows = report.diagnoses.map((diagnosis) =>
+    [
+      diagnosis.caseId,
+      modeLabel(diagnosis.mode),
+      diagnosis.category,
+      diagnosis.severity,
+      diagnosis.outcome,
+      diagnosis.recommendedInterventions.map((item) => item.owner).join(", ")
+    ].join(" | ")
+  );
+
+  const categoryRows = report.summary.categories.map((item) => `| ${item.category} | ${item.count} |`);
+  const ownerRows = report.summary.interventionOwners.map((item) => `| ${item.owner} | ${item.count} |`);
+
+  return `# Failure Diagnosis Casebook
+
+Generated at: ${report.generatedAt}
+
+This casebook turns deterministic eval outcomes into model-behavior hypotheses and concrete follow-up owners. It is meant to support post-training, grader, safety, and product-harness iteration.
+
+## Summary
+
+| Metric | Value |
+| --- | ---: |
+| Total cases | ${report.summary.total} |
+| Evaluator successes | ${report.summary.successes} |
+| Evaluator failures | ${report.summary.failures} |
+| Policy blocks | ${report.summary.blocked} |
+| Highest severity | ${report.summary.highestSeverity} |
+
+## Case Diagnoses
+
+| Case | Mode | Category | Severity | Outcome | Intervention owners |
+| --- | --- | --- | --- | --- | --- |
+| ${rows.join(" |\n| ")} |
+
+## Category Counts
+
+| Category | Count |
+| --- | ---: |
+${categoryRows.join("\n")}
+
+## Intervention Owner Counts
+
+| Owner | Count |
+| --- | ---: |
+${ownerRows.join("\n")}
+
+## How To Use This
+
+- Convert repeated failure categories into new eval cases and grader assertions.
+- Convert critical model-behavior hypotheses into targeted post-training data.
+- Keep blocked outcomes separate from failures so safety and approval compliance are not penalized as task failures.
 `;
 }
 

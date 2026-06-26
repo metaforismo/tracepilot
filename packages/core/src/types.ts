@@ -127,3 +127,58 @@ export type EvalComparisonSummary = {
     };
   };
 };
+
+export type FailureCategory =
+  | "success"
+  | "false_completion"
+  | "approval_policy_miss"
+  | "prompt_injection_risk"
+  | "prompt_injection_blocked"
+  | "requires_human_approval"
+  | "stuck_loop"
+  | "no_progress"
+  | "unknown_failure";
+
+export type FailureSeverity = "low" | "medium" | "high" | "critical";
+
+export type FailureOutcome = "pass" | "fail" | "blocked";
+
+export type InterventionOwner =
+  | "post_training_data"
+  | "grader_or_eval"
+  | "agent_harness"
+  | "safety_policy"
+  | "product_workflow";
+
+export type RecommendedIntervention = {
+  owner: InterventionOwner;
+  action: string;
+};
+
+export type FailureDiagnosis = {
+  suiteId: string;
+  caseId: string;
+  mode: EvalMode;
+  taskId: string;
+  outcome: FailureOutcome;
+  category: FailureCategory;
+  severity: FailureSeverity;
+  evidence: string[];
+  modelBehaviorHypothesis: string;
+  recommendedInterventions: RecommendedIntervention[];
+};
+
+export type FailureDiagnosisReport = {
+  suiteId: string;
+  generatedAt: string;
+  diagnoses: FailureDiagnosis[];
+  summary: {
+    total: number;
+    successes: number;
+    failures: number;
+    blocked: number;
+    highestSeverity: FailureSeverity;
+    categories: Array<{ category: FailureCategory; count: number }>;
+    interventionOwners: Array<{ owner: InterventionOwner; count: number }>;
+  };
+};

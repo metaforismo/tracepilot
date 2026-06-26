@@ -44,6 +44,16 @@ describe("TracePilot Studio", () => {
     await expectText("Deterministic evaluator found expected success state.");
     await expect(page!.locator("img[alt='Observation step-1']").count()).resolves.toBe(1);
   });
+
+  it("renders the failure diagnostics surface", async () => {
+    await page!.goto(`${origin}/diagnostics`, { waitUntil: "networkidle" });
+
+    await expectText("Failure diagnostics");
+    await expectText("model-behavior hypotheses");
+    await expectText("false-completion-before-receipt");
+    await expectText("false_completion");
+    await expectText("post_training_data");
+  });
 });
 
 async function expectText(text: string): Promise<void> {
@@ -79,4 +89,3 @@ async function getFreePort(): Promise<number> {
   });
   return address.port;
 }
-
