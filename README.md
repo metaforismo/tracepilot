@@ -106,10 +106,11 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`;
 - baseline-vs-TracePilot comparison suite with JSON and Markdown artifacts;
 - failure diagnosis casebook that maps eval outcomes to post-training, grader, safety, and harness interventions.
+- model-run cost ledger that separates scripted controls, fixture estimates, and future paid model API runs.
 
 Next build slices:
 
-1. Real model-driver run with explicit cost accounting.
+1. Real model-driver run using the cost ledger's `model_api` reporting path.
 2. Video walkthrough package.
 3. Larger failure taxonomy with repeated runs per task.
 
@@ -121,6 +122,7 @@ corepack pnpm@9.15.4 run ci
 corepack pnpm@9.15.4 run eval -- --suite smoke
 corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
+corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
@@ -142,6 +144,14 @@ Expected comparison output:
 comparison success_delta=75.0% false_completion_delta=-50.0% report=... diagnosis=...
 ```
 
+Expected cost-ledger output:
+
+```text
+cost-ledger model_runs=1 scripted_controls=1 total_cost_usd=0.30975 source=model_fixture ledger=... report=...
+```
+
+The cost-ledger suite uses fixture token usage only. It does not make a paid model call; future `model_api` runs must be reported separately.
+
 ## Docs
 
 - [Design Spec](docs/superpowers/specs/2026-06-26-tracepilot-design.md)
@@ -150,6 +160,7 @@ comparison success_delta=75.0% false_completion_delta=-50.0% report=... diagnosi
 - [First Report](docs/results/first-report.md)
 - [Baseline Comparison](docs/results/baseline-comparison.md)
 - [Failure Diagnosis](docs/results/failure-diagnosis.md)
+- [Model Cost Ledger](docs/results/model-cost-ledger.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
 - [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)
