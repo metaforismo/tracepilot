@@ -14,12 +14,13 @@ TracePilot evals measure whether a computer-use harness improves reliability in 
 | Suite | Command | Purpose |
 | --- | --- | --- |
 | `smoke` | `corepack pnpm@9.15.4 run eval -- --suite smoke` | Proves the trace store and local target can write a minimal successful run. |
-| `invoice` | `corepack pnpm@9.15.4 run eval -- --suite invoice` | Exercises portal entry, approval stop, and prompt-injection block cases. |
-| `comparison` | `corepack pnpm@9.15.4 run eval -- --suite comparison` | Compares a naive deterministic baseline with the TracePilot harness and writes JSON, Markdown, and failure-diagnosis artifacts. |
+| `invoice` | `corepack pnpm@9.15.4 run eval -- --suite invoice` | Exercises portal entry, validation recovery, approval stop, and prompt-injection block cases. |
+| `comparison` | `corepack pnpm@9.15.4 run eval -- --suite comparison` | Compares a naive deterministic baseline with the TracePilot harness across happy path, false completion, validation recovery, approval, and prompt-injection cases. |
 | `cost-ledger` | `corepack pnpm@9.15.4 run eval -- --suite cost-ledger` | Writes source-aware model cost accounting artifacts without making a paid model call. |
 | `model-readiness` | `corepack pnpm@9.15.4 run eval -- --suite model-readiness` | Writes an env-gated model-run manifest that explains whether a paid model call was disabled, blocked, or executed. |
 | `openai-benchmark` | `corepack pnpm@9.15.4 run eval -- --suite openai-benchmark` | Runs a dry-run by default, or an env-gated OpenAI Responses API benchmark with task validators, reasoning-effort capture, and a cost circuit breaker. |
 | `model-browser` | `corepack pnpm@9.15.4 run eval -- --suite model-browser` | Runs a dry-run by default, or an env-gated real model browser-control workflow with screenshot observation, verifier checks, trace artifacts, and cost budget stops. |
+| `anthropic-computer-use` | `corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use` | Runs a dry-run by default, or an env-gated Anthropic Computer Use workflow with `tool_use` action parsing, verifier checks, trace artifacts, and cost budget stops. |
 
 ## Diagnosis Artifacts
 
@@ -64,6 +65,15 @@ It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAI
 
 This suite is the first real browser-control measurement path. It separates model-driver outcomes from deterministic controls, records step-level `model_api` cost metadata in the trace, and keeps model failures as artifacts instead of hiding them behind a crashed eval process.
 
+The Anthropic computer-use suite writes:
+
+- `runs/latest/anthropic-computer-use/anthropic-computer-use-summary.json`;
+- `runs/latest/anthropic-computer-use/anthropic-computer-use-report.md`.
+
+It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `ANTHROPIC_API_KEY`, and an explicit budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MODEL` chooses the Anthropic model, `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK` chooses `legacy-portal` or `smoke-form`, and `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_TOKENS` controls the Messages API output cap.
+
+This suite validates the Anthropic adapter boundary without silently mixing it with OpenAI results. The request includes Anthropic's computer-use tool definition and maps returned `tool_use` blocks into the same TracePilot action, verifier, trace, and cost contract.
+
 ## First Task Set
 
 | ID | Category | Success Criterion |
@@ -101,6 +111,7 @@ This suite is the first real browser-control measurement path. It separates mode
 - Do not publish dry-run readiness manifests as model-performance results.
 - Do not publish one-off OpenAI benchmark runs as broad model rankings; use them as harness, cost, and prompt/schema evidence unless repeated.
 - Do not publish one-off model-browser runs as broad computer-use rankings; use them as operational evidence and keep failed runs in the report.
+- Do not publish mocked Anthropic computer-use runs as paid model results; use them as adapter and harness evidence until a real paid run exists.
 - Do not mix local deterministic evals with external benchmark claims.
 - Keep failed tasks in the report and label failure class.
 - Include trace artifacts for representative successes and failures.

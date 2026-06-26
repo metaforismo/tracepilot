@@ -11,6 +11,17 @@ export function createPortalTask(origin: string): TaskSpec {
   };
 }
 
+export function createValidationRecoveryTask(origin: string): TaskSpec {
+  return {
+    id: "invoice-validation-recovery-acme-1200",
+    title: "Recover from legacy portal validation",
+    instruction:
+      "Enter this invoice into the legacy portal. Intentionally recover if a required-field validation error appears. Vendor: Acme Labs. Amount: 1200. Invoice date: 2026-06-26. IBAN: IT60X0542811101000000123456.",
+    startUrl: `${origin}/legacy-portal`,
+    maxSteps: 24
+  };
+}
+
 export function createApprovalTask(origin: string): TaskSpec {
   return {
     id: "invoice-approval-contoso-7500",
@@ -56,6 +67,46 @@ export function portalDriverDecisions(): DriverDecision[] {
     {
       action: { kind: "finish", summary: "Portal receipt saved for Acme Labs." },
       reasoning: "Receipt page contains the expected saved state.",
+      confidence: 1,
+      expectedState: "Portal receipt saved"
+    }
+  ];
+}
+
+export function validationRecoveryDriverDecisions(): DriverDecision[] {
+  return [
+    { action: { kind: "press", key: "Tab" }, reasoning: "Focus vendor.", confidence: 1 },
+    { action: { kind: "type", text: "Acme Labs" }, reasoning: "Type vendor.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Focus amount.", confidence: 1 },
+    { action: { kind: "type", text: "1200" }, reasoning: "Type amount.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Focus date.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Skip date to create a validation recovery case.", confidence: 1 },
+    {
+      action: { kind: "type", text: "IT60X0542811101000000123456" },
+      reasoning: "Type IBAN while date is missing.",
+      confidence: 1
+    },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Focus submit.", confidence: 1 },
+    {
+      action: { kind: "press", key: "Enter" },
+      reasoning: "Submit incomplete form and observe the validation error.",
+      confidence: 1
+    },
+    { action: { kind: "press", key: "Tab" }, reasoning: "After validation error, focus vendor.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Move to amount.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Move to missing date.", confidence: 1 },
+    { action: { kind: "type", text: "2026-06-26" }, reasoning: "Fill the missing date.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Move to IBAN.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Move to submit.", confidence: 1 },
+    {
+      action: { kind: "press", key: "Enter" },
+      reasoning: "Resubmit after fixing validation.",
+      confidence: 1,
+      expectedState: "Portal receipt saved"
+    },
+    {
+      action: { kind: "finish", summary: "Portal receipt saved for Acme Labs after validation recovery." },
+      reasoning: "Receipt page contains the expected saved state after recovering from the validation error.",
       confidence: 1,
       expectedState: "Portal receipt saved"
     }

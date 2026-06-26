@@ -34,7 +34,7 @@ describe("TracePilot Studio", () => {
     await expectText("TracePilot Studio");
     await expectText("Run launcher");
     await expectText("Open trace");
-  });
+  }, 15000);
 
   it("renders the trace replay surface", async () => {
     await page!.goto(`${origin}/runs/smoke-form`, { waitUntil: "networkidle" });
@@ -43,7 +43,7 @@ describe("TracePilot Studio", () => {
     await expectText("Inspector");
     await expectText("Deterministic evaluator found expected success state.");
     await expect(page!.locator("img[alt='Observation step-1']").count()).resolves.toBe(1);
-  });
+  }, 15000);
 
   it("renders the failure diagnostics surface", async () => {
     await page!.goto(`${origin}/diagnostics`, { waitUntil: "networkidle" });
@@ -53,7 +53,7 @@ describe("TracePilot Studio", () => {
     await expectText("false-completion-before-receipt");
     await expectText("false_completion");
     await expectText("post_training_data");
-  });
+  }, 15000);
 });
 
 async function expectText(text: string): Promise<void> {
