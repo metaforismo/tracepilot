@@ -1,4 +1,7 @@
 export { createTraceStore } from "./trace-store.js";
+export { isStuckLoop } from "./loop-detector.js";
+export { inspectUntrustedContent, validateSensitiveAction } from "./safety-policy.js";
+export { verifyActionEffect } from "./verifier.js";
 export type { TraceStore } from "./trace-store.js";
 export type {
   ActionKind,
@@ -11,4 +14,3 @@ export type {
   VerifierResult,
   VerifierStatus
 } from "./types.js";
-
