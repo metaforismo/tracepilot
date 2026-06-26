@@ -137,7 +137,9 @@ invoice success=true portal=true approval=true injection=true
 - [Design Spec](docs/superpowers/specs/2026-06-26-tracepilot-design.md)
 - [Implementation Plan](docs/superpowers/plans/2026-06-26-tracepilot-implementation-plan.md)
 - [Eval Plan](docs/eval-plan.md)
+- [First Report](docs/results/first-report.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
+- [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)
 
 ## License
