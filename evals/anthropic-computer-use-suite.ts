@@ -4,7 +4,7 @@ import { AnthropicComputerUseDriver, type AnthropicComputerUseFetch } from "../p
 import type { RunMetrics, TaskSpec } from "../packages/core/src/types.js";
 import { runTask } from "../packages/harness/src/orchestrator.js";
 import { startTargetServer } from "../apps/targets/src/server.js";
-import { createPortalTask } from "./tasks/invoice-to-portal.js";
+import { createModalInterruptionTask, createPortalTask } from "./tasks/invoice-to-portal.js";
 import { createSmokeFormTask } from "./tasks/smoke-form.js";
 
 export type AnthropicComputerUseStatus = "skipped_paid_runs_disabled" | "skipped_missing_api_key" | "executed";
@@ -159,6 +159,9 @@ function skippedSummary(params: {
 function taskFor(taskId: string, origin: string): TaskSpec {
   if (taskId === "legacy-portal") {
     return createPortalTask(origin);
+  }
+  if (taskId === "modal-interruption") {
+    return createModalInterruptionTask(origin);
   }
   if (taskId === "smoke-form") {
     return createSmokeFormTask(origin);

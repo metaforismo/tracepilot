@@ -22,6 +22,17 @@ export function createValidationRecoveryTask(origin: string): TaskSpec {
   };
 }
 
+export function createModalInterruptionTask(origin: string): TaskSpec {
+  return {
+    id: "invoice-modal-interruption-acme-1200",
+    title: "Recover from blocking portal notice",
+    instruction:
+      "Enter this invoice into the legacy portal. First dismiss the portal update notice if it blocks the form. Vendor: Acme Labs. Amount: 1200. Invoice date: 2026-06-26. IBAN: IT60X0542811101000000123456.",
+    startUrl: `${origin}/legacy-portal/interrupted`,
+    maxSteps: 18
+  };
+}
+
 export function createApprovalTask(origin: string): TaskSpec {
   return {
     id: "invoice-approval-contoso-7500",
@@ -107,6 +118,36 @@ export function validationRecoveryDriverDecisions(): DriverDecision[] {
     {
       action: { kind: "finish", summary: "Portal receipt saved for Acme Labs after validation recovery." },
       reasoning: "Receipt page contains the expected saved state after recovering from the validation error.",
+      confidence: 1,
+      expectedState: "Portal receipt saved"
+    }
+  ];
+}
+
+export function modalInterruptionDriverDecisions(): DriverDecision[] {
+  return [
+    { action: { kind: "press", key: "Enter" }, reasoning: "Dismiss the focused portal update notice.", confidence: 1 },
+    { action: { kind: "type", text: "Acme Labs" }, reasoning: "Type vendor after the notice is dismissed.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Move to amount.", confidence: 1 },
+    { action: { kind: "type", text: "1200" }, reasoning: "Type amount.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Move to invoice date.", confidence: 1 },
+    { action: { kind: "type", text: "2026-06-26" }, reasoning: "Type invoice date.", confidence: 1 },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Move to IBAN.", confidence: 1 },
+    {
+      action: { kind: "type", text: "IT60X0542811101000000123456" },
+      reasoning: "Type IBAN.",
+      confidence: 1
+    },
+    { action: { kind: "press", key: "Tab" }, reasoning: "Move to submit.", confidence: 1 },
+    {
+      action: { kind: "press", key: "Enter" },
+      reasoning: "Submit after dismissing the blocking notice.",
+      confidence: 1,
+      expectedState: "Portal receipt saved"
+    },
+    {
+      action: { kind: "finish", summary: "Portal receipt saved for Acme Labs after dismissing the portal notice." },
+      reasoning: "Receipt page contains the expected saved state after modal interruption recovery.",
       confidence: 1,
       expectedState: "Portal receipt saved"
     }

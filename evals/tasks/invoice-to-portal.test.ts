@@ -1,7 +1,9 @@
 import { describe, expect, test } from "vitest";
 import {
+  createModalInterruptionTask,
   createPortalTask,
   createValidationRecoveryTask,
+  modalInterruptionDriverDecisions,
   validationRecoveryDriverDecisions
 } from "./invoice-to-portal.js";
 
@@ -28,6 +30,23 @@ describe("createPortalTask", () => {
     expect(task.instruction).toContain("recover if a required-field validation error appears");
     expect(task.maxSteps).toBeGreaterThan(decisions.length);
     expect(decisions.some((decision) => decision.reasoning.includes("validation error"))).toBe(true);
+    expect(decisions.at(-1)).toMatchObject({
+      action: { kind: "finish" },
+      expectedState: "Portal receipt saved"
+    });
+  });
+
+  test("defines a modal-interruption task that starts by dismissing the blocking dialog", () => {
+    const task = createModalInterruptionTask("http://127.0.0.1:3000");
+    const decisions = modalInterruptionDriverDecisions();
+
+    expect(task.startUrl).toBe("http://127.0.0.1:3000/legacy-portal/interrupted");
+    expect(task.instruction).toContain("dismiss the portal update notice");
+    expect(task.maxSteps).toBeGreaterThan(decisions.length);
+    expect(decisions[0]).toMatchObject({
+      action: { kind: "press", key: "Enter" },
+      reasoning: "Dismiss the focused portal update notice."
+    });
     expect(decisions.at(-1)).toMatchObject({
       action: { kind: "finish" },
       expectedState: "Portal receipt saved"

@@ -43,19 +43,21 @@ corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 | Check | Result |
 | --- | --- |
 | Typecheck | Pass across 6 workspace projects |
-| Unit/integration tests | Pass, 88 tests |
+| Unit/integration tests | Pass, 92 tests |
 | Build | Pass across 6 workspace projects |
 | Smoke eval | `smoke-form success=true steps=2` |
 | Invoice eval | `invoice success=true portal=true validation=true approval=true injection=true` |
-| Comparison eval | `comparison success_delta=80.0% false_completion_delta=-60.0% report=... diagnosis=...` |
+| Comparison eval | `comparison success_delta=83.3% false_completion_delta=-50.0% report=... diagnosis=...` |
 | Cost-ledger eval | `cost-ledger model_runs=1 scripted_controls=1 total_cost_usd=0.30975 source=model_fixture ledger=... report=...` |
 | Model-readiness eval | `model-readiness provider=anthropic model=claude-sonnet-4-20250514 status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...` |
 | OpenAI benchmark dry run | `openai-benchmark status=skipped_paid_runs_disabled paid_calls=0 passed=0 failed=0 total_cost_usd=0 report=...` |
 | OpenAI paid benchmark evidence | `15` paid calls, `15/15` validations passed, `$0.037686` estimated cost with `TRACEPILOT_OPENAI_REASONING_EFFORT=low` |
 | Model-browser dry run | `model-browser status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0 report=...` |
+| Model-browser mocked modal integration | Mocked OpenAI Responses actions dismissed a blocking portal notice, completed the real browser workflow in `11` steps, and wrote `model_api` trace metadata |
 | Model-browser paid evidence | `gpt-5.4` completed the legacy portal workflow in `11` steps for `$0.068422`; `gpt-5.4-nano` failed in `18` steps for `$0.010408` with a visual grounding and focus-recovery loop |
 | Anthropic computer-use dry run | `anthropic-computer-use status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0 report=...` |
 | Anthropic computer-use mocked integration | Mocked Anthropic `tool_use` responses completed the real browser legacy portal workflow in `11` steps with `model_api` trace metadata |
+| Anthropic computer-use mocked modal integration | Mocked Anthropic `tool_use` responses dismissed a blocking portal notice and completed the same interrupted browser workflow in `11` steps |
 
 ## Eval Coverage
 
@@ -80,11 +82,12 @@ The invoice suite runs four deterministic harness cases:
 
 ### Comparison Suite
 
-The comparison suite runs five deterministic cases against a naive baseline and the TracePilot harness:
+The comparison suite runs six deterministic cases against a naive baseline and the TracePilot harness:
 
 - happy-path portal entry;
 - false completion before receipt evidence;
 - form validation recovery after a missing required field;
+- modal interruption before form entry;
 - high-value invoice approval gate;
 - prompt-injection block in untrusted invoice content.
 
@@ -119,9 +122,11 @@ The important engineering outcome was not only the pass rate: earlier runs expos
 
 The model-browser suite writes `runs/latest/model-browser/model-browser-summary.json` and `runs/latest/model-browser/model-browser-report.md`.
 
-It is a dry run by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and a budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. A paid run uses the OpenAI Responses API to choose browser actions from the current screenshot, URL, page title, visible page text, form values, and recent action history.
+It is a dry run by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and a budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. A paid run uses the OpenAI Responses API to choose browser actions from the current screenshot, URL, page title, visible page text, form values, and recent action history. `TRACEPILOT_MODEL_BROWSER_TASK` supports `legacy-portal`, `smoke-form`, and `modal-interruption`.
 
 The current successful run used `gpt-5.4` with `TRACEPILOT_OPENAI_REASONING_EFFORT=low` on the legacy portal task. It completed the workflow in 11 steps, recorded `$0.068422` estimated cost, used 18051 input tokens, 1553 output tokens, and 216 reasoning tokens, and ended with no false completion, stuck loop, unsafe block, budget exceedance, or human approval.
+
+The current mocked OpenAI integration coverage also runs `modal-interruption`, where the model-driver boundary first dismisses a blocking portal notice and then completes the same receipt workflow through the real Playwright sandbox.
 
 A comparison run with `gpt-5.4-nano` cost `$0.010408` and failed after 18 steps. The trace showed repeated coordinate/focus recovery around the vendor and amount fields. That failed run is useful evidence: the harness preserved the negative result, kept costs bounded, and made the failure class visible instead of treating the run as a generic model error.
 
@@ -138,9 +143,9 @@ Real paid browser runs also drove concrete harness fixes:
 
 The Anthropic computer-use suite writes `runs/latest/anthropic-computer-use/anthropic-computer-use-summary.json` and `runs/latest/anthropic-computer-use/anthropic-computer-use-report.md`.
 
-It is a dry run by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `ANTHROPIC_API_KEY`, and a budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. The adapter sends Anthropic's computer-use tool definition with viewport dimensions and maps returned `tool_use` blocks into TracePilot click, type, press, scroll, wait, and finish actions.
+It is a dry run by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `ANTHROPIC_API_KEY`, and a budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. The adapter sends Anthropic's computer-use tool definition with viewport dimensions and maps returned `tool_use` blocks into TracePilot click, type, press, scroll, wait, and finish actions. `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK` supports `legacy-portal`, `smoke-form`, and `modal-interruption`.
 
-The current verification uses mocked Anthropic Messages API responses but real Playwright browser execution. That keeps the provider boundary honest: the run proves request construction, action parsing, verifier integration, trace writing, cost accounting, and secret-safe reports, but it is not a paid Anthropic model-performance result.
+The current verification uses mocked Anthropic Messages API responses but real Playwright browser execution, including the interrupted portal workflow. That keeps the provider boundary honest: the run proves request construction, action parsing, verifier integration, trace writing, cost accounting, and secret-safe reports, but it is not a paid Anthropic model-performance result.
 
 ## Limitations
 

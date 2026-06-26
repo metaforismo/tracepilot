@@ -91,4 +91,39 @@ describe("target server", () => {
     const success = await fetch(`${target.origin}${valid.headers.get("location")}`);
     await expect(success.text()).resolves.toContain("Portal receipt saved");
   });
+
+  it("serves an interrupted legacy portal that posts through the same receipt workflow", async () => {
+    target = await startTargetServer();
+
+    const page = await fetch(`${target.origin}/legacy-portal/interrupted`);
+    const html = await page.text();
+
+    expect(page.status).toBe(200);
+    expect(html).toContain("Portal update notice");
+    expect(html).toContain("Dismiss notice");
+    expect(html).toContain('action="/legacy-portal/interrupted"');
+
+    const invalid = await fetch(`${target.origin}/legacy-portal/interrupted`, {
+      method: "POST",
+      body: new URLSearchParams({ vendor: "Acme Labs", amount: "1200", date: "", iban: "IT60X0542811101000000123456" }),
+      headers: { "content-type": "application/x-www-form-urlencoded" }
+    });
+    expect(invalid.status).toBe(400);
+    await expect(invalid.text()).resolves.toContain("Vendor, amount, date, and IBAN are required.");
+
+    const valid = await fetch(`${target.origin}/legacy-portal/interrupted`, {
+      method: "POST",
+      body: new URLSearchParams({
+        vendor: "Acme Labs",
+        amount: "1200",
+        date: "2026-06-26",
+        iban: "IT60X0542811101000000123456"
+      }),
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      redirect: "manual"
+    });
+
+    expect(valid.status).toBe(303);
+    expect(valid.headers.get("location")).toContain("/legacy-portal/success");
+  });
 });

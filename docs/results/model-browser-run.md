@@ -37,6 +37,8 @@ TRACEPILOT_OPENAI_REASONING_EFFORT=low \
 corepack pnpm@9.15.4 exec tsx evals/run-evals.ts -- --suite model-browser
 ```
 
+Set `TRACEPILOT_MODEL_BROWSER_TASK=modal-interruption` to run the harder portal-notice workflow instead of the straight legacy portal task.
+
 The API key is read from `OPENAI_API_KEY` and is never written to the report. Pricing references OpenAI standard short-context pricing from [OpenAI API pricing](https://openai.com/api/pricing/).
 
 ## Successful Run
@@ -65,6 +67,10 @@ click vendor -> type vendor -> Tab -> type amount -> Tab -> type date -> Tab -> 
 ```
 
 The final verifier accepted the portal receipt state. The receipt page showed the expected vendor, amount, invoice date, and IBAN evidence.
+
+## Mocked Modal Coverage
+
+The suite also has mocked OpenAI Responses integration coverage for `modal-interruption`. That test uses the real Playwright target with a blocking portal update notice, then verifies the driver can dismiss the modal, fill the invoice fields, submit, and finish only after the receipt appears. This is provider-boundary evidence, not a paid OpenAI model result.
 
 ## Negative Run
 

@@ -16,9 +16,11 @@ import {
   approvalDriverDecisions,
   createApprovalTask,
   createMaliciousInvoiceTask,
+  createModalInterruptionTask,
   createPortalTask,
   createValidationRecoveryTask,
   maliciousDriverDecisions,
+  modalInterruptionDriverDecisions,
   portalDriverDecisions,
   validationRecoveryDriverDecisions
 } from "./tasks/invoice-to-portal.js";
@@ -113,9 +115,11 @@ function comparisonCases(origin: string): Array<{
   const approvalTask = createApprovalTask(origin);
   const maliciousTask = createMaliciousInvoiceTask(origin);
   const validationRecoveryTask = createValidationRecoveryTask(origin);
+  const modalInterruptionTask = createModalInterruptionTask(origin);
   const happyPath = taskForCase(portalTask, "happy-path-portal-entry");
   const falseCompletion = taskForCase(portalTask, "false-completion-before-receipt");
   const validationRecovery = taskForCase(validationRecoveryTask, "validation-recovery-after-missing-date");
+  const modalInterruption = taskForCase(modalInterruptionTask, "modal-interruption-blocking-form");
   const approval = taskForCase(approvalTask, "approval-required-above-threshold");
   const promptInjection = taskForCase(maliciousTask, "prompt-injection-in-untrusted-invoice");
 
@@ -154,6 +158,18 @@ function comparisonCases(origin: string): Array<{
       }),
       tracepilotTask: validationRecovery,
       tracepilotDecisions: validationRecoveryDriverDecisions()
+    },
+    {
+      caseId: "modal-interruption-blocking-form",
+      baseline: baselineResult({
+        caseId: "modal-interruption-blocking-form",
+        taskId: modalInterruption.id,
+        success: false,
+        stuckLoop: true,
+        steps: 4
+      }),
+      tracepilotTask: modalInterruption,
+      tracepilotDecisions: modalInterruptionDriverDecisions()
     },
     {
       caseId: "approval-required-above-threshold",

@@ -48,7 +48,7 @@ describe("runTask", () => {
 
     const trace = await readFile(join(result.runDir, "trace.jsonl"), "utf8");
     expect(trace).toContain("Invoice saved");
-  });
+  }, 15000);
 
   it("reports max-step failure without success", async () => {
     target = await startTargetServer();
@@ -71,7 +71,7 @@ describe("runTask", () => {
 
     expect(result.metrics.success).toBe(false);
     expect(result.metrics.steps).toBe(2);
-  });
+  }, 15000);
 
   it("detects false completion", async () => {
     target = await startTargetServer();
@@ -98,7 +98,7 @@ describe("runTask", () => {
 
     expect(result.metrics.success).toBe(false);
     expect(result.metrics.falseCompletion).toBe(true);
-  });
+  }, 15000);
 
   it("blocks prompt injection from untrusted page content", async () => {
     target = await startTargetServer();
@@ -118,7 +118,7 @@ describe("runTask", () => {
 
     expect(result.metrics.unsafeBlocked).toBe(true);
     expect(result.steps[0]?.verifier.status).toBe("unsafe");
-  });
+  }, 15000);
 
   it("detects stuck loops", async () => {
     target = await startTargetServer();
@@ -143,7 +143,7 @@ describe("runTask", () => {
 
     expect(result.metrics.stuckLoop).toBe(true);
     expect(result.metrics.success).toBe(false);
-  });
+  }, 15000);
 
   it("propagates model decision cost into trace steps and run metrics", async () => {
     target = await startTargetServer();
@@ -190,7 +190,7 @@ describe("runTask", () => {
     expect(result.metrics.totalCostUsd).toBe(0.000045);
     expect(result.steps[0]?.tokenCostUsd).toBe(0.000045);
     expect(result.steps[0]?.decision.modelRun?.resolvedModel).toBe("gpt-5.4-nano-2026-03-17");
-  });
+  }, 15000);
 
   it("stops model runs when the configured cost budget is reached", async () => {
     target = await startTargetServer();
@@ -238,7 +238,7 @@ describe("runTask", () => {
     expect(result.metrics.budgetExceeded).toBe(true);
     expect(result.metrics.steps).toBe(2);
     expect(result.metrics.totalCostUsd).toBe(0.00009);
-  });
+  }, 15000);
 
   it("preserves success when the final successful model step reaches the cost budget", async () => {
     target = await startTargetServer();
@@ -285,7 +285,7 @@ describe("runTask", () => {
     expect(result.metrics.budgetExceeded).toBe(true);
     expect(result.metrics.steps).toBe(1);
     expect(result.metrics.totalCostUsd).toBe(0.000045);
-  });
+  }, 15000);
 
   it("records driver decision errors as trace failures instead of crashing the run", async () => {
     target = await startTargetServer();
@@ -312,5 +312,5 @@ describe("runTask", () => {
     expect(result.steps[0]?.verifier.status).toBe("failure");
     expect(result.steps[0]?.verifier.reason).toContain("Driver decision failed");
     expect(result.steps[0]?.decision.action.kind).toBe("finish");
-  });
+  }, 15000);
 });

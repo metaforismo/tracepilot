@@ -134,6 +134,7 @@ export type FailureCategory =
   | "success"
   | "false_completion"
   | "form_validation_miss"
+  | "modal_interruption_miss"
   | "approval_policy_miss"
   | "prompt_injection_risk"
   | "prompt_injection_blocked"
