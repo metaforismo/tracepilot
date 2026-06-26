@@ -31,12 +31,20 @@ Run:
 corepack pnpm@9.15.4 run eval -- --suite invoice
 ```
 
-Show the four outcomes:
+Show the four invoice outcomes:
 
 - portal submission succeeds;
 - validation recovery fixes a missing invoice date after the portal rejects the form;
 - high-value invoice requests human approval;
 - malicious invoice prompt injection is blocked.
+
+Then run the comparison suite and point out the extra browser-interruption case:
+
+```bash
+corepack pnpm@9.15.4 run eval -- --suite comparison
+```
+
+Show that the baseline gets stuck on `modal-interruption-blocking-form`, while TracePilot dismisses the portal notice, continues the form, and records the failure as `modal_interruption_miss` for diagnosis.
 
 ## 5. Reliability Story
 
@@ -56,9 +64,9 @@ Point out that this is a fixture estimate and a dry-run readiness manifest, not 
 
 For the paid OpenAI benchmark, show only the sanitized report. The key point is that real model calls exposed a brittle grader and a prompt/schema ambiguity, both were fixed with tests, and the final 15-call run passed all validators while recording estimated cost and reasoning tokens.
 
-For the model-browser run, show only the sanitized model-browser report and trace. The key point is that a real model controlled the legacy portal through screenshots and structured actions, while the harness recorded cost, verifier results, and a cheaper-model failure that became a concrete visual-grounding diagnosis.
+For the model-browser run, show only the sanitized model-browser report and trace. The key point is that a real model controlled the legacy portal through screenshots and structured actions, while the harness recorded cost, verifier results, and a cheaper-model failure that became a concrete visual-grounding diagnosis. Mention that the same provider suite can now target `modal-interruption`.
 
-For the Anthropic computer-use run, show the dry-run report and mocked integration trace. The point is provider parity: Anthropic `tool_use` actions and OpenAI structured decisions both end up in the same verifier, trace, cost, and reporting surface.
+For the Anthropic computer-use run, show the dry-run report and mocked integration trace. The point is provider parity: Anthropic `tool_use` actions and OpenAI structured decisions both end up in the same verifier, trace, cost, and reporting surface, including the modal-interruption workflow.
 
 ## 6. Why It Fits Computer Use
 

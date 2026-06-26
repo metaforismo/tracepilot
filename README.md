@@ -102,7 +102,7 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - env-gated Anthropic driver boundary for future paid computer-use calls;
 - orchestrator loop for observe, decide, safety-check, act, verify, trace, and measure;
 - Next.js Studio UI with run launcher, metrics strip, screenshot panel, timeline, and inspector;
-- invoice-to-legacy-portal target fixtures with approval and prompt-injection cases;
+- invoice-to-legacy-portal target fixtures with validation recovery, modal interruption, approval, and prompt-injection cases;
 - real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`;
 - baseline-vs-TracePilot comparison suite with JSON and Markdown artifacts;
 - failure diagnosis casebook that maps eval outcomes to post-training, grader, safety, and harness interventions.
@@ -110,9 +110,9 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - env-gated model-run readiness manifest that explains why a paid model call did or did not execute without leaking credentials.
 - optional OpenAI Responses API benchmark suite with model/task validation, reasoning-effort capture, and a cost circuit breaker.
 - real OpenAI Responses decision client for screenshot-driven browser actions, with strict structured output, token/cost metadata, budget stops, and traced driver failures.
-- model-browser suite that runs the invoice-to-legacy-portal task with a real model driver behind explicit paid-run gates.
+- model-browser suite that runs invoice-to-legacy-portal and modal-interruption tasks with a real model driver behind explicit paid-run gates.
 - real Anthropic Computer Use decision client that sends the `computer_20251124` tool definition, parses `tool_use` actions, records usage/cost metadata, and redacts API errors.
-- Anthropic computer-use suite that runs the same browser workflow contract behind explicit paid-run gates.
+- Anthropic computer-use suite that runs the same browser workflow contracts behind explicit paid-run gates.
 
 Next build slices:
 
@@ -151,7 +151,7 @@ invoice success=true portal=true validation=true approval=true injection=true
 Expected comparison output:
 
 ```text
-comparison success_delta=80.0% false_completion_delta=-60.0% report=... diagnosis=...
+comparison success_delta=83.3% false_completion_delta=-50.0% report=... diagnosis=...
 ```
 
 Expected cost-ledger output:
@@ -194,7 +194,7 @@ Expected model-browser dry-run output:
 model-browser status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0 report=...
 ```
 
-The model-browser suite is the paid browser-control path. By default it is a dry run. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and a budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. When enabled, it lets a real OpenAI Responses model observe screenshots and page context, choose browser actions, and write a sanitized model-browser report under `runs/latest/model-browser/`.
+The model-browser suite is the paid browser-control path. By default it is a dry run. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and a budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. Set `TRACEPILOT_MODEL_BROWSER_TASK=legacy-portal`, `smoke-form`, or `modal-interruption` to choose the target workflow. When enabled, it lets a real OpenAI Responses model observe screenshots and page context, choose browser actions, and write a sanitized model-browser report under `runs/latest/model-browser/`.
 
 Expected Anthropic computer-use dry-run output:
 
@@ -202,7 +202,7 @@ Expected Anthropic computer-use dry-run output:
 anthropic-computer-use status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0 report=...
 ```
 
-The Anthropic computer-use suite is also env-gated. It makes no paid calls unless `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1` and `ANTHROPIC_API_KEY` are present. When enabled, it sends Anthropic's computer-use tool definition, parses returned `tool_use` actions into TracePilot browser actions, records cost metadata, and writes sanitized artifacts under `runs/latest/anthropic-computer-use/`.
+The Anthropic computer-use suite is also env-gated. It makes no paid calls unless `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1` and `ANTHROPIC_API_KEY` are present. Set `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK=legacy-portal`, `smoke-form`, or `modal-interruption` to choose the target workflow. When enabled, it sends Anthropic's computer-use tool definition, parses returned `tool_use` actions into TracePilot browser actions, records cost metadata, and writes sanitized artifacts under `runs/latest/anthropic-computer-use/`.
 
 ## Docs
 

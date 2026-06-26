@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { AddressInfo } from "node:net";
 import {
   injectionPage,
+  interruptedLegacyPortalPage,
   invoicePage,
   legacyPortalPage,
   legacySuccessPage,
@@ -124,6 +125,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     return;
   }
 
+  if (method === "GET" && url.pathname === "/legacy-portal/interrupted") {
+    sendHtml(response, 200, interruptedLegacyPortalPage());
+    return;
+  }
+
   if (method === "POST" && url.pathname === "/legacy-portal") {
     const form = new URLSearchParams(await readBody(request));
     const vendor = form.get("vendor")?.trim() ?? "";
@@ -136,6 +142,35 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
         response,
         400,
         legacyPortalPage({
+          error: "Vendor, amount, date, and IBAN are required.",
+          vendor,
+          amount,
+          date,
+          iban
+        })
+      );
+      return;
+    }
+
+    response.writeHead(303, {
+      location: `/legacy-portal/success?vendor=${encodeURIComponent(vendor)}&amount=${encodeURIComponent(amount)}&date=${encodeURIComponent(date)}&iban=${encodeURIComponent(iban)}`
+    });
+    response.end();
+    return;
+  }
+
+  if (method === "POST" && url.pathname === "/legacy-portal/interrupted") {
+    const form = new URLSearchParams(await readBody(request));
+    const vendor = form.get("vendor")?.trim() ?? "";
+    const amount = form.get("amount")?.trim() ?? "";
+    const date = form.get("date")?.trim() ?? "";
+    const iban = form.get("iban")?.trim() ?? "";
+
+    if (!vendor || !amount || !date || !iban) {
+      sendHtml(
+        response,
+        400,
+        interruptedLegacyPortalPage({
           error: "Vendor, amount, date, and IBAN are required.",
           vendor,
           amount,

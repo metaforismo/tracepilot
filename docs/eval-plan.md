@@ -61,7 +61,7 @@ The model-browser suite writes:
 - `runs/latest/model-browser/model-browser-summary.json`;
 - `runs/latest/model-browser/model-browser-report.md`.
 
-It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and an explicit budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. `TRACEPILOT_MODEL_BROWSER_MODEL` chooses the OpenAI model, `TRACEPILOT_MODEL_BROWSER_TASK` chooses `legacy-portal` or `smoke-form`, `TRACEPILOT_MODEL_BROWSER_MAX_OUTPUT_TOKENS` controls structured-output headroom, and `TRACEPILOT_OPENAI_REASONING_EFFORT` defaults to `low`.
+It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and an explicit budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. `TRACEPILOT_MODEL_BROWSER_MODEL` chooses the OpenAI model, `TRACEPILOT_MODEL_BROWSER_TASK` chooses `legacy-portal`, `smoke-form`, or `modal-interruption`, `TRACEPILOT_MODEL_BROWSER_MAX_OUTPUT_TOKENS` controls structured-output headroom, and `TRACEPILOT_OPENAI_REASONING_EFFORT` defaults to `low`.
 
 This suite is the first real browser-control measurement path. It separates model-driver outcomes from deterministic controls, records step-level `model_api` cost metadata in the trace, and keeps model failures as artifacts instead of hiding them behind a crashed eval process.
 
@@ -70,7 +70,7 @@ The Anthropic computer-use suite writes:
 - `runs/latest/anthropic-computer-use/anthropic-computer-use-summary.json`;
 - `runs/latest/anthropic-computer-use/anthropic-computer-use-report.md`.
 
-It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `ANTHROPIC_API_KEY`, and an explicit budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MODEL` chooses the Anthropic model, `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK` chooses `legacy-portal` or `smoke-form`, and `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_TOKENS` controls the Messages API output cap.
+It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `ANTHROPIC_API_KEY`, and an explicit budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MODEL` chooses the Anthropic model, `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK` chooses `legacy-portal`, `smoke-form`, or `modal-interruption`, and `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_TOKENS` controls the Messages API output cap.
 
 This suite validates the Anthropic adapter boundary without silently mixing it with OpenAI results. The request includes Anthropic's computer-use tool definition and maps returned `tool_use` blocks into the same TracePilot action, verifier, trace, and cost contract.
 

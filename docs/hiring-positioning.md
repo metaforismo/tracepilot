@@ -32,7 +32,8 @@ The project also maps directly to computer-use post-training work:
 - credential-safe Anthropic/OpenAI readiness manifest for env-gated paid run attempts;
 - OpenAI Responses API benchmark that found and fixed grader/prompt issues before producing a `15/15` paid validation run under four cents;
 - real OpenAI Responses browser-control run that completed the legacy portal workflow, plus a preserved negative nano run that exposed a visual grounding and focus-recovery failure;
-- Anthropic Computer Use adapter that sends the `computer_20251124` tool definition, parses `tool_use` blocks, and runs the same local browser workflow contract through a mocked API boundary;
+- OpenAI and Anthropic mocked provider integrations that both complete a harder modal-interruption browser workflow through the same trace/verifier contract;
+- Anthropic Computer Use adapter that sends the `computer_20251124` tool definition, parses `tool_use` blocks, and runs local browser workflow contracts through a mocked API boundary;
 - clear separation between scripted-driver results and future model-driver results.
 
 ## Application Summary
@@ -46,6 +47,7 @@ Current foundation:
 - prompt-injection block fixture;
 - approval-gated invoice workflow;
 - validation-recovery workflow that submits a broken form, reads the UI error, repairs the missing field, and resubmits;
+- modal-interruption workflow that dismisses a blocking portal notice before form entry;
 - Next.js trace replay Studio;
 - baseline-vs-TracePilot comparison report;
 - failure diagnosis report with post-training and harness follow-ups;
@@ -60,13 +62,13 @@ Current foundation:
 
 Hi, I am interested in Product Engineer, Computer Use. I am building TracePilot, a reliability studio for computer-use agents: a sandboxed browser harness with trace replay, eval tasks, step-level verification, stuck-loop detection, prompt-injection tests, and an invoice-to-legacy-portal workflow.
 
-The project focuses on the part of computer use I find most important: turning raw model capability into a measurable, debuggable, safe product loop. I am including a video walkthrough, eval report, before/after metrics comparing a baseline agent to a verifier/retry layer, source-aware cost accounting, a credential-safe Anthropic/OpenAI readiness manifest, a small OpenAI Responses API benchmark, a real OpenAI model-browser run, and Anthropic Computer Use adapter coverage over the same workflow contract.
+The project focuses on the part of computer use I find most important: turning raw model capability into a measurable, debuggable, safe product loop. I am including a video walkthrough, eval report, before/after metrics comparing a baseline agent to a verifier/retry layer, source-aware cost accounting, a credential-safe Anthropic/OpenAI readiness manifest, a small OpenAI Responses API benchmark, a real OpenAI model-browser run, and OpenAI/Anthropic adapter coverage over straight-through and modal-interrupted workflow contracts.
 
 I would be excited to work on agent harness reliability, evals, browser-control product surfaces, and knowledge-worker workflows.
 
 ## OpenAI Application Draft
 
-I am interested in Agent Post-Training, Computer Use. I am building TracePilot, a local eval and diagnostics harness for browser-based computer-use agents. It includes production-like target environments, grader-style success criteria, trace artifacts, prompt-injection and approval-gate cases, a reproducible baseline-vs-TracePilot comparison report, a source-aware model cost ledger, a credential-safe Anthropic/OpenAI readiness manifest, a small paid OpenAI benchmark with cost and reasoning-token accounting, real OpenAI and Anthropic-compatible browser-control adapters, and a failure diagnosis casebook.
+I am interested in Agent Post-Training, Computer Use. I am building TracePilot, a local eval and diagnostics harness for browser-based computer-use agents. It includes production-like target environments, grader-style success criteria, trace artifacts, prompt-injection, validation-recovery, modal-interruption, and approval-gate cases, a reproducible baseline-vs-TracePilot comparison report, a source-aware model cost ledger, a credential-safe Anthropic/OpenAI readiness manifest, a small paid OpenAI benchmark with cost and reasoning-token accounting, real OpenAI and Anthropic-compatible browser-control adapters, and a failure diagnosis casebook.
 
 The project is meant to show how I move from a vague behavior problem to a concrete experiment: define the failure mode, build the environment, add a grader, run the comparison, inspect the trace, classify the failure, and decide what should become a model, data, or product-harness fix.
 

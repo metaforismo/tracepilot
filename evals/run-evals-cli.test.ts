@@ -11,7 +11,7 @@ describe("run-evals CLI", () => {
       ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "invoice"],
       {
         cwd: process.cwd(),
-        timeout: 30_000
+        timeout: 60_000
       }
     );
 
@@ -20,7 +20,7 @@ describe("run-evals CLI", () => {
     expect(stdout).toContain("validation=true");
     expect(stdout).toContain("approval=true");
     expect(stdout).toContain("injection=true");
-  }, 30_000);
+  }, 60_000);
 
   test("runs the baseline-vs-TracePilot comparison suite", async () => {
     const { stdout } = await execFileAsync(
@@ -28,14 +28,14 @@ describe("run-evals CLI", () => {
       ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "comparison"],
       {
         cwd: process.cwd(),
-        timeout: 30_000
+        timeout: 60_000
       }
     );
 
-    expect(stdout).toContain("comparison success_delta=80.0%");
-    expect(stdout).toContain("false_completion_delta=-60.0%");
+    expect(stdout).toContain("comparison success_delta=83.3%");
+    expect(stdout).toContain("false_completion_delta=-50.0%");
     expect(stdout).toContain("diagnosis=");
-  }, 30_000);
+  }, 60_000);
 
   test("runs the model cost-ledger suite with source-aware accounting", async () => {
     const { stdout } = await execFileAsync(

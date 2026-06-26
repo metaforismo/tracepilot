@@ -37,6 +37,8 @@ TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_TOKENS=700 \
 corepack pnpm@9.15.4 exec tsx evals/run-evals.ts -- --suite anthropic-computer-use
 ```
 
+Set `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK=modal-interruption` to run the harder portal-notice workflow instead of the straight legacy portal task.
+
 The API key is read from `ANTHROPIC_API_KEY` and is never written to the report. Pricing references first-party Claude API prices from [Anthropic pricing](https://docs.anthropic.com/en/docs/about-claude/pricing). The computer-use request shape follows [Anthropic's computer use tool docs](https://docs.anthropic.com/en/docs/build-with-claude/computer-use).
 
 ## Verified Locally
@@ -58,6 +60,8 @@ The mocked action path is:
 ```text
 Tab -> type vendor -> Tab -> type amount -> Tab -> type date -> Tab -> type IBAN -> Tab -> Return -> finish
 ```
+
+The mocked integration suite also covers `modal-interruption`. In that path, Anthropic-style `tool_use` blocks first dismiss a blocking portal update notice and then complete the same receipt workflow through the real browser sandbox.
 
 ## Current Boundary
 
