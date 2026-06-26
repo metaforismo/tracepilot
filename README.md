@@ -88,18 +88,38 @@ The first public report will compare:
 
 ## Repository Status
 
-This repository starts with the product spec and implementation plan. The build will proceed in small verified slices:
+TracePilot is now an executable TypeScript workspace. The current foundation includes:
 
-1. Monorepo scaffold and CI.
-2. Trace schema and artifact store.
-3. Local target app and repeatable task fixture.
-4. Browser sandbox adapter.
-5. Agent driver interface.
-6. Orchestrator loop.
-7. Verifier and retry policies.
-8. Studio UI trace viewer.
-9. Invoice workflow.
-10. Eval runner and public report.
+- pnpm monorepo scaffold and GitHub Actions CI;
+- strict TypeScript configuration;
+- `@tracepilot/core` trace/action/task/metric schema;
+- local JSONL trace store;
+- deterministic verifier, safety policy, and stuck-loop detector;
+- dependency-free local target app;
+- real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`.
+
+Next build slices:
+
+1. Browser sandbox adapter.
+2. Agent driver interface.
+3. Orchestrator loop.
+4. Studio UI trace viewer.
+5. Invoice workflow.
+6. Eval runner and public report.
+
+## Run Locally
+
+```bash
+corepack pnpm@9.15.4 install
+corepack pnpm@9.15.4 run ci
+corepack pnpm@9.15.4 run eval -- --suite smoke
+```
+
+Expected smoke output:
+
+```text
+smoke-form success=true steps=2
+```
 
 ## Docs
 
@@ -112,4 +132,3 @@ This repository starts with the product spec and implementation plan. The build 
 ## License
 
 MIT.
-
