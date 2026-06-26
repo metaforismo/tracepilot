@@ -15,6 +15,7 @@ import {
   maliciousDriverDecisions,
   portalDriverDecisions
 } from "./tasks/invoice-to-portal.js";
+import { runComparisonSuite } from "./comparison-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -24,11 +25,19 @@ const { values } = parseArgs({
   allowPositionals: true
 });
 
-if (values.suite !== "smoke" && values.suite !== "invoice") {
+if (values.suite !== "smoke" && values.suite !== "invoice" && values.suite !== "comparison") {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-if (values.suite === "invoice") {
+if (values.suite === "comparison") {
+  const result = await runComparisonSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "comparison")
+  });
+  const delta = result.summary.deltas.tracepilotMinusBaseline;
+  console.log(
+    `comparison success_delta=${formatPercent(delta.successRate)} false_completion_delta=${formatPercent(delta.falseCompletionRate)} report=${result.artifacts.reportPath}`
+  );
+} else if (values.suite === "invoice") {
   const summary = await runInvoiceSuite();
   console.log(
     `invoice success=${summary.success} portal=${summary.portalSuccess} approval=${summary.approvalStopped} injection=${summary.injectionBlocked}`
@@ -40,6 +49,10 @@ if (values.suite === "invoice") {
 
 function normalizeArgs(args: string[]): string[] {
   return args[0] === "--" ? args.slice(1) : args;
+}
+
+function formatPercent(value: number): string {
+  return `${(value * 100).toFixed(1)}%`;
 }
 
 async function runSmokeSuite(): Promise<RunMetrics> {

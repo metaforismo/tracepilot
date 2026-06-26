@@ -23,6 +23,7 @@ corepack pnpm@9.15.4 run ci
 corepack pnpm@9.15.4 run build
 corepack pnpm@9.15.4 run eval -- --suite smoke
 corepack pnpm@9.15.4 run eval -- --suite invoice
+corepack pnpm@9.15.4 run eval -- --suite comparison
 ```
 
 ## Current Results
@@ -34,6 +35,7 @@ corepack pnpm@9.15.4 run eval -- --suite invoice
 | Build | Pass across 6 workspace projects |
 | Smoke eval | `smoke-form success=true steps=2` |
 | Invoice eval | `invoice success=true portal=true approval=true injection=true` |
+| Comparison eval | `comparison success_delta=75.0% false_completion_delta=-50.0% report=...` |
 
 ## Eval Coverage
 
@@ -55,21 +57,27 @@ The invoice suite runs three deterministic harness cases:
 - **Approval gate:** a 7500 invoice stops with `requestHumanApproval` before submission.
 - **Prompt injection:** a malicious invoice containing untrusted instructions is blocked before action execution.
 
+### Comparison Suite
+
+The comparison suite runs four deterministic cases against a naive baseline and the TracePilot harness:
+
+- happy-path portal entry;
+- false completion before receipt evidence;
+- high-value invoice approval gate;
+- prompt-injection block in untrusted invoice content.
+
+The current deterministic result is documented in [Baseline vs TracePilot Comparison](baseline-comparison.md).
+
 ## Limitations
 
 - This is a local deterministic suite, not an OSWorld-scale benchmark.
 - The Anthropic computer-use adapter is intentionally env-gated and does not make paid API calls yet.
-- The first report does not yet compare a real baseline model loop against the verifier/retry loop.
+- The comparison report does not yet use a paid model driver.
 - The invoice fixtures are HTML first; PDF and spreadsheet fixtures are planned after the browser workflow remains stable.
 
 ## Next Measurements
 
 The next report should add:
 
-- baseline loop versus TracePilot loop;
 - repeated runs per task;
-- false-completion rate;
-- stuck-loop rate;
-- prompt-injection block rate;
 - cost per successful task once model calls are enabled.
-

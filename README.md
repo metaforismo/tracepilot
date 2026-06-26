@@ -81,7 +81,7 @@ TracePilot will report:
 | Cost per successful task | Model and tool cost divided by successful runs. |
 | Median steps per task | Efficiency signal for completed tasks. |
 
-The first public report will compare:
+The current comparison report measures:
 
 - baseline loop: observe -> act -> final answer;
 - TracePilot loop: observe -> act -> verify -> retry/escalate -> final answer.
@@ -103,12 +103,14 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - orchestrator loop for observe, decide, safety-check, act, verify, trace, and measure;
 - Next.js Studio UI with run launcher, metrics strip, screenshot panel, timeline, and inspector;
 - invoice-to-legacy-portal target fixtures with approval and prompt-injection cases;
-- real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`.
+- real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`;
+- baseline-vs-TracePilot comparison suite with JSON and Markdown artifacts.
 
 Next build slices:
 
-1. Baseline-vs-TracePilot comparison report.
+1. Real model-driver run with explicit cost accounting.
 2. Video walkthrough package.
+3. Larger failure taxonomy with repeated runs per task.
 
 ## Run Locally
 
@@ -117,6 +119,7 @@ corepack pnpm@9.15.4 install
 corepack pnpm@9.15.4 run ci
 corepack pnpm@9.15.4 run eval -- --suite smoke
 corepack pnpm@9.15.4 run eval -- --suite invoice
+corepack pnpm@9.15.4 run eval -- --suite comparison
 corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
@@ -132,12 +135,19 @@ Expected invoice output:
 invoice success=true portal=true approval=true injection=true
 ```
 
+Expected comparison output:
+
+```text
+comparison success_delta=75.0% false_completion_delta=-50.0% report=...
+```
+
 ## Docs
 
 - [Design Spec](docs/superpowers/specs/2026-06-26-tracepilot-design.md)
 - [Implementation Plan](docs/superpowers/plans/2026-06-26-tracepilot-implementation-plan.md)
 - [Eval Plan](docs/eval-plan.md)
 - [First Report](docs/results/first-report.md)
+- [Baseline Comparison](docs/results/baseline-comparison.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
 - [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)
