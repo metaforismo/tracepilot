@@ -42,21 +42,32 @@ export class BrowserSandbox {
   }
 
   async observe(stepId: string): Promise<Observation> {
-    const screenshotPath = join(this.traceStore.screenshotsDir, `${sanitizeStepId(stepId)}.png`);
-    await this.page.screenshot({ path: screenshotPath, fullPage: true });
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        await this.page.waitForLoadState("domcontentloaded", { timeout: 1000 }).catch(() => undefined);
+        const screenshotPath = join(this.traceStore.screenshotsDir, `${sanitizeStepId(stepId)}.png`);
+        await this.page.screenshot({ path: screenshotPath, fullPage: true });
 
-    const [title, domText] = await Promise.all([this.page.title(), extractPageText(this.page)]);
-    const viewport = this.page.viewportSize() ?? { width: 1280, height: 720 };
+        const [title, domText] = await Promise.all([this.page.title(), extractPageText(this.page)]);
+        const viewport = this.page.viewportSize() ?? { width: 1280, height: 720 };
 
-    return {
-      stepId,
-      screenshotPath,
-      url: this.page.url(),
-      title,
-      viewport,
-      capturedAt: new Date().toISOString(),
-      domText
-    };
+        return {
+          stepId,
+          screenshotPath,
+          url: this.page.url(),
+          title,
+          viewport,
+          capturedAt: new Date().toISOString(),
+          domText
+        };
+      } catch (error) {
+        lastError = error;
+        await this.page.waitForTimeout(50);
+      }
+    }
+
+    throw lastError;
   }
 
   async close(): Promise<void> {
@@ -83,4 +94,3 @@ async function extractPageText(page: Page): Promise<string> {
 function sanitizeStepId(stepId: string): string {
   return stepId.replace(/[^a-zA-Z0-9._-]/g, "_");
 }
-

@@ -1,5 +1,5 @@
 {
-  "name": "@tracepilot/core",
+  "name": "@tracepilot/harness",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,10 +9,6 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
-    },
-    "./types": {
-      "types": "./src/types.ts",
-      "import": "./src/types.ts"
     }
   },
   "scripts": {
@@ -21,9 +17,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "nanoid": "^5.0.9"
+    "@tracepilot/agents": "workspace:*",
+    "@tracepilot/core": "workspace:*",
+    "@tracepilot/sandbox": "workspace:*"
   },
   "devDependencies": {
+    "@tracepilot/targets": "workspace:*",
     "vitest": "^2.1.8"
   }
 }
