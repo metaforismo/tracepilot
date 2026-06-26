@@ -22,6 +22,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Model-browser eval suite with step-level model cost metadata, per-run budget stops, driver-error trace failures, and sanitized reports.
 - Anthropic Computer Use decision client that sends the `computer_20251124` tool definition, parses `tool_use` blocks, and attaches usage/cost metadata.
 - Anthropic computer-use eval suite with dry-run gates, mocked browser integration coverage, and sanitized reports.
+- Reliability scorecard suite that reruns hard browser workflows and aggregates success, false-completion, stuck-loop, unsafe-block, and approval-stop rates.
 
 ## Verification Commands
 
@@ -31,6 +32,7 @@ corepack pnpm@9.15.4 run build
 corepack pnpm@9.15.4 run eval -- --suite smoke
 corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
+corepack pnpm@9.15.4 run eval -- --suite reliability-scorecard
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
@@ -43,11 +45,12 @@ corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 | Check | Result |
 | --- | --- |
 | Typecheck | Pass across 6 workspace projects |
-| Unit/integration tests | Pass, 92 tests |
+| Unit/integration tests | Pass, 95 tests |
 | Build | Pass across 6 workspace projects |
 | Smoke eval | `smoke-form success=true steps=2` |
 | Invoice eval | `invoice success=true portal=true validation=true approval=true injection=true` |
 | Comparison eval | `comparison success_delta=83.3% false_completion_delta=-50.0% report=... diagnosis=...` |
+| Reliability scorecard eval | `reliability-scorecard runs=5 repetitions=1 success_rate=100.0% false_completion_rate=0.0% stuck_loop_rate=0.0% report=... diagnosis=...` |
 | Cost-ledger eval | `cost-ledger model_runs=1 scripted_controls=1 total_cost_usd=0.30975 source=model_fixture ledger=... report=...` |
 | Model-readiness eval | `model-readiness provider=anthropic model=claude-sonnet-4-20250514 status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...` |
 | OpenAI benchmark dry run | `openai-benchmark status=skipped_paid_runs_disabled paid_calls=0 passed=0 failed=0 total_cost_usd=0 report=...` |
@@ -92,6 +95,20 @@ The comparison suite runs six deterministic cases against a naive baseline and t
 - prompt-injection block in untrusted invoice content.
 
 The current deterministic result is documented in [Baseline vs TracePilot Comparison](baseline-comparison.md), with diagnosis details in [Failure Diagnosis Casebook](failure-diagnosis.md).
+
+### Reliability Scorecard Suite
+
+The reliability scorecard suite writes `runs/latest/reliability-scorecard/reliability-scorecard.json`, `runs/latest/reliability-scorecard/reliability-scorecard.md`, `runs/latest/reliability-scorecard/reliability-results.json`, `runs/latest/reliability-scorecard/reliability-diagnosis.json`, and `runs/latest/reliability-scorecard/reliability-diagnosis.md`.
+
+The default CLI run uses one repetition per hard browser case. Longer local runs can be requested with `--repetitions 3` or higher:
+
+- happy-path portal entry;
+- validation recovery after a missing invoice date;
+- modal interruption before form entry;
+- high-value invoice approval gate;
+- prompt-injection block in untrusted invoice content.
+
+The current deterministic result is documented in [Reliability Scorecard](reliability-scorecard.md). The default run reports 5/5 successful policy outcomes, 0 false completions, 0 stuck loops, one approval stop, and one unsafe-content block. An extended local run with `--repetitions 3` reports 15/15 successful policy outcomes, 0 false completions, 0 stuck loops, three approval stops, and three unsafe-content blocks. Approval and unsafe-content blocks are counted as successful outcomes because the correct product behavior is to stop rather than finish autonomously.
 
 ### Cost-Ledger Suite
 
@@ -152,6 +169,7 @@ The current verification uses mocked Anthropic Messages API responses but real P
 - This is a local deterministic suite, not an OSWorld-scale benchmark.
 - The Anthropic computer-use adapter can make paid calls behind explicit env gates, but this report has not recorded a paid Anthropic run yet.
 - The comparison report does not yet use a paid model driver.
+- The reliability scorecard is deterministic harness evidence; it is not a paid provider quality ranking.
 - The cost-ledger result is a fixture estimate; paid model-browser measurements are reported separately.
 - The model-readiness result is a dry-run manifest, not model-performance evidence.
 - The OpenAI paid run is a small operational benchmark and harness-readiness check, not a broad model-quality ranking.
@@ -163,7 +181,7 @@ The current verification uses mocked Anthropic Messages API responses but real P
 
 The next report should add:
 
-- repeated runs per task;
 - paid `model_api` cost per successful task across repeated browser-control runs;
+- confidence intervals for provider-backed reliability scorecards;
 - a real paid Anthropic Computer Use run under the same trace contract;
 - cross-provider failure-class scorecards for OpenAI and Anthropic browser workflows.

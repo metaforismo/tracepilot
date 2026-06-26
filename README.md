@@ -113,12 +113,13 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - model-browser suite that runs invoice-to-legacy-portal and modal-interruption tasks with a real model driver behind explicit paid-run gates.
 - real Anthropic Computer Use decision client that sends the `computer_20251124` tool definition, parses `tool_use` actions, records usage/cost metadata, and redacts API errors.
 - Anthropic computer-use suite that runs the same browser workflow contracts behind explicit paid-run gates.
+- repeated reliability scorecard suite that reruns hard browser workflows and reports success, false-completion, stuck-loop, unsafe-block, and approval-stop rates.
 
 Next build slices:
 
 1. Paid Anthropic Computer Use run evidence once an Anthropic key is available.
-2. Repeated cross-provider browser runs with confidence intervals and failure-class scorecards.
-3. Studio surfacing for per-step `model_api` metadata, budget stops, and driver error traces.
+2. Cross-provider browser scorecards with confidence intervals over paid OpenAI and Anthropic runs.
+3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, and reliability-scorecard drilldowns.
 
 ## Run Locally
 
@@ -128,6 +129,7 @@ corepack pnpm@9.15.4 run ci
 corepack pnpm@9.15.4 run eval -- --suite smoke
 corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
+corepack pnpm@9.15.4 run eval -- --suite reliability-scorecard
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
@@ -153,6 +155,14 @@ Expected comparison output:
 ```text
 comparison success_delta=83.3% false_completion_delta=-50.0% report=... diagnosis=...
 ```
+
+Expected reliability-scorecard output:
+
+```text
+reliability-scorecard runs=5 repetitions=1 success_rate=100.0% false_completion_rate=0.0% stuck_loop_rate=0.0% report=... diagnosis=...
+```
+
+The reliability-scorecard suite reruns the harder deterministic browser workflows and writes JSON/Markdown artifacts under `runs/latest/reliability-scorecard/`. It is meant to measure harness repeatability before paid provider scorecards are compared. Use `--repetitions 3` or higher for longer local runs.
 
 Expected cost-ledger output:
 
@@ -211,6 +221,7 @@ The Anthropic computer-use suite is also env-gated. It makes no paid calls unles
 - [Eval Plan](docs/eval-plan.md)
 - [First Report](docs/results/first-report.md)
 - [Baseline Comparison](docs/results/baseline-comparison.md)
+- [Reliability Scorecard](docs/results/reliability-scorecard.md)
 - [Failure Diagnosis](docs/results/failure-diagnosis.md)
 - [Model Cost Ledger](docs/results/model-cost-ledger.md)
 - [Model Run Readiness](docs/results/model-readiness.md)

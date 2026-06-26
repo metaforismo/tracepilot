@@ -37,6 +37,48 @@ describe("run-evals CLI", () => {
     expect(stdout).toContain("diagnosis=");
   }, 60_000);
 
+  test("runs the repeated reliability scorecard suite", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "reliability-scorecard"],
+      {
+        cwd: process.cwd(),
+        timeout: 90_000
+      }
+    );
+
+    expect(stdout).toContain("reliability-scorecard runs=5 repetitions=1 success_rate=100.0%");
+    expect(stdout).toContain("false_completion_rate=0.0%");
+    expect(stdout).toContain("stuck_loop_rate=0.0%");
+    expect(stdout).toContain("report=");
+    expect(stdout).toContain("diagnosis=");
+  }, 90_000);
+
+  test("passes a reliability scorecard repetition count through the CLI", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      [
+        "pnpm@9.15.4",
+        "exec",
+        "tsx",
+        "evals/run-evals.ts",
+        "--",
+        "--suite",
+        "reliability-scorecard",
+        "--repetitions",
+        "2"
+      ],
+      {
+        cwd: process.cwd(),
+        timeout: 120_000
+      }
+    );
+
+    expect(stdout).toContain("reliability-scorecard runs=10 repetitions=2 success_rate=100.0%");
+    expect(stdout).toContain("false_completion_rate=0.0%");
+    expect(stdout).toContain("stuck_loop_rate=0.0%");
+  }, 120_000);
+
   test("runs the model cost-ledger suite with source-aware accounting", async () => {
     const { stdout } = await execFileAsync(
       "corepack",
