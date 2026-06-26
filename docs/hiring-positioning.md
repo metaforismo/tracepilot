@@ -31,6 +31,7 @@ The project also maps directly to computer-use post-training work:
 - source-aware cost ledger for separating scripted controls, fixtures, dry runs, and paid `model_api` results;
 - credential-safe Anthropic/OpenAI readiness manifest for env-gated paid run attempts;
 - OpenAI Responses API benchmark that found and fixed grader/prompt issues before producing a `15/15` paid validation run under four cents;
+- real OpenAI Responses browser-control run that completed the legacy portal workflow, plus a preserved negative nano run that exposed a visual grounding and focus-recovery failure;
 - clear separation between scripted-driver results and future model-driver results.
 
 ## Application Summary
@@ -49,19 +50,20 @@ Current foundation:
 - model cost ledger with explicit fixture-versus-paid reporting boundary;
 - Anthropic/OpenAI readiness manifest that records paid-run gates without leaking credentials;
 - OpenAI paid benchmark evidence with task validators, reasoning-token capture, and cost accounting;
+- real model-browser evidence: a `gpt-5.4` run completed the invoice portal in 11 browser actions while a cheaper nano run failed in a traceable focus loop;
 - exact verification commands and artifacts.
 
 ## Anthropic DM Draft
 
 Hi, I am interested in Product Engineer, Computer Use. I am building TracePilot, a reliability studio for computer-use agents: a sandboxed browser harness with trace replay, eval tasks, step-level verification, stuck-loop detection, prompt-injection tests, and an invoice-to-legacy-portal workflow.
 
-The project focuses on the part of computer use I find most important: turning raw model capability into a measurable, debuggable, safe product loop. I am including a video walkthrough, eval report, before/after metrics comparing a baseline agent to a verifier/retry layer, source-aware cost accounting, a credential-safe Anthropic/OpenAI readiness manifest, and a small OpenAI Responses API benchmark that found and fixed grader/prompt issues before the final paid run.
+The project focuses on the part of computer use I find most important: turning raw model capability into a measurable, debuggable, safe product loop. I am including a video walkthrough, eval report, before/after metrics comparing a baseline agent to a verifier/retry layer, source-aware cost accounting, a credential-safe Anthropic/OpenAI readiness manifest, a small OpenAI Responses API benchmark, and a real model-browser run that completed an invoice portal while preserving a failed cheaper-model trace for diagnosis.
 
 I would be excited to work on agent harness reliability, evals, browser-control product surfaces, and knowledge-worker workflows.
 
 ## OpenAI Application Draft
 
-I am interested in Agent Post-Training, Computer Use. I am building TracePilot, a local eval and diagnostics harness for browser-based computer-use agents. It includes production-like target environments, grader-style success criteria, trace artifacts, prompt-injection and approval-gate cases, a reproducible baseline-vs-TracePilot comparison report, a source-aware model cost ledger, a credential-safe Anthropic/OpenAI readiness manifest, a small paid OpenAI benchmark with cost and reasoning-token accounting, and a failure diagnosis casebook.
+I am interested in Agent Post-Training, Computer Use. I am building TracePilot, a local eval and diagnostics harness for browser-based computer-use agents. It includes production-like target environments, grader-style success criteria, trace artifacts, prompt-injection and approval-gate cases, a reproducible baseline-vs-TracePilot comparison report, a source-aware model cost ledger, a credential-safe Anthropic/OpenAI readiness manifest, a small paid OpenAI benchmark with cost and reasoning-token accounting, a real Responses-driven browser workflow, and a failure diagnosis casebook.
 
 The project is meant to show how I move from a vague behavior problem to a concrete experiment: define the failure mode, build the environment, add a grader, run the comparison, inspect the trace, classify the failure, and decide what should become a model, data, or product-harness fix.
 

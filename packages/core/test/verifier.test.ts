@@ -56,5 +56,21 @@ describe("verifyActionEffect", () => {
 
     expect(result.status).toBe("success");
   });
-});
 
+  it("allows descriptive finish evidence when all quoted fragments are present", () => {
+    const result = verifyActionEffect({
+      before: baseObservation,
+      after: {
+        ...baseObservation,
+        title: "Portal Receipt Saved",
+        domText:
+          "Portal receipt saved\nVendor\nAcme Labs\nAmount\n1200\nDate\n2026-06-26\nIBAN\nIT60X0542811101000000123456"
+      },
+      action: { kind: "finish", summary: "Done" },
+      expectedState:
+        "Visible page shows 'Portal receipt saved' with Vendor 'Acme Labs', Amount '1200', Date '2026-06-26', and IBAN 'IT60X0542811101000000123456'."
+    });
+
+    expect(result.status).toBe("success");
+  });
+});

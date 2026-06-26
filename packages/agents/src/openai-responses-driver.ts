@@ -1,5 +1,9 @@
 import type { DriverDecision } from "@tracepilot/core";
 import type { AgentDriver, AgentDriverContext } from "./agent-driver.js";
+import {
+  OpenAIResponsesDecisionClient,
+  type OpenAIResponsesFetch
+} from "./openai-responses-decision-client.js";
 
 export type OpenAIDecisionClient = {
   decide(context: AgentDriverContext, options: { model: string; reasoningEffort?: string }): Promise<DriverDecision>;
@@ -10,6 +14,9 @@ export type OpenAIResponsesDriverOptions = {
   model?: string;
   reasoningEffort?: string;
   client?: OpenAIDecisionClient;
+  enablePaidCalls?: boolean;
+  fetchImpl?: OpenAIResponsesFetch;
+  maxOutputTokens?: number;
 };
 
 export class MissingOpenAIApiKeyError extends Error {
@@ -32,7 +39,15 @@ export class OpenAIResponsesDriver implements AgentDriver {
 
     this.model = options.model ?? process.env.TRACEPILOT_OPENAI_MODEL ?? "gpt-5.4-nano";
     this.reasoningEffort = options.reasoningEffort ?? process.env.TRACEPILOT_OPENAI_REASONING_EFFORT ?? "low";
-    this.client = options.client;
+    this.client =
+      options.client ??
+      (options.enablePaidCalls
+        ? new OpenAIResponsesDecisionClient({
+            apiKey,
+            ...(options.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl }),
+            ...(options.maxOutputTokens === undefined ? {} : { maxOutputTokens: options.maxOutputTokens })
+          })
+        : undefined);
   }
 
   async decide(context: AgentDriverContext): Promise<DriverDecision> {

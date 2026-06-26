@@ -16,6 +16,7 @@ export type RunTaskOptions = {
   driver: AgentDriver;
   runsDir: string;
   headless?: boolean;
+  maxCostUsd?: number;
 };
 
 export type RunTaskResult = {
@@ -35,6 +36,7 @@ export async function runTask(options: RunTaskOptions): Promise<RunTaskResult> {
   let stuckLoop = false;
   let unsafeBlocked = false;
   let humanApprovals = 0;
+  let budgetExceeded = false;
 
   try {
     sandbox = await BrowserSandbox.launch({
@@ -46,7 +48,21 @@ export async function runTask(options: RunTaskOptions): Promise<RunTaskResult> {
     let observation = await sandbox.observe("step-0");
 
     for (let stepIndex = 0; stepIndex < options.task.maxSteps; stepIndex += 1) {
-      const decision = await options.driver.decide({ task: options.task, observation, steps });
+      const decisionResult = await decideSafely(options.driver, { task: options.task, observation, steps });
+      if (!decisionResult.ok) {
+        const step = traceStep({
+          task: options.task,
+          stepIndex,
+          observation,
+          decision: decisionResult.decision,
+          verifier: decisionResult.verifier,
+          startedAt
+        });
+        steps.push(step);
+        await store.appendStep(step);
+        break;
+      }
+      const decision = decisionResult.decision;
       const unsafe = inspectUntrustedContent(observation.domText ?? "");
       if (unsafe.status === "unsafe") {
         unsafeBlocked = true;
@@ -81,13 +97,22 @@ export async function runTask(options: RunTaskOptions): Promise<RunTaskResult> {
       steps.push(step);
       await store.appendStep(step);
 
+      const reachedBudget = options.maxCostUsd !== undefined && totalCostUsd(steps) >= options.maxCostUsd;
+
       if (verifier.status === "success") {
         success = true;
+        budgetExceeded = reachedBudget;
         break;
       }
 
       if (decision.action.kind === "finish" && verifier.status === "failure") {
         falseCompletion = true;
+        budgetExceeded = reachedBudget;
+        break;
+      }
+
+      if (reachedBudget) {
+        budgetExceeded = true;
         break;
       }
 
@@ -109,7 +134,8 @@ export async function runTask(options: RunTaskOptions): Promise<RunTaskResult> {
     stuckLoop,
     unsafeBlocked,
     humanApprovals,
-    totalCostUsd: steps.reduce((sum, step) => sum + (step.tokenCostUsd ?? 0), 0),
+    totalCostUsd: totalCostUsd(steps),
+    ...(budgetExceeded ? { budgetExceeded } : {}),
     durationMs: Date.now() - startedAt
   };
   await store.writeMetrics(metrics);
@@ -119,6 +145,33 @@ export async function runTask(options: RunTaskOptions): Promise<RunTaskResult> {
     runDir: join(options.runsDir, options.task.id),
     steps
   };
+}
+
+async function decideSafely(
+  driver: AgentDriver,
+  context: Parameters<AgentDriver["decide"]>[0]
+): Promise<
+  | { ok: true; decision: Awaited<ReturnType<AgentDriver["decide"]>> }
+  | { ok: false; decision: Awaited<ReturnType<AgentDriver["decide"]>>; verifier: TraceStep["verifier"] }
+> {
+  try {
+    return { ok: true, decision: await driver.decide(context) };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      decision: {
+        action: { kind: "finish", summary: "Driver failed before choosing a valid browser action." },
+        reasoning: `Driver decision failed: ${message}`,
+        confidence: 0
+      },
+      verifier: {
+        status: "failure",
+        reason: `Driver decision failed: ${message}`,
+        suggestedRecovery: "Inspect the model output, schema, and observation before retrying."
+      }
+    };
+  }
 }
 
 function traceStep(params: {
@@ -135,6 +188,11 @@ function traceStep(params: {
     observation: params.observation,
     decision: params.decision,
     verifier: params.verifier,
-    latencyMs: Date.now() - params.startedAt
+    latencyMs: Date.now() - params.startedAt,
+    ...(params.decision.modelRun?.costUsd === undefined ? {} : { tokenCostUsd: params.decision.modelRun.costUsd })
   };
+}
+
+function totalCostUsd(steps: TraceStep[]): number {
+  return Number(steps.reduce((sum, step) => sum + (step.tokenCostUsd ?? 0), 0).toFixed(6));
 }

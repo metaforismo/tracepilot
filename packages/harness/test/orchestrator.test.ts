@@ -144,5 +144,173 @@ describe("runTask", () => {
     expect(result.metrics.stuckLoop).toBe(true);
     expect(result.metrics.success).toBe(false);
   });
-});
 
+  it("propagates model decision cost into trace steps and run metrics", async () => {
+    target = await startTargetServer();
+    const runsDir = await mkdtemp(join(tmpdir(), "tracepilot-harness-cost-"));
+
+    const result = await runTask({
+      runsDir,
+      task: {
+        id: "model-cost-success",
+        title: "Model cost success",
+        instruction: "Finish only when the form is visible.",
+        startUrl: `${target.origin}/smoke-form`,
+        maxSteps: 2
+      },
+      driver: {
+        async decide() {
+          return {
+            action: { kind: "finish", summary: "Smoke form is visible." },
+            reasoning: "The title and visible text show the smoke form.",
+            confidence: 0.9,
+            expectedState: "TracePilot Smoke Form",
+            modelRun: {
+              source: "model_api",
+              provider: "openai",
+              model: "gpt-5.4-nano",
+              resolvedModel: "gpt-5.4-nano-2026-03-17",
+              usage: {
+                inputTokens: 100,
+                outputTokens: 20
+              },
+              pricing: {
+                inputUsdPerMillionTokens: 0.2,
+                outputUsdPerMillionTokens: 1.25
+              },
+              costUsd: 0.000045,
+              latencyMs: 50
+            }
+          };
+        }
+      }
+    });
+
+    expect(result.metrics.success).toBe(true);
+    expect(result.metrics.totalCostUsd).toBe(0.000045);
+    expect(result.steps[0]?.tokenCostUsd).toBe(0.000045);
+    expect(result.steps[0]?.decision.modelRun?.resolvedModel).toBe("gpt-5.4-nano-2026-03-17");
+  });
+
+  it("stops model runs when the configured cost budget is reached", async () => {
+    target = await startTargetServer();
+    const runsDir = await mkdtemp(join(tmpdir(), "tracepilot-harness-budget-"));
+    let calls = 0;
+
+    const result = await runTask({
+      runsDir,
+      maxCostUsd: 0.00008,
+      task: {
+        id: "model-budget",
+        title: "Model budget",
+        instruction: "Keep waiting until budget stops the run.",
+        startUrl: `${target.origin}/smoke-form`,
+        maxSteps: 5
+      },
+      driver: {
+        async decide() {
+          calls += 1;
+          return {
+            action: { kind: "wait", ms: 1 },
+            reasoning: "Spend one model step.",
+            confidence: 0.8,
+            modelRun: {
+              source: "model_api",
+              provider: "openai",
+              model: "gpt-5.4-nano",
+              usage: {
+                inputTokens: 100,
+                outputTokens: 20
+              },
+              pricing: {
+                inputUsdPerMillionTokens: 0.2,
+                outputUsdPerMillionTokens: 1.25
+              },
+              costUsd: 0.000045,
+              latencyMs: 50
+            }
+          };
+        }
+      }
+    });
+
+    expect(calls).toBe(2);
+    expect(result.metrics.budgetExceeded).toBe(true);
+    expect(result.metrics.steps).toBe(2);
+    expect(result.metrics.totalCostUsd).toBe(0.00009);
+  });
+
+  it("preserves success when the final successful model step reaches the cost budget", async () => {
+    target = await startTargetServer();
+    const runsDir = await mkdtemp(join(tmpdir(), "tracepilot-harness-budget-success-"));
+
+    const result = await runTask({
+      runsDir,
+      maxCostUsd: 0.00004,
+      task: {
+        id: "model-budget-success",
+        title: "Model budget success",
+        instruction: "Finish only when the form is visible.",
+        startUrl: `${target.origin}/smoke-form`,
+        maxSteps: 2
+      },
+      driver: {
+        async decide() {
+          return {
+            action: { kind: "finish", summary: "Smoke form is visible." },
+            reasoning: "The visible form proves completion.",
+            confidence: 0.9,
+            expectedState: "TracePilot Smoke Form",
+            modelRun: {
+              source: "model_api",
+              provider: "openai",
+              model: "gpt-5.4-nano",
+              usage: {
+                inputTokens: 100,
+                outputTokens: 20
+              },
+              pricing: {
+                inputUsdPerMillionTokens: 0.2,
+                outputUsdPerMillionTokens: 1.25
+              },
+              costUsd: 0.000045,
+              latencyMs: 50
+            }
+          };
+        }
+      }
+    });
+
+    expect(result.metrics.success).toBe(true);
+    expect(result.metrics.budgetExceeded).toBe(true);
+    expect(result.metrics.steps).toBe(1);
+    expect(result.metrics.totalCostUsd).toBe(0.000045);
+  });
+
+  it("records driver decision errors as trace failures instead of crashing the run", async () => {
+    target = await startTargetServer();
+    const runsDir = await mkdtemp(join(tmpdir(), "tracepilot-harness-driver-error-"));
+
+    const result = await runTask({
+      runsDir,
+      task: {
+        id: "driver-error",
+        title: "Driver error",
+        instruction: "Handle a driver error.",
+        startUrl: `${target.origin}/smoke-form`,
+        maxSteps: 3
+      },
+      driver: {
+        async decide() {
+          throw new Error("model output did not contain a JSON decision object");
+        }
+      }
+    });
+
+    expect(result.metrics.success).toBe(false);
+    expect(result.metrics.steps).toBe(1);
+    expect(result.steps[0]?.verifier.status).toBe("failure");
+    expect(result.steps[0]?.verifier.reason).toContain("Driver decision failed");
+    expect(result.steps[0]?.decision.action.kind).toBe("finish");
+  });
+});

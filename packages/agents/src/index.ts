@@ -8,6 +8,10 @@ export {
   MissingOpenAIApiKeyError,
   OpenAIResponsesDriver
 } from "./openai-responses-driver.js";
+export {
+  OpenAIResponsesDecisionClient,
+  OpenAIResponsesDriverError
+} from "./openai-responses-decision-client.js";
 export type {
   AnthropicComputerUseDriverOptions,
   AnthropicDecisionClient
@@ -16,3 +20,7 @@ export type {
   OpenAIDecisionClient,
   OpenAIResponsesDriverOptions
 } from "./openai-responses-driver.js";
+export type {
+  OpenAIResponsesDecisionClientOptions,
+  OpenAIResponsesFetch
+} from "./openai-responses-decision-client.js";

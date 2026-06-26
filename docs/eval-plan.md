@@ -19,6 +19,7 @@ TracePilot evals measure whether a computer-use harness improves reliability in 
 | `cost-ledger` | `corepack pnpm@9.15.4 run eval -- --suite cost-ledger` | Writes source-aware model cost accounting artifacts without making a paid model call. |
 | `model-readiness` | `corepack pnpm@9.15.4 run eval -- --suite model-readiness` | Writes an env-gated model-run manifest that explains whether a paid model call was disabled, blocked, or executed. |
 | `openai-benchmark` | `corepack pnpm@9.15.4 run eval -- --suite openai-benchmark` | Runs a dry-run by default, or an env-gated OpenAI Responses API benchmark with task validators, reasoning-effort capture, and a cost circuit breaker. |
+| `model-browser` | `corepack pnpm@9.15.4 run eval -- --suite model-browser` | Runs a dry-run by default, or an env-gated real model browser-control workflow with screenshot observation, verifier checks, trace artifacts, and cost budget stops. |
 
 ## Diagnosis Artifacts
 
@@ -53,6 +54,15 @@ The OpenAI benchmark suite writes:
 - `runs/latest/openai-benchmark/openai-benchmark-report.md`.
 
 It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and an explicit budget such as `TRACEPILOT_OPENAI_BENCHMARK_MAX_USD=1`. The default task set covers structured extraction, next-action selection, guardrail classification, failure diagnosis, and technical summary generation across `gpt-5.4-nano`, `gpt-5.4`, and `gpt-5.5` with `TRACEPILOT_OPENAI_REASONING_EFFORT=low`.
+
+The model-browser suite writes:
+
+- `runs/latest/model-browser/model-browser-summary.json`;
+- `runs/latest/model-browser/model-browser-report.md`.
+
+It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and an explicit budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. `TRACEPILOT_MODEL_BROWSER_MODEL` chooses the OpenAI model, `TRACEPILOT_MODEL_BROWSER_TASK` chooses `legacy-portal` or `smoke-form`, `TRACEPILOT_MODEL_BROWSER_MAX_OUTPUT_TOKENS` controls structured-output headroom, and `TRACEPILOT_OPENAI_REASONING_EFFORT` defaults to `low`.
+
+This suite is the first real browser-control measurement path. It separates model-driver outcomes from deterministic controls, records step-level `model_api` cost metadata in the trace, and keeps model failures as artifacts instead of hiding them behind a crashed eval process.
 
 ## First Task Set
 
@@ -90,6 +100,7 @@ It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAI
 - Do not publish model-cost claims without provider, model, token usage, pricing, source, and computed cost metadata.
 - Do not publish dry-run readiness manifests as model-performance results.
 - Do not publish one-off OpenAI benchmark runs as broad model rankings; use them as harness, cost, and prompt/schema evidence unless repeated.
+- Do not publish one-off model-browser runs as broad computer-use rankings; use them as operational evidence and keep failed runs in the report.
 - Do not mix local deterministic evals with external benchmark claims.
 - Keep failed tasks in the report and label failure class.
 - Include trace artifacts for representative successes and failures.

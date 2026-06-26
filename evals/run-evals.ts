@@ -19,6 +19,7 @@ import { runComparisonSuite } from "./comparison-suite.js";
 import { runCostLedgerSuite } from "./cost-ledger-suite.js";
 import { runModelReadinessSuite } from "./model-readiness-suite.js";
 import { runOpenAIBenchmarkSuite } from "./openai-benchmark-suite.js";
+import { runModelBrowserSuite } from "./model-browser-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -34,12 +35,20 @@ if (
   values.suite !== "comparison" &&
   values.suite !== "cost-ledger" &&
   values.suite !== "model-readiness" &&
-  values.suite !== "openai-benchmark"
+  values.suite !== "openai-benchmark" &&
+  values.suite !== "model-browser"
 ) {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-if (values.suite === "openai-benchmark") {
+if (values.suite === "model-browser") {
+  const result = await runModelBrowserSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "model-browser")
+  });
+  console.log(
+    `model-browser status=${result.summary.status} paid_call=${result.summary.paidCall} success=${result.summary.success} steps=${result.summary.steps} total_cost_usd=${result.summary.totalCostUsd} report=${result.artifacts.reportPath}`
+  );
+} else if (values.suite === "openai-benchmark") {
   const result = await runOpenAIBenchmarkSuite({
     runsDir: join(process.cwd(), "runs", "latest", "openai-benchmark")
   });

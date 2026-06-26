@@ -5,9 +5,9 @@ export function createPortalTask(origin: string): TaskSpec {
     id: "invoice-portal-acme-1200",
     title: "Invoice to legacy portal",
     instruction:
-      "Enter the Acme Labs invoice into the legacy portal and finish only after the receipt is saved.",
+      "Enter this invoice into the legacy portal and finish only after the receipt is saved. Vendor: Acme Labs. Amount: 1200. Invoice date: 2026-06-26. IBAN: IT60X0542811101000000123456.",
     startUrl: `${origin}/legacy-portal`,
-    maxSteps: 12
+    maxSteps: 18
   };
 }
 
