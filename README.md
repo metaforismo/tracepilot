@@ -96,16 +96,17 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - local JSONL trace store;
 - deterministic verifier, safety policy, and stuck-loop detector;
 - dependency-free local target app;
+- Playwright browser sandbox with screenshot observation capture;
+- typed action executor for click, type, press, scroll, wait, upload, finish, and human approval actions;
 - real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`.
 
 Next build slices:
 
-1. Browser sandbox adapter.
-2. Agent driver interface.
-3. Orchestrator loop.
-4. Studio UI trace viewer.
-5. Invoice workflow.
-6. Eval runner and public report.
+1. Agent driver interface.
+2. Orchestrator loop.
+3. Studio UI trace viewer.
+4. Invoice workflow.
+5. Eval runner and public report.
 
 ## Run Locally
 

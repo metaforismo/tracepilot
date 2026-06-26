@@ -1,5 +1,5 @@
 {
-  "name": "@tracepilot/core",
+  "name": "@tracepilot/sandbox",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -9,10 +9,6 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./dist/index.js"
-    },
-    "./types": {
-      "types": "./src/types.ts",
-      "import": "./dist/types.js"
     }
   },
   "scripts": {
@@ -21,9 +17,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "nanoid": "^5.0.9"
+    "@tracepilot/core": "workspace:*",
+    "playwright": "^1.61.1"
   },
   "devDependencies": {
     "vitest": "^2.1.8"
   }
 }
+
