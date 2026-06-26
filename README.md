@@ -63,7 +63,7 @@ flowchart TD
 - **Runtime:** Node.js, pnpm workspaces.
 - **Browser control:** Playwright.
 - **Product UI:** Next.js.
-- **Agent layer:** Pluggable driver interface, starting with a deterministic scripted driver and an Anthropic Computer Use adapter.
+- **Agent layer:** Pluggable driver interface, starting with a deterministic scripted driver, an Anthropic Computer Use adapter boundary, and an OpenAI Responses decision client.
 - **Storage:** Local SQLite for run metadata, filesystem artifacts for screenshots and trace files, with Postgres-compatible schema later.
 - **Testing:** Vitest for unit tests, Playwright for integration tasks, reproducible eval runner for metrics.
 
@@ -109,12 +109,14 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - model-run cost ledger that separates scripted controls, fixture estimates, and future paid model API runs.
 - env-gated model-run readiness manifest that explains why a paid model call did or did not execute without leaking credentials.
 - optional OpenAI Responses API benchmark suite with model/task validation, reasoning-effort capture, and a cost circuit breaker.
+- real OpenAI Responses decision client for screenshot-driven browser actions, with strict structured output, token/cost metadata, budget stops, and traced driver failures.
+- model-browser suite that runs the invoice-to-legacy-portal task with a real model driver behind explicit paid-run gates.
 
 Next build slices:
 
-1. Injected real model decision client using the readiness manifest and cost ledger's `model_api` reporting path.
-2. Video walkthrough package.
-3. Larger failure taxonomy with repeated runs per task.
+1. Anthropic Computer Use paid-driver parity with the same trace, verifier, and cost contract.
+2. Repeated model-browser runs with confidence intervals and failure-class scorecards.
+3. Studio surfacing for per-step `model_api` metadata, budget stops, and driver error traces.
 
 ## Run Locally
 
@@ -127,6 +129,7 @@ corepack pnpm@9.15.4 run eval -- --suite comparison
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
+corepack pnpm@9.15.4 run eval -- --suite model-browser
 corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
@@ -182,6 +185,14 @@ openai-benchmark status=skipped_paid_runs_disabled paid_calls=0 passed=0 failed=
 
 The OpenAI benchmark suite is also env-gated. It makes no paid calls unless `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1` and `OPENAI_API_KEY` are present. When enabled, it writes sanitized JSON and Markdown artifacts under `runs/latest/openai-benchmark/`, records token usage and estimated cost, and stops when `TRACEPILOT_OPENAI_BENCHMARK_MAX_USD` is reached.
 
+Expected model-browser dry-run output:
+
+```text
+model-browser status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0 report=...
+```
+
+The model-browser suite is the paid browser-control path. By default it is a dry run. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and a budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. When enabled, it lets a real OpenAI Responses model observe screenshots and page context, choose browser actions, and write a sanitized model-browser report under `runs/latest/model-browser/`.
+
 ## Docs
 
 - [Design Spec](docs/superpowers/specs/2026-06-26-tracepilot-design.md)
@@ -193,6 +204,7 @@ The OpenAI benchmark suite is also env-gated. It makes no paid calls unless `TRA
 - [Model Cost Ledger](docs/results/model-cost-ledger.md)
 - [Model Run Readiness](docs/results/model-readiness.md)
 - [OpenAI API Evidence](docs/results/openai-smoke.md)
+- [Model Browser Run](docs/results/model-browser-run.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
 - [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)

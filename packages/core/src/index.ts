@@ -28,6 +28,7 @@ export type {
   ModelRunManifest,
   ModelRunResult,
   ModelRunStatus,
+  ModelDecisionMetadata,
   ModelPricing,
   ModelProvider,
   Observation,

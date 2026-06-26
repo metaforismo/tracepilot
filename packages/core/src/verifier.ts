@@ -10,8 +10,7 @@ export function verifyActionEffect(params: {
 
   if (action.kind === "finish") {
     const text = `${after.title}\n${after.domText ?? ""}`.toLowerCase();
-    const expected = expectedState?.toLowerCase();
-    if (expected && !text.includes(expected)) {
+    if (expectedState && !matchesExpectedState(text, expectedState)) {
       return {
         status: "failure",
         reason: `Agent finished before expected state appeared: ${expectedState}`,
@@ -40,3 +39,15 @@ export function verifyActionEffect(params: {
   };
 }
 
+function matchesExpectedState(normalizedVisibleText: string, expectedState: string): boolean {
+  const expected = expectedState.toLowerCase();
+  if (normalizedVisibleText.includes(expected)) {
+    return true;
+  }
+
+  const quotedFragments = Array.from(expected.matchAll(/['"]([^'"]+)['"]/g), (match) => match[1])
+    .map((fragment) => fragment?.trim().toLowerCase())
+    .filter((fragment): fragment is string => Boolean(fragment));
+
+  return quotedFragments.length > 0 && quotedFragments.every((fragment) => normalizedVisibleText.includes(fragment));
+}

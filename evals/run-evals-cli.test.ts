@@ -105,4 +105,26 @@ describe("run-evals CLI", () => {
     expect(stdout).toContain("report=");
     expect(stdout).not.toContain("test-openai-key");
   }, 30_000);
+
+  test("runs the model-browser suite as a dry run by default", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "model-browser"],
+      {
+        cwd: process.cwd(),
+        timeout: 30_000,
+        env: {
+          ...process.env,
+          OPENAI_API_KEY: "test-openai-key",
+          TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
+        }
+      }
+    );
+
+    expect(stdout).toContain(
+      "model-browser status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0"
+    );
+    expect(stdout).toContain("report=");
+    expect(stdout).not.toContain("test-openai-key");
+  }, 30_000);
 });

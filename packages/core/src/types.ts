@@ -33,6 +33,7 @@ export type DriverDecision = {
   reasoning: string;
   confidence: number;
   expectedState?: string;
+  modelRun?: ModelDecisionMetadata;
 };
 
 export type VerifierStatus =
@@ -79,6 +80,7 @@ export type RunMetrics = {
   unsafeBlocked: boolean;
   humanApprovals: number;
   totalCostUsd: number;
+  budgetExceeded?: boolean;
   durationMs: number;
 };
 
@@ -220,6 +222,18 @@ export type CostLedgerRun = {
 export type CostLedgerRunWithCost = CostLedgerRun & {
   source: RunSource;
   computedCostUsd: number;
+};
+
+export type ModelDecisionMetadata = {
+  source: Extract<RunSource, "model_api" | "model_fixture" | "dry_run">;
+  provider: ModelProvider;
+  model: string;
+  resolvedModel?: string;
+  usage: TokenUsage;
+  pricing: ModelPricing;
+  costUsd: number;
+  latencyMs: number;
+  reasoningTokens?: number;
 };
 
 export type CostLedger = {

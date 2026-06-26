@@ -74,5 +74,30 @@ describe("BrowserSandbox and executeAction", () => {
     expect(result.verifier.status).toBe("failure");
     expect(result.verifier.reason).toContain("Playwright action failed");
   });
-});
 
+  it("normalizes common modifier key aliases from model output", async () => {
+    target = await startTargetServer();
+    const root = await mkdtemp(join(tmpdir(), "tracepilot-sandbox-"));
+    const traceStore = await createTraceStore(root, "sandbox-key-alias");
+
+    sandbox = await BrowserSandbox.launch({
+      task: {
+        id: "smoke-form",
+        title: "Smoke form",
+        instruction: "Select text using a model-style shortcut.",
+        startUrl: `${target.origin}/smoke-form`,
+        maxSteps: 4
+      },
+      traceStore
+    });
+
+    const vendor = sandbox.page.locator("#vendor");
+    await vendor.click();
+    await vendor.fill("Acme Labs");
+    const result = await executeAction(sandbox.page, { kind: "press", key: "Ctrl+A" });
+    await sandbox.page.keyboard.type("Contoso Research");
+
+    await expect(vendor.inputValue()).resolves.toBe("Contoso Research");
+    expect(result.ok).toBe(true);
+  });
+});

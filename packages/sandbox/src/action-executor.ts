@@ -34,7 +34,7 @@ async function performAction(page: Page, action: AgentAction): Promise<void> {
       await page.keyboard.type(action.text);
       return;
     case "press":
-      await page.keyboard.press(action.key);
+      await page.keyboard.press(normalizeKey(action.key));
       return;
     case "scroll":
       await page.mouse.wheel(action.deltaX, action.deltaY);
@@ -49,6 +49,13 @@ async function performAction(page: Page, action: AgentAction): Promise<void> {
     case "requestHumanApproval":
       return;
   }
+}
+
+function normalizeKey(key: string): string {
+  return key
+    .replace(/\bCtrl\b/g, process.platform === "darwin" ? "Meta" : "Control")
+    .replace(/\bCmd\b/g, "Meta")
+    .replace(/\bCommand\b/g, "Meta");
 }
 
 async function uploadToFocusedInput(page: Page, path: string): Promise<void> {
@@ -72,4 +79,3 @@ function successFor(action: AgentAction): VerifierResult {
 
   return { status: "progress", reason: `${action.kind} action executed.` };
 }
-

@@ -47,11 +47,14 @@ Run:
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
+corepack pnpm@9.15.4 run eval -- --suite model-browser
 ```
 
 Point out that this is a fixture estimate and a dry-run readiness manifest, not a paid API result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently, and API key presence is recorded without leaking the key.
 
 For the paid OpenAI benchmark, show only the sanitized report. The key point is that real model calls exposed a brittle grader and a prompt/schema ambiguity, both were fixed with tests, and the final 15-call run passed all validators while recording estimated cost and reasoning tokens.
+
+For the model-browser run, show only the sanitized model-browser report and trace. The key point is that a real model controlled the legacy portal through screenshots and structured actions, while the harness recorded cost, verifier results, and a cheaper-model failure that became a concrete visual-grounding diagnosis.
 
 ## 6. Why It Fits Computer Use
 

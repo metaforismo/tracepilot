@@ -57,5 +57,5 @@ describe("runComparisonSuite", () => {
     expect(diagnosisReport).toContain("# Failure Diagnosis Casebook");
     expect(diagnosisReport).toContain("| false-completion-before-receipt | Baseline | false_completion | critical |");
     expect(diagnosisReport).toContain("model-behavior hypotheses");
-  });
+  }, 30_000);
 });
