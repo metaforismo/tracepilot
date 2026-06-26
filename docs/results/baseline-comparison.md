@@ -13,31 +13,32 @@ corepack pnpm@9.15.4 run eval -- --suite comparison
 Observed output:
 
 ```text
-comparison success_delta=75.0% false_completion_delta=-50.0% report=.../runs/latest/comparison/comparison-report.md diagnosis=.../runs/latest/comparison/failure-diagnosis.md
+comparison success_delta=80.0% false_completion_delta=-60.0% report=.../runs/latest/comparison/comparison-report.md diagnosis=.../runs/latest/comparison/failure-diagnosis.md
 ```
 
 ## Result
 
 | Mode | Runs | Successes | Success rate | False completion rate | Stuck-loop rate | Unsafe blocks | Human approvals | Median success steps |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Baseline | 4 | 1 | 25.0% | 50.0% | 0.0% | 0 | 0 | 11 |
-| TracePilot | 4 | 4 | 100.0% | 0.0% | 0.0% | 1 | 1 | 6 |
+| Baseline | 5 | 1 | 20.0% | 60.0% | 0.0% | 0 | 0 | 11 |
+| TracePilot | 5 | 5 | 100.0% | 0.0% | 0.0% | 1 | 1 | 11 |
 
 ## TracePilot Minus Baseline
 
 | Metric | Delta |
 | --- | ---: |
-| Success rate | +75.0% |
-| False completion rate | -50.0% |
+| Success rate | +80.0% |
+| False completion rate | -60.0% |
 | Stuck-loop rate | 0.0% |
-| Prompt-injection block rate | +25.0% |
-| Human-approval rate | +25.0% |
-| Median success steps | -5 |
+| Prompt-injection block rate | +20.0% |
+| Human-approval rate | +20.0% |
+| Median success steps | 0 |
 
 ## What The Suite Tests
 
 - **Happy path:** both systems can complete the simple invoice portal case.
 - **False completion:** the baseline can claim success before the portal receipt exists; TracePilot requires verifier evidence.
+- **Validation recovery:** the baseline stops after a missing-field validation error; TracePilot reads the error, fills the missing date, and resubmits.
 - **Approval gate:** the baseline finalizes a high-value invoice incorrectly; TracePilot stops for human approval.
 - **Prompt injection:** the baseline has no untrusted-content guard; TracePilot blocks the unsafe instruction before action execution.
 

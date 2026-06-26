@@ -133,6 +133,7 @@ export type EvalComparisonSummary = {
 export type FailureCategory =
   | "success"
   | "false_completion"
+  | "form_validation_miss"
   | "approval_policy_miss"
   | "prompt_injection_risk"
   | "prompt_injection_blocked"

@@ -5,6 +5,23 @@ import { describe, expect, test } from "vitest";
 const execFileAsync = promisify(execFile);
 
 describe("run-evals CLI", () => {
+  test("runs the invoice suite with validation recovery", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "invoice"],
+      {
+        cwd: process.cwd(),
+        timeout: 30_000
+      }
+    );
+
+    expect(stdout).toContain("invoice success=true");
+    expect(stdout).toContain("portal=true");
+    expect(stdout).toContain("validation=true");
+    expect(stdout).toContain("approval=true");
+    expect(stdout).toContain("injection=true");
+  }, 30_000);
+
   test("runs the baseline-vs-TracePilot comparison suite", async () => {
     const { stdout } = await execFileAsync(
       "corepack",
@@ -15,8 +32,8 @@ describe("run-evals CLI", () => {
       }
     );
 
-    expect(stdout).toContain("comparison success_delta=75.0%");
-    expect(stdout).toContain("false_completion_delta=-50.0%");
+    expect(stdout).toContain("comparison success_delta=80.0%");
+    expect(stdout).toContain("false_completion_delta=-60.0%");
     expect(stdout).toContain("diagnosis=");
   }, 30_000);
 
@@ -126,5 +143,27 @@ describe("run-evals CLI", () => {
     );
     expect(stdout).toContain("report=");
     expect(stdout).not.toContain("test-openai-key");
+  }, 30_000);
+
+  test("runs the Anthropic computer-use suite as a dry run by default", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "anthropic-computer-use"],
+      {
+        cwd: process.cwd(),
+        timeout: 30_000,
+        env: {
+          ...process.env,
+          ANTHROPIC_API_KEY: "test-anthropic-key",
+          TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
+        }
+      }
+    );
+
+    expect(stdout).toContain(
+      "anthropic-computer-use status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0"
+    );
+    expect(stdout).toContain("report=");
+    expect(stdout).not.toContain("test-anthropic-key");
   }, 30_000);
 });

@@ -63,7 +63,7 @@ flowchart TD
 - **Runtime:** Node.js, pnpm workspaces.
 - **Browser control:** Playwright.
 - **Product UI:** Next.js.
-- **Agent layer:** Pluggable driver interface, starting with a deterministic scripted driver, an Anthropic Computer Use adapter boundary, and an OpenAI Responses decision client.
+- **Agent layer:** Pluggable driver interface, starting with a deterministic scripted driver, an Anthropic Computer Use decision client, and an OpenAI Responses decision client.
 - **Storage:** Local SQLite for run metadata, filesystem artifacts for screenshots and trace files, with Postgres-compatible schema later.
 - **Testing:** Vitest for unit tests, Playwright for integration tasks, reproducible eval runner for metrics.
 
@@ -111,11 +111,13 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - optional OpenAI Responses API benchmark suite with model/task validation, reasoning-effort capture, and a cost circuit breaker.
 - real OpenAI Responses decision client for screenshot-driven browser actions, with strict structured output, token/cost metadata, budget stops, and traced driver failures.
 - model-browser suite that runs the invoice-to-legacy-portal task with a real model driver behind explicit paid-run gates.
+- real Anthropic Computer Use decision client that sends the `computer_20251124` tool definition, parses `tool_use` actions, records usage/cost metadata, and redacts API errors.
+- Anthropic computer-use suite that runs the same browser workflow contract behind explicit paid-run gates.
 
 Next build slices:
 
-1. Anthropic Computer Use paid-driver parity with the same trace, verifier, and cost contract.
-2. Repeated model-browser runs with confidence intervals and failure-class scorecards.
+1. Paid Anthropic Computer Use run evidence once an Anthropic key is available.
+2. Repeated cross-provider browser runs with confidence intervals and failure-class scorecards.
 3. Studio surfacing for per-step `model_api` metadata, budget stops, and driver error traces.
 
 ## Run Locally
@@ -130,6 +132,7 @@ corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 corepack pnpm@9.15.4 run eval -- --suite model-browser
+corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
@@ -142,13 +145,13 @@ smoke-form success=true steps=2
 Expected invoice output:
 
 ```text
-invoice success=true portal=true approval=true injection=true
+invoice success=true portal=true validation=true approval=true injection=true
 ```
 
 Expected comparison output:
 
 ```text
-comparison success_delta=75.0% false_completion_delta=-50.0% report=... diagnosis=...
+comparison success_delta=80.0% false_completion_delta=-60.0% report=... diagnosis=...
 ```
 
 Expected cost-ledger output:
@@ -193,6 +196,14 @@ model-browser status=skipped_paid_runs_disabled paid_call=false success=false st
 
 The model-browser suite is the paid browser-control path. By default it is a dry run. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `OPENAI_API_KEY`, and a budget such as `TRACEPILOT_MODEL_BROWSER_MAX_USD=0.5`. When enabled, it lets a real OpenAI Responses model observe screenshots and page context, choose browser actions, and write a sanitized model-browser report under `runs/latest/model-browser/`.
 
+Expected Anthropic computer-use dry-run output:
+
+```text
+anthropic-computer-use status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0 report=...
+```
+
+The Anthropic computer-use suite is also env-gated. It makes no paid calls unless `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1` and `ANTHROPIC_API_KEY` are present. When enabled, it sends Anthropic's computer-use tool definition, parses returned `tool_use` actions into TracePilot browser actions, records cost metadata, and writes sanitized artifacts under `runs/latest/anthropic-computer-use/`.
+
 ## Docs
 
 - [Design Spec](docs/superpowers/specs/2026-06-26-tracepilot-design.md)
@@ -205,6 +216,7 @@ The model-browser suite is the paid browser-control path. By default it is a dry
 - [Model Run Readiness](docs/results/model-readiness.md)
 - [OpenAI API Evidence](docs/results/openai-smoke.md)
 - [Model Browser Run](docs/results/model-browser-run.md)
+- [Anthropic Computer Use Run](docs/results/anthropic-computer-use.md)
 - [Hiring Positioning](docs/hiring-positioning.md)
 - [Video Walkthrough Script](docs/video-walkthrough-script.md)
 - [Security Model](SECURITY.md)

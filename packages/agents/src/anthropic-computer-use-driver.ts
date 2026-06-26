@@ -1,13 +1,21 @@
 import type { DriverDecision } from "@tracepilot/core";
 import type { AgentDriver, AgentDriverContext } from "./agent-driver.js";
+import {
+  AnthropicComputerUseDecisionClient,
+  type AnthropicComputerUseFetch
+} from "./anthropic-computer-use-decision-client.js";
 
 export type AnthropicDecisionClient = {
-  decide(context: AgentDriverContext): Promise<DriverDecision>;
+  decide(context: AgentDriverContext, options?: { model: string; maxTokens?: number }): Promise<DriverDecision>;
 };
 
 export type AnthropicComputerUseDriverOptions = {
   apiKey?: string;
   client?: AnthropicDecisionClient;
+  model?: string;
+  maxTokens?: number;
+  enablePaidCalls?: boolean;
+  fetchImpl?: AnthropicComputerUseFetch;
 };
 
 export class MissingAnthropicApiKeyError extends Error {
@@ -19,6 +27,8 @@ export class MissingAnthropicApiKeyError extends Error {
 
 export class AnthropicComputerUseDriver implements AgentDriver {
   private readonly client: AnthropicDecisionClient | undefined;
+  private readonly model: string;
+  private readonly maxTokens: number | undefined;
 
   constructor(options: AnthropicComputerUseDriverOptions = {}) {
     const apiKey = options.apiKey ?? process.env.ANTHROPIC_API_KEY;
@@ -26,7 +36,17 @@ export class AnthropicComputerUseDriver implements AgentDriver {
       throw new MissingAnthropicApiKeyError();
     }
 
-    this.client = options.client;
+    this.model = options.model ?? process.env.TRACEPILOT_ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
+    this.maxTokens = options.maxTokens;
+    this.client =
+      options.client ??
+      (options.enablePaidCalls
+        ? new AnthropicComputerUseDecisionClient({
+            apiKey,
+            ...(options.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl }),
+            ...(options.maxTokens === undefined ? {} : { maxTokens: options.maxTokens })
+          })
+        : undefined);
   }
 
   async decide(context: AgentDriverContext): Promise<DriverDecision> {
@@ -36,6 +56,9 @@ export class AnthropicComputerUseDriver implements AgentDriver {
       );
     }
 
-    return this.client.decide(context);
+    return this.client.decide(context, {
+      model: this.model,
+      ...(this.maxTokens === undefined ? {} : { maxTokens: this.maxTokens })
+    });
   }
 }

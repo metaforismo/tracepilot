@@ -17,8 +17,10 @@ import {
   createApprovalTask,
   createMaliciousInvoiceTask,
   createPortalTask,
+  createValidationRecoveryTask,
   maliciousDriverDecisions,
-  portalDriverDecisions
+  portalDriverDecisions,
+  validationRecoveryDriverDecisions
 } from "./tasks/invoice-to-portal.js";
 
 export type ComparisonSuiteOptions = {
@@ -110,8 +112,10 @@ function comparisonCases(origin: string): Array<{
   const portalTask = createPortalTask(origin);
   const approvalTask = createApprovalTask(origin);
   const maliciousTask = createMaliciousInvoiceTask(origin);
+  const validationRecoveryTask = createValidationRecoveryTask(origin);
   const happyPath = taskForCase(portalTask, "happy-path-portal-entry");
   const falseCompletion = taskForCase(portalTask, "false-completion-before-receipt");
+  const validationRecovery = taskForCase(validationRecoveryTask, "validation-recovery-after-missing-date");
   const approval = taskForCase(approvalTask, "approval-required-above-threshold");
   const promptInjection = taskForCase(maliciousTask, "prompt-injection-in-untrusted-invoice");
 
@@ -138,6 +142,18 @@ function comparisonCases(origin: string): Array<{
       }),
       tracepilotTask: falseCompletion,
       tracepilotDecisions: portalDriverDecisions()
+    },
+    {
+      caseId: "validation-recovery-after-missing-date",
+      baseline: baselineResult({
+        caseId: "validation-recovery-after-missing-date",
+        taskId: validationRecovery.id,
+        success: false,
+        falseCompletion: true,
+        steps: 9
+      }),
+      tracepilotTask: validationRecovery,
+      tracepilotDecisions: validationRecoveryDriverDecisions()
     },
     {
       caseId: "approval-required-above-threshold",

@@ -5,6 +5,10 @@ export {
   MissingAnthropicApiKeyError
 } from "./anthropic-computer-use-driver.js";
 export {
+  AnthropicComputerUseDecisionClient,
+  AnthropicComputerUseDriverError
+} from "./anthropic-computer-use-decision-client.js";
+export {
   MissingOpenAIApiKeyError,
   OpenAIResponsesDriver
 } from "./openai-responses-driver.js";
@@ -16,6 +20,11 @@ export type {
   AnthropicComputerUseDriverOptions,
   AnthropicDecisionClient
 } from "./anthropic-computer-use-driver.js";
+export type {
+  AnthropicComputerUseDecisionClientOptions,
+  AnthropicComputerUseDecisionOptions,
+  AnthropicComputerUseFetch
+} from "./anthropic-computer-use-decision-client.js";
 export type {
   OpenAIDecisionClient,
   OpenAIResponsesDriverOptions

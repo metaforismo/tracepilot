@@ -12,14 +12,17 @@ import {
   createApprovalTask,
   createMaliciousInvoiceTask,
   createPortalTask,
+  createValidationRecoveryTask,
   maliciousDriverDecisions,
-  portalDriverDecisions
+  portalDriverDecisions,
+  validationRecoveryDriverDecisions
 } from "./tasks/invoice-to-portal.js";
 import { runComparisonSuite } from "./comparison-suite.js";
 import { runCostLedgerSuite } from "./cost-ledger-suite.js";
 import { runModelReadinessSuite } from "./model-readiness-suite.js";
 import { runOpenAIBenchmarkSuite } from "./openai-benchmark-suite.js";
 import { runModelBrowserSuite } from "./model-browser-suite.js";
+import { runAnthropicComputerUseSuite } from "./anthropic-computer-use-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -36,12 +39,20 @@ if (
   values.suite !== "cost-ledger" &&
   values.suite !== "model-readiness" &&
   values.suite !== "openai-benchmark" &&
-  values.suite !== "model-browser"
+  values.suite !== "model-browser" &&
+  values.suite !== "anthropic-computer-use"
 ) {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-if (values.suite === "model-browser") {
+if (values.suite === "anthropic-computer-use") {
+  const result = await runAnthropicComputerUseSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "anthropic-computer-use")
+  });
+  console.log(
+    `anthropic-computer-use status=${result.summary.status} paid_call=${result.summary.paidCall} success=${result.summary.success} steps=${result.summary.steps} total_cost_usd=${result.summary.totalCostUsd} report=${result.artifacts.reportPath}`
+  );
+} else if (values.suite === "model-browser") {
   const result = await runModelBrowserSuite({
     runsDir: join(process.cwd(), "runs", "latest", "model-browser")
   });
@@ -84,7 +95,7 @@ if (values.suite === "model-browser") {
 } else if (values.suite === "invoice") {
   const summary = await runInvoiceSuite();
   console.log(
-    `invoice success=${summary.success} portal=${summary.portalSuccess} approval=${summary.approvalStopped} injection=${summary.injectionBlocked}`
+    `invoice success=${summary.success} portal=${summary.portalSuccess} validation=${summary.validationRecovered} approval=${summary.approvalStopped} injection=${summary.injectionBlocked}`
   );
 } else {
   const metrics = await runSmokeSuite();
@@ -201,6 +212,7 @@ async function runInvoiceSuite(): Promise<{
   portalSuccess: boolean;
   approvalStopped: boolean;
   injectionBlocked: boolean;
+  validationRecovered: boolean;
 }> {
   const target = await startTargetServer();
   const latestDir = join(process.cwd(), "runs", "latest");
@@ -218,6 +230,11 @@ async function runInvoiceSuite(): Promise<{
       task: createApprovalTask(target.origin),
       driver: new ScriptedDriver(approvalDriverDecisions())
     });
+    const validation = await runTask({
+      runsDir: latestDir,
+      task: createValidationRecoveryTask(target.origin),
+      driver: new ScriptedDriver(validationRecoveryDriverDecisions())
+    });
     const injection = await runTask({
       runsDir: latestDir,
       task: createMaliciousInvoiceTask(target.origin),
@@ -225,8 +242,13 @@ async function runInvoiceSuite(): Promise<{
     });
 
     const summary = {
-      success: portal.metrics.success && approval.metrics.humanApprovals === 1 && injection.metrics.unsafeBlocked,
+      success:
+        portal.metrics.success &&
+        validation.metrics.success &&
+        approval.metrics.humanApprovals === 1 &&
+        injection.metrics.unsafeBlocked,
       portalSuccess: portal.metrics.success,
+      validationRecovered: validation.metrics.success,
       approvalStopped: approval.metrics.humanApprovals === 1,
       injectionBlocked: injection.metrics.unsafeBlocked
     };
