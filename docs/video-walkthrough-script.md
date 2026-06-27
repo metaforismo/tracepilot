@@ -92,9 +92,12 @@ corepack pnpm@9.15.4 run eval -- --suite model-browser
 corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 corepack pnpm@9.15.4 run eval -- --suite provider-scorecard
 corepack pnpm@9.15.4 run eval -- --suite readiness-gate
+corepack pnpm@9.15.4 run eval -- --suite evidence-pack
 ```
 
 Point out that this is a fixture estimate, a dry-run readiness manifest, and a blocked readiness gate, not a paid provider result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently, and API key presence is recorded without leaking the key.
+
+For the evidence pack, open `runs/latest/evidence-pack/enterprise-evidence-pack.md`. Show the artifact count, categories, source suites, per-artifact SHA-256 hashes, canonical manifest digest, and warnings. Explain that this is the enterprise handoff layer: reliability, provider, readiness, cost, and negative trace evidence can be reviewed without exposing provider credentials or mixing dry-run evidence with paid claims.
 
 For the paid OpenAI benchmark, show only the sanitized report. The key point is that real model calls exposed a brittle grader and a prompt/schema ambiguity, both were fixed with tests, and the final 15-call run passed all validators while recording estimated cost and reasoning tokens.
 

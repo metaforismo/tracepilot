@@ -28,6 +28,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Studio readiness dashboard that renders the default gate decision, thresholds, evidence classes, rule outcomes, and warnings.
 - Studio scorecard drilldowns for provider and reliability evidence, with generated `runs/latest` artifact loading and committed fixture fallback for clean clones.
 - Studio model-evidence trace replay for a negative browser-control run, including `model_api` metadata, selected-step token/cost details, budget-stop state, and preserved driver failure details.
+- Enterprise evidence-pack suite that emits redacted artifacts, per-artifact SHA-256 hashes, a canonical manifest digest, and a Markdown audit readout across readiness, provider, reliability, cost, and model-trace evidence.
 
 ## Verification Commands
 
@@ -45,6 +46,7 @@ corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 corepack pnpm@9.15.4 run eval -- --suite model-browser
 corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
+corepack pnpm@9.15.4 run eval -- --suite evidence-pack
 ```
 
 ## Current Results
@@ -70,6 +72,7 @@ corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 | Anthropic computer-use dry run | `anthropic-computer-use status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0 report=...` |
 | Anthropic computer-use mocked integration | Mocked Anthropic `tool_use` responses completed the real browser legacy portal workflow in `11` steps with `model_api` trace metadata |
 | Anthropic computer-use mocked modal integration | Mocked Anthropic `tool_use` responses dismissed a blocking portal notice and completed the same interrupted browser workflow in `11` steps |
+| Enterprise evidence pack | `evidence-pack artifacts=14 redacted=0 manifest=... report=...` |
 
 ## Eval Coverage
 
@@ -195,6 +198,14 @@ It is a dry run by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODE
 
 The current verification uses mocked Anthropic Messages API responses but real Playwright browser execution, including the interrupted portal workflow. That keeps the provider boundary honest: the run proves request construction, action parsing, verifier integration, trace writing, cost accounting, and secret-safe reports, but it is not a paid Anthropic model-performance result.
 
+### Enterprise Evidence-Pack Suite
+
+The evidence-pack suite writes `runs/latest/evidence-pack/enterprise-evidence-pack.json`, `runs/latest/evidence-pack/enterprise-evidence-pack.md`, and redacted artifact copies under `runs/latest/evidence-pack/artifacts/`.
+
+The default pack collects readiness-gate inputs and decision, nested reliability and provider scorecards, diagnosis artifacts, the model cost ledger, and the committed model-browser negative trace. Each copied artifact is redacted before it is written into the pack, then hashed with SHA-256. The manifest also has a canonical SHA-256 digest over the artifact metadata, summary, policy, and warnings.
+
+This is the enterprise review boundary: a team can inspect which evidence was included, verify file integrity, see whether any artifacts were redacted, and keep dry-run provider evidence separate from paid provider claims.
+
 ## Limitations
 
 - This is a local deterministic suite, not an OSWorld-scale benchmark.
@@ -208,6 +219,7 @@ The current verification uses mocked Anthropic Messages API responses but real P
 - The OpenAI paid run is a small operational benchmark and harness-readiness check, not a broad model-quality ranking.
 - The model-browser paid runs are small operational browser-control checks, not broad computer-use model rankings.
 - The Anthropic computer-use result is mocked at the API boundary until a real paid run is explicitly enabled.
+- Evidence-pack hashes cover redacted evidence-pack artifacts, not unredacted source files.
 - The invoice fixtures are HTML first; PDF and spreadsheet fixtures are planned after the browser workflow remains stable.
 
 ## Next Measurements

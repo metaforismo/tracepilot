@@ -26,6 +26,7 @@ import { runAnthropicComputerUseSuite } from "./anthropic-computer-use-suite.js"
 import { runReliabilityScorecardSuite } from "./reliability-scorecard-suite.js";
 import { runProviderScorecardSuite } from "./provider-scorecard-suite.js";
 import { runReadinessGateSuite } from "./readiness-gate-suite.js";
+import { runEvidencePackSuite } from "./evidence-pack-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -47,12 +48,20 @@ if (
   values.suite !== "model-readiness" &&
   values.suite !== "openai-benchmark" &&
   values.suite !== "model-browser" &&
-  values.suite !== "anthropic-computer-use"
+  values.suite !== "anthropic-computer-use" &&
+  values.suite !== "evidence-pack"
 ) {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-if (values.suite === "anthropic-computer-use") {
+if (values.suite === "evidence-pack") {
+  const result = await runEvidencePackSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "evidence-pack")
+  });
+  console.log(
+    `evidence-pack artifacts=${result.manifest.summary.totalArtifacts} redacted=${result.manifest.summary.redactedArtifacts} manifest=${result.artifacts.manifestPath} report=${result.artifacts.reportPath}`
+  );
+} else if (values.suite === "anthropic-computer-use") {
   const result = await runAnthropicComputerUseSuite({
     runsDir: join(process.cwd(), "runs", "latest", "anthropic-computer-use")
   });
