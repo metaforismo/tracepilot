@@ -37,6 +37,7 @@ describe("TracePilot Studio", () => {
     await expectText("Readiness gate");
     await expectText("Provider scorecard");
     await expectText("Reliability scorecard");
+    await expectText("Model browser negative run");
   }, 15000);
 
   it("renders the trace replay surface", async () => {
@@ -46,6 +47,28 @@ describe("TracePilot Studio", () => {
     await expectText("Inspector");
     await expectText("Deterministic evaluator found expected success state.");
     await expect(page!.locator("img[alt='Observation step-1']").count()).resolves.toBe(1);
+  }, 15000);
+
+  it("renders model API evidence for a failed browser-control run", async () => {
+    await page!.goto(`${origin}/runs/model-browser-negative`, { waitUntil: "networkidle" });
+
+    await expectText("Model API evidence");
+    await expectText("gpt-5.4-nano");
+    await expectText("model_api");
+    await expectText("Total model cost");
+    await expectText("$0.010408");
+    await expectText("Budget exceeded");
+    await expectText("Driver decision failed");
+    await expectText("OpenAI Responses output did not contain a JSON decision object.");
+
+    await page!.getByRole("link", { name: /#1/ }).click();
+    await page!.waitForURL(`${origin}/runs/model-browser-negative?step=1`);
+    expect(page!.url()).toBe(`${origin}/runs/model-browser-negative?step=1`);
+    await expectText("Selected model decision");
+    await expectText("Input tokens");
+    await expectText("4,210");
+    await expectText("Reasoning tokens");
+    await expectText("42");
   }, 15000);
 
   it("renders the failure diagnostics surface", async () => {

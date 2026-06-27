@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, RotateCcw } from "lucide-react";
 import { MetricsStrip } from "../../../components/MetricsStrip";
+import { ModelEvidencePanel } from "../../../components/ModelEvidencePanel";
 import { ScreenshotPanel } from "../../../components/ScreenshotPanel";
 import { TraceTimeline } from "../../../components/TraceTimeline";
 import { loadRun, selectStep } from "../../../lib/trace-fixtures";
@@ -65,35 +66,38 @@ export default async function RunPage({ params, searchParams }: PageProps) {
             <TraceTimeline runId={run.id} steps={run.steps} selectedStep={selectedStep} />
           </div>
 
-          <section className="panel" aria-label="Step inspector">
-            <div className="panelHeader">
-              <h2>Inspector</h2>
-              <span className="meta">{selectedStep.latencyMs}ms</span>
-            </div>
-            <div className="inspector">
-              <div className="detailBlock">
-                <h3>Action</h3>
-                <pre className="codeBlock">{JSON.stringify(selectedStep.decision.action, null, 2)}</pre>
+          <div className="panelStack">
+            <ModelEvidencePanel metrics={run.metrics} selectedStep={selectedStep} steps={run.steps} />
+
+            <section className="panel" aria-label="Step inspector">
+              <div className="panelHeader">
+                <h2>Inspector</h2>
+                <span className="meta">{selectedStep.latencyMs}ms</span>
               </div>
-              <div className="detailBlock">
-                <h3>Reasoning</h3>
-                <p>{selectedStep.decision.reasoning}</p>
-              </div>
-              <div className="detailBlock">
-                <h3>Verifier</h3>
-                <p>{selectedStep.verifier.reason}</p>
-              </div>
-              {selectedStep.verifier.suggestedRecovery ? (
+              <div className="inspector">
                 <div className="detailBlock">
-                  <h3>Recovery</h3>
-                  <p>{selectedStep.verifier.suggestedRecovery}</p>
+                  <h3>Action</h3>
+                  <pre className="codeBlock">{JSON.stringify(selectedStep.decision.action, null, 2)}</pre>
                 </div>
-              ) : null}
-            </div>
-          </section>
+                <div className="detailBlock">
+                  <h3>Reasoning</h3>
+                  <p>{selectedStep.decision.reasoning}</p>
+                </div>
+                <div className="detailBlock">
+                  <h3>Verifier</h3>
+                  <p>{selectedStep.verifier.reason}</p>
+                </div>
+                {selectedStep.verifier.suggestedRecovery ? (
+                  <div className="detailBlock">
+                    <h3>Recovery</h3>
+                    <p>{selectedStep.verifier.suggestedRecovery}</p>
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          </div>
         </div>
       </section>
     </main>
   );
 }
-

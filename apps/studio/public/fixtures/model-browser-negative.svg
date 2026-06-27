@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Legacy AP Portal model-browser negative fixture</title>
+  <desc id="desc">A legacy invoice form showing ambiguous focus around vendor and amount fields.</desc>
+  <rect width="1280" height="720" fill="#eef2f3"/>
+  <rect x="88" y="64" width="1104" height="592" rx="8" fill="#ffffff" stroke="#bcc7cb"/>
+  <rect x="88" y="64" width="1104" height="72" rx="8" fill="#111619"/>
+  <text x="124" y="110" fill="#ffffff" font-family="Arial, sans-serif" font-size="26" font-weight="700">Legacy AP Portal</text>
+  <text x="1012" y="108" fill="#c7d0d3" font-family="Arial, sans-serif" font-size="15">Browser-control trace</text>
+  <rect x="124" y="170" width="694" height="414" rx="6" fill="#f9fbfb" stroke="#d9e0e2"/>
+  <text x="156" y="218" fill="#111619" font-family="Arial, sans-serif" font-size="22" font-weight="700">Invoice entry</text>
+  <text x="156" y="262" fill="#687276" font-family="Arial, sans-serif" font-size="14" font-weight="700">Vendor</text>
+  <rect x="156" y="276" width="438" height="48" rx="4" fill="#ffffff" stroke="#ad6a00" stroke-width="3"/>
+  <text x="176" y="307" fill="#111619" font-family="Arial, sans-serif" font-size="16">Acme Labs</text>
+  <rect x="584" y="287" width="2" height="25" fill="#ad6a00"/>
+  <text x="156" y="350" fill="#687276" font-family="Arial, sans-serif" font-size="14" font-weight="700">Amount</text>
+  <rect x="156" y="364" width="438" height="48" rx="4" fill="#ffffff" stroke="#bcc7cb" stroke-width="2"/>
+  <text x="176" y="395" fill="#9aa4a8" font-family="Arial, sans-serif" font-size="16">Expected 1200</text>
+  <text x="156" y="438" fill="#687276" font-family="Arial, sans-serif" font-size="14" font-weight="700">Invoice date</text>
+  <rect x="156" y="452" width="438" height="48" rx="4" fill="#ffffff" stroke="#bcc7cb" stroke-width="2"/>
+  <text x="176" y="483" fill="#9aa4a8" font-family="Arial, sans-serif" font-size="16">2026-06-27</text>
+  <rect x="156" y="526" width="142" height="42" rx="4" fill="#0c7a53"/>
+  <text x="186" y="553" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="700">Save invoice</text>
+  <rect x="846" y="170" width="308" height="198" rx="6" fill="#fff4dd" stroke="#e7bd6f"/>
+  <text x="872" y="214" fill="#ad6a00" font-family="Arial, sans-serif" font-size="17" font-weight="700">Verifier warning</text>
+  <text x="872" y="250" fill="#5f4b1e" font-family="Arial, sans-serif" font-size="15">The typed value is visible, but the</text>
+  <text x="872" y="274" fill="#5f4b1e" font-family="Arial, sans-serif" font-size="15">focus target remains ambiguous.</text>
+  <text x="872" y="314" fill="#5f4b1e" font-family="Arial, sans-serif" font-size="15">TracePilot should preserve this as</text>
+  <text x="872" y="338" fill="#5f4b1e" font-family="Arial, sans-serif" font-size="15">failure evidence, not hide it.</text>
+  <rect x="846" y="392" width="308" height="192" rx="6" fill="#fff0f0" stroke="#e3a4a4"/>
+  <text x="872" y="436" fill="#ad2f2f" font-family="Arial, sans-serif" font-size="17" font-weight="700">Driver failure</text>
+  <text x="872" y="472" fill="#5f2525" font-family="Arial, sans-serif" font-size="15">The model response did not contain</text>
+  <text x="872" y="496" fill="#5f2525" font-family="Arial, sans-serif" font-size="15">a valid JSON action object.</text>
+  <text x="872" y="536" fill="#5f2525" font-family="Arial, sans-serif" font-size="15">Budget stop kept the failure bounded.</text>
+</svg>
