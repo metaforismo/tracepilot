@@ -18,6 +18,7 @@ TracePilot evals measure whether a computer-use harness improves reliability in 
 | `comparison` | `corepack pnpm@9.15.4 run eval -- --suite comparison` | Compares a naive deterministic baseline with the TracePilot harness across happy path, false completion, validation recovery, approval, and prompt-injection cases. |
 | `reliability-scorecard` | `corepack pnpm@9.15.4 run eval -- --suite reliability-scorecard` | Reruns the harder deterministic browser workflows and aggregates success, false-completion, stuck-loop, unsafe-block, and approval-stop rates. |
 | `provider-scorecard` | `corepack pnpm@9.15.4 run eval -- --suite provider-scorecard` | Runs a dry-run by default, or an env-gated OpenAI/Anthropic browser-control scorecard over shared hard tasks. |
+| `readiness-gate` | `corepack pnpm@9.15.4 run eval -- --suite readiness-gate` | Converts reliability and provider scorecards into a pass/warn/fail/blocked operational gate with confidence bounds, cost limits, and dry-run blocking. |
 | `cost-ledger` | `corepack pnpm@9.15.4 run eval -- --suite cost-ledger` | Writes source-aware model cost accounting artifacts without making a paid model call. |
 | `model-readiness` | `corepack pnpm@9.15.4 run eval -- --suite model-readiness` | Writes an env-gated model-run manifest that explains whether a paid model call was disabled, blocked, or executed. |
 | `openai-benchmark` | `corepack pnpm@9.15.4 run eval -- --suite openai-benchmark` | Runs a dry-run by default, or an env-gated OpenAI Responses API benchmark with task validators, reasoning-effort capture, and a cost circuit breaker. |
@@ -52,6 +53,14 @@ The provider-scorecard suite writes:
 - `runs/latest/provider-scorecard/provider-diagnosis.md`.
 
 The default CLI run is a dry run that plans 6 rows: OpenAI and Anthropic over `legacy-portal`, `modal-interruption`, and `prompt-injection`. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, the relevant provider keys, and `TRACEPILOT_PROVIDER_SCORECARD_MAX_USD`. Prompt-injection blocks are counted as successful policy outcomes while still appearing as blocked diagnoses.
+
+The readiness-gate suite writes:
+
+- `runs/latest/readiness-gate/readiness-inputs.json`;
+- `runs/latest/readiness-gate/readiness-gate.json`;
+- `runs/latest/readiness-gate/readiness-gate.md`.
+
+The default CLI run executes the deterministic reliability scorecard once, runs the provider scorecard in dry-run mode unless paid provider runs are explicitly enabled, and emits a `blocked` decision when provider evidence is planned but not executed. The gate uses Wilson confidence intervals for success, false-completion, and stuck-loop rates; dry-run provider evidence cannot pass readiness.
 
 ## Cost Artifacts
 
@@ -136,6 +145,7 @@ This suite validates the Anthropic adapter boundary without silently mixing it w
 - Do not publish mocked Anthropic computer-use runs as paid model results; use them as adapter and harness evidence until a real paid run exists.
 - Do not publish deterministic reliability-scorecard success as provider model quality; use it as harness repeatability evidence and as the control for paid provider scorecards.
 - Do not publish provider-scorecard dry runs or mocked integration tests as provider quality; use them as adapter, harness, and reporting evidence until real paid runs are explicitly enabled.
+- Do not treat readiness-gate pass/warn/fail/blocked decisions as model rankings; they are release-style operational gates over the evidence actually executed.
 - Do not mix local deterministic evals with external benchmark claims.
 - Keep failed tasks in the report and label failure class.
 - Include trace artifacts for representative successes and failures.

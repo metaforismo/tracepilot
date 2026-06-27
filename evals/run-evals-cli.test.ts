@@ -137,6 +137,28 @@ describe("run-evals CLI", () => {
     expect(stdout).not.toContain("test-anthropic-key");
   }, 30_000);
 
+  test("runs the readiness gate suite without leaking provider keys", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "readiness-gate"],
+      {
+        cwd: process.cwd(),
+        timeout: 90_000,
+        env: {
+          ...process.env,
+          OPENAI_API_KEY: "test-openai-key",
+          ANTHROPIC_API_KEY: "test-anthropic-key",
+          TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
+        }
+      }
+    );
+
+    expect(stdout).toContain("readiness-gate decision=blocked reliability_runs=5 provider_executed_runs=0");
+    expect(stdout).toContain("report=");
+    expect(stdout).not.toContain("test-openai-key");
+    expect(stdout).not.toContain("test-anthropic-key");
+  }, 90_000);
+
   test("runs the model cost-ledger suite with source-aware accounting", async () => {
     const { stdout } = await execFileAsync(
       "corepack",

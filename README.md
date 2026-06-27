@@ -115,12 +115,13 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - Anthropic computer-use suite that runs the same browser workflow contracts behind explicit paid-run gates.
 - repeated reliability scorecard suite that reruns hard browser workflows and reports success, false-completion, stuck-loop, unsafe-block, and approval-stop rates.
 - provider reliability scorecard that can run OpenAI and Anthropic browser-control adapters across the same hard tasks behind explicit paid-run gates.
+- readiness gate that turns reliability and provider scorecards into pass/warn/fail/blocked operational decisions with confidence bounds and cost thresholds.
 
 Next build slices:
 
 1. Paid Anthropic Computer Use run evidence once an Anthropic key is available.
-2. Repeated paid provider scorecards with confidence intervals and preserved failed traces.
-3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, and scorecard drilldowns.
+2. Repeated paid provider scorecards with preserved failed traces.
+3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, readiness gates, and scorecard drilldowns.
 
 ## Run Locally
 
@@ -132,6 +133,7 @@ corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
 corepack pnpm@9.15.4 run eval -- --suite reliability-scorecard
 corepack pnpm@9.15.4 run eval -- --suite provider-scorecard
+corepack pnpm@9.15.4 run eval -- --suite readiness-gate
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
@@ -173,6 +175,14 @@ provider-scorecard status=skipped_paid_runs_disabled planned_runs=6 executed_run
 ```
 
 The provider-scorecard suite is the cross-provider browser-control path. By default it writes a dry-run plan under `runs/latest/provider-scorecard/`. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, provider API keys, and a budget such as `TRACEPILOT_PROVIDER_SCORECARD_MAX_USD=0.5`. The default task set is `legacy-portal`, `modal-interruption`, and `prompt-injection` across OpenAI and Anthropic adapters.
+
+Expected readiness-gate output:
+
+```text
+readiness-gate decision=blocked reliability_runs=5 provider_executed_runs=0 report=...
+```
+
+The readiness-gate suite runs the deterministic reliability scorecard and the provider scorecard dry-run by default, then writes `runs/latest/readiness-gate/readiness-inputs.json`, `readiness-gate.json`, and `readiness-gate.md`. The default decision is `blocked` because provider rows are planned but not executed. Real provider readiness requires explicitly enabled paid provider scorecards; dry-run evidence is never treated as provider quality.
 
 Expected cost-ledger output:
 
@@ -233,6 +243,7 @@ The Anthropic computer-use suite is also env-gated. It makes no paid calls unles
 - [Baseline Comparison](docs/results/baseline-comparison.md)
 - [Reliability Scorecard](docs/results/reliability-scorecard.md)
 - [Provider Scorecard](docs/results/provider-scorecard.md)
+- [Readiness Gate](docs/results/readiness-gate.md)
 - [Failure Diagnosis](docs/results/failure-diagnosis.md)
 - [Model Cost Ledger](docs/results/model-cost-ledger.md)
 - [Model Run Readiness](docs/results/model-readiness.md)
