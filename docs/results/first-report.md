@@ -29,6 +29,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Studio scorecard drilldowns for provider and reliability evidence, with generated `runs/latest` artifact loading and committed fixture fallback for clean clones.
 - Studio model-evidence trace replay for a negative browser-control run, including `model_api` metadata, selected-step token/cost details, budget-stop state, and preserved driver failure details.
 - Enterprise evidence-pack suite that emits redacted artifacts, per-artifact SHA-256 hashes, a canonical manifest digest, and a Markdown audit readout across readiness, provider, reliability, cost, and model-trace evidence.
+- Enterprise evidence-pack verifier that rechecks manifest integrity, copied artifact hashes, byte counts, required evidence classes, and provider-secret redaction before a pack is trusted.
 
 ## Verification Commands
 
@@ -47,6 +48,7 @@ corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 corepack pnpm@9.15.4 run eval -- --suite model-browser
 corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 corepack pnpm@9.15.4 run eval -- --suite evidence-pack
+corepack pnpm@9.15.4 run eval -- --suite evidence-pack-verify
 ```
 
 ## Current Results
@@ -73,6 +75,7 @@ corepack pnpm@9.15.4 run eval -- --suite evidence-pack
 | Anthropic computer-use mocked integration | Mocked Anthropic `tool_use` responses completed the real browser legacy portal workflow in `11` steps with `model_api` trace metadata |
 | Anthropic computer-use mocked modal integration | Mocked Anthropic `tool_use` responses dismissed a blocking portal notice and completed the same interrupted browser workflow in `11` steps |
 | Enterprise evidence pack | `evidence-pack artifacts=14 redacted=0 manifest=... report=...` |
+| Enterprise evidence-pack verifier | `evidence-pack-verify decision=pass artifacts=14 errors=0 warnings=0 report=...` |
 
 ## Eval Coverage
 
@@ -206,6 +209,14 @@ The default pack collects readiness-gate inputs and decision, nested reliability
 
 This is the enterprise review boundary: a team can inspect which evidence was included, verify file integrity, see whether any artifacts were redacted, and keep dry-run provider evidence separate from paid provider claims.
 
+### Enterprise Evidence-Pack Verifier
+
+The evidence-pack verifier writes `runs/latest/evidence-pack-verify/enterprise-evidence-pack-verification.json` and `runs/latest/evidence-pack-verify/enterprise-evidence-pack-verification.md`.
+
+It generates a fresh pack, reads the copied redacted artifacts from disk, and verifies the pack as an offline audit object. The verifier fails if the manifest digest no longer matches, if copied artifacts are missing or tampered, if byte counts differ, if the pack lacks required enterprise evidence categories or source suites, or if copied artifacts still contain unredacted provider credential patterns.
+
+This turns the evidence pack from a report into a checkable contract: an external reviewer can distinguish an intact, complete, redacted bundle from a modified folder of files.
+
 ## Limitations
 
 - This is a local deterministic suite, not an OSWorld-scale benchmark.
@@ -220,6 +231,7 @@ This is the enterprise review boundary: a team can inspect which evidence was in
 - The model-browser paid runs are small operational browser-control checks, not broad computer-use model rankings.
 - The Anthropic computer-use result is mocked at the API boundary until a real paid run is explicitly enabled.
 - Evidence-pack hashes cover redacted evidence-pack artifacts, not unredacted source files.
+- Evidence-pack verification is an integrity and completeness check, not a cryptographic signature; teams should compare the manifest SHA-256 against an out-of-band digest when exchanging packs.
 - The invoice fixtures are HTML first; PDF and spreadsheet fixtures are planned after the browser workflow remains stable.
 
 ## Next Measurements

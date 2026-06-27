@@ -5,6 +5,11 @@ export {
   redactEvidenceText,
   renderEvidencePackMarkdown
 } from "./evidence-pack.js";
+export {
+  defaultEnterpriseEvidencePackRequirements,
+  renderEvidencePackVerificationMarkdown,
+  verifyEvidencePack
+} from "./evidence-pack-verifier.js";
 export { diagnoseEvalResults } from "./failure-diagnosis.js";
 export { buildModelRunManifest } from "./model-run-manifest.js";
 export {
@@ -59,6 +64,17 @@ export type {
   EvidencePackManifestInput,
   EvidenceRedaction
 } from "./evidence-pack.js";
+export type {
+  EvidencePackArtifactContent,
+  EvidencePackCheckedArtifact,
+  EvidencePackCheckedArtifactStatus,
+  EvidencePackVerificationDecision,
+  EvidencePackVerificationInput,
+  EvidencePackVerificationIssue,
+  EvidencePackVerificationIssueCode,
+  EvidencePackVerificationReport,
+  EvidencePackVerificationSeverity
+} from "./evidence-pack-verifier.js";
 export type {
   ReadinessGateDecision,
   ReadinessGateInput,

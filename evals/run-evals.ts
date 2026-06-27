@@ -27,6 +27,7 @@ import { runReliabilityScorecardSuite } from "./reliability-scorecard-suite.js";
 import { runProviderScorecardSuite } from "./provider-scorecard-suite.js";
 import { runReadinessGateSuite } from "./readiness-gate-suite.js";
 import { runEvidencePackSuite } from "./evidence-pack-suite.js";
+import { runEvidencePackVerifySuite } from "./evidence-pack-verify-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -49,12 +50,20 @@ if (
   values.suite !== "openai-benchmark" &&
   values.suite !== "model-browser" &&
   values.suite !== "anthropic-computer-use" &&
-  values.suite !== "evidence-pack"
+  values.suite !== "evidence-pack" &&
+  values.suite !== "evidence-pack-verify"
 ) {
   throw new Error(`Unknown eval suite: ${values.suite}`);
 }
 
-if (values.suite === "evidence-pack") {
+if (values.suite === "evidence-pack-verify") {
+  const result = await runEvidencePackVerifySuite({
+    runsDir: join(process.cwd(), "runs", "latest", "evidence-pack-verify")
+  });
+  console.log(
+    `evidence-pack-verify decision=${result.report.decision} artifacts=${result.report.summary.verifiedArtifacts} errors=${result.report.summary.errors} warnings=${result.report.summary.warnings} report=${result.artifacts.reportMarkdownPath}`
+  );
+} else if (values.suite === "evidence-pack") {
   const result = await runEvidencePackSuite({
     runsDir: join(process.cwd(), "runs", "latest", "evidence-pack")
   });
