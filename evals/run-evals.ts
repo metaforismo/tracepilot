@@ -25,6 +25,7 @@ import { runModelBrowserSuite } from "./model-browser-suite.js";
 import { runAnthropicComputerUseSuite } from "./anthropic-computer-use-suite.js";
 import { runReliabilityScorecardSuite } from "./reliability-scorecard-suite.js";
 import { runProviderScorecardSuite } from "./provider-scorecard-suite.js";
+import { runReadinessGateSuite } from "./readiness-gate-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -41,6 +42,7 @@ if (
   values.suite !== "comparison" &&
   values.suite !== "reliability-scorecard" &&
   values.suite !== "provider-scorecard" &&
+  values.suite !== "readiness-gate" &&
   values.suite !== "cost-ledger" &&
   values.suite !== "model-readiness" &&
   values.suite !== "openai-benchmark" &&
@@ -112,6 +114,16 @@ if (values.suite === "anthropic-computer-use") {
   });
   console.log(
     `provider-scorecard status=${result.summary.status} planned_runs=${result.summary.plannedRuns} executed_runs=${result.summary.executedRuns} success_rate=${formatPercent(result.summary.successRate)} total_cost_usd=${result.summary.totalCostUsd} report=${result.artifacts.reportPath} diagnosis=${result.artifacts.diagnosisReportPath}`
+  );
+} else if (values.suite === "readiness-gate") {
+  const result = await runReadinessGateSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "readiness-gate"),
+    ...(values.repetitions === undefined
+      ? {}
+      : { reliabilityRepetitions: parsePositiveInteger("repetitions", values.repetitions) })
+  });
+  console.log(
+    `readiness-gate decision=${result.gate.decision} reliability_runs=${result.inputs.reliability.runs} provider_executed_runs=${result.inputs.provider.executedRuns} report=${result.artifacts.reportPath}`
   );
 } else if (values.suite === "invoice") {
   const summary = await runInvoiceSuite();

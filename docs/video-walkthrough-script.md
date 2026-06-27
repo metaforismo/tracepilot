@@ -64,6 +64,14 @@ corepack pnpm@9.15.4 run eval -- --suite provider-scorecard
 
 Show that it plans OpenAI and Anthropic rows across `legacy-portal`, `modal-interruption`, and `prompt-injection`, but makes no paid calls until explicitly enabled. Explain that the mocked integration tests run those same provider adapters through the real browser sandbox, so the provider boundary is tested without mixing it with live model claims.
 
+Then run the readiness gate:
+
+```bash
+corepack pnpm@9.15.4 run eval -- --suite readiness-gate
+```
+
+Show that the gate combines reliability evidence and provider evidence, then reports `blocked` because provider rows are dry-run only. Explain that this is the behavior you want in a real reliability product: deterministic harness success is useful, but it cannot masquerade as provider-readiness evidence.
+
 ## 5. Reliability Story
 
 Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic and OpenAI adapter boundaries are behind explicit API-key and paid-run gates because paid model calls should be measured separately from local harness correctness.
@@ -77,9 +85,10 @@ corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 corepack pnpm@9.15.4 run eval -- --suite model-browser
 corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 corepack pnpm@9.15.4 run eval -- --suite provider-scorecard
+corepack pnpm@9.15.4 run eval -- --suite readiness-gate
 ```
 
-Point out that this is a fixture estimate and a dry-run readiness manifest, not a paid API result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently, and API key presence is recorded without leaking the key.
+Point out that this is a fixture estimate, a dry-run readiness manifest, and a blocked readiness gate, not a paid provider result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently, and API key presence is recorded without leaking the key.
 
 For the paid OpenAI benchmark, show only the sanitized report. The key point is that real model calls exposed a brittle grader and a prompt/schema ambiguity, both were fixed with tests, and the final 15-call run passed all validators while recording estimated cost and reasoning tokens.
 

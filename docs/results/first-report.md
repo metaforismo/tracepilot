@@ -24,6 +24,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Anthropic computer-use eval suite with dry-run gates, mocked browser integration coverage, and sanitized reports.
 - Reliability scorecard suite that reruns hard browser workflows and aggregates success, false-completion, stuck-loop, unsafe-block, and approval-stop rates.
 - Provider scorecard suite that runs OpenAI and Anthropic browser-control adapters over shared hard tasks behind explicit paid-run gates.
+- Readiness gate suite that converts reliability and provider scorecards into pass/warn/fail/blocked operational decisions with confidence bounds and cost thresholds.
 
 ## Verification Commands
 
@@ -35,6 +36,7 @@ corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
 corepack pnpm@9.15.4 run eval -- --suite reliability-scorecard
 corepack pnpm@9.15.4 run eval -- --suite provider-scorecard
+corepack pnpm@9.15.4 run eval -- --suite readiness-gate
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
@@ -47,13 +49,14 @@ corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 | Check | Result |
 | --- | --- |
 | Typecheck | Pass across 6 workspace projects |
-| Unit/integration tests | Pass, 99 tests |
+| Unit/integration tests | Pass, 106 tests |
 | Build | Pass across 6 workspace projects |
 | Smoke eval | `smoke-form success=true steps=2` |
 | Invoice eval | `invoice success=true portal=true validation=true approval=true injection=true` |
 | Comparison eval | `comparison success_delta=83.3% false_completion_delta=-50.0% report=... diagnosis=...` |
 | Reliability scorecard eval | `reliability-scorecard runs=5 repetitions=1 success_rate=100.0% false_completion_rate=0.0% stuck_loop_rate=0.0% report=... diagnosis=...` |
 | Provider scorecard dry run | `provider-scorecard status=skipped_paid_runs_disabled planned_runs=6 executed_runs=0 success_rate=0.0% total_cost_usd=0 report=... diagnosis=...` |
+| Readiness gate eval | `readiness-gate decision=blocked reliability_runs=5 provider_executed_runs=0 report=...` |
 | Cost-ledger eval | `cost-ledger model_runs=1 scripted_controls=1 total_cost_usd=0.30975 source=model_fixture ledger=... report=...` |
 | Model-readiness eval | `model-readiness provider=anthropic model=claude-sonnet-4-20250514 status=skipped_paid_runs_disabled source=dry_run paid_call=false manifest=... report=...` |
 | OpenAI benchmark dry run | `openai-benchmark status=skipped_paid_runs_disabled paid_calls=0 passed=0 failed=0 total_cost_usd=0 report=...` |
@@ -121,6 +124,14 @@ The default dry run plans 6 rows: OpenAI and Anthropic over `legacy-portal`, `mo
 
 The current mocked integration test runs both provider adapters through the real browser sandbox over the same three tasks. It verifies 6/6 successful policy outcomes, 0 false completions, 0 stuck loops, and 2 prompt-injection blocks while preserving model-style cost metadata in traces. This is adapter and harness evidence, not a live provider ranking.
 
+### Readiness Gate Suite
+
+The readiness gate suite writes `runs/latest/readiness-gate/readiness-inputs.json`, `runs/latest/readiness-gate/readiness-gate.json`, and `runs/latest/readiness-gate/readiness-gate.md`, plus nested reliability and provider scorecard artifacts.
+
+The default run executes the deterministic reliability scorecard once and runs the provider scorecard as a dry run unless paid provider calls are explicitly enabled. The current default decision is `blocked`: the reliability evidence has 5/5 successful policy outcomes with small-sample confidence warnings, but provider evidence has 0 executed rows because paid provider calls are disabled.
+
+The gate computes Wilson confidence intervals for success, false-completion, and stuck-loop rates, then reports `pass`, `warn`, `fail`, or `blocked` with rule-level evidence. This is a release-style operational gate over executed evidence, not a model ranking.
+
 ### Cost-Ledger Suite
 
 The cost-ledger suite writes `runs/latest/cost-ledger/model-cost-ledger.json` and `runs/latest/cost-ledger/model-cost-report.md`.
@@ -182,6 +193,7 @@ The current verification uses mocked Anthropic Messages API responses but real P
 - The comparison report does not yet use a paid model driver.
 - The reliability scorecard is deterministic harness evidence; it is not a paid provider quality ranking.
 - The provider scorecard dry run and mocked integration coverage are not live provider quality rankings.
+- The readiness gate currently blocks by design because provider evidence is dry-run only.
 - The cost-ledger result is a fixture estimate; paid model-browser measurements are reported separately.
 - The model-readiness result is a dry-run manifest, not model-performance evidence.
 - The OpenAI paid run is a small operational benchmark and harness-readiness check, not a broad model-quality ranking.
@@ -194,6 +206,6 @@ The current verification uses mocked Anthropic Messages API responses but real P
 The next report should add:
 
 - paid `model_api` cost per successful task across repeated browser-control runs;
-- confidence intervals for real paid provider-backed scorecards;
 - a real paid Anthropic Computer Use run under the same trace contract;
+- repeated paid provider-backed readiness gates with preserved failed traces;
 - provider failure-class scorecards over more browser workflows, including validation recovery and approval boundaries.
