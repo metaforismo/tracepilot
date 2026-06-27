@@ -119,6 +119,7 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - Studio readiness gate dashboard that surfaces operational decision, rule outcomes, thresholds, reliability evidence, provider evidence, and warnings.
 - Studio provider and reliability scorecard drilldowns that load generated `runs/latest` artifacts when present, fall back to committed fixtures in fresh clones, and expose row-level evidence behind readiness decisions.
 - Studio trace replay model-evidence panel that surfaces per-step `model_api` metadata, selected-step token/cost details, run-level budget stops, and driver decision failures.
+- enterprise evidence-pack suite that writes redacted artifacts, SHA-256 hashes, a canonical manifest digest, and a Markdown audit readout for readiness, provider, reliability, cost, and trace evidence.
 
 Next build slices:
 
@@ -142,6 +143,7 @@ corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 corepack pnpm@9.15.4 run eval -- --suite model-browser
 corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
+corepack pnpm@9.15.4 run eval -- --suite evidence-pack
 corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
@@ -186,6 +188,14 @@ readiness-gate decision=blocked reliability_runs=5 provider_executed_runs=0 repo
 ```
 
 The readiness-gate suite runs the deterministic reliability scorecard and the provider scorecard dry-run by default, then writes `runs/latest/readiness-gate/readiness-inputs.json`, `readiness-gate.json`, and `readiness-gate.md`. The default decision is `blocked` because provider rows are planned but not executed. Real provider readiness requires explicitly enabled paid provider scorecards; dry-run evidence is never treated as provider quality.
+
+Expected evidence-pack output:
+
+```text
+evidence-pack artifacts=14 redacted=0 manifest=... report=...
+```
+
+The evidence-pack suite creates `runs/latest/evidence-pack/enterprise-evidence-pack.json`, `enterprise-evidence-pack.md`, and a redacted `artifacts/` directory. The manifest records SHA-256 hashes for every redacted artifact and a canonical manifest digest, so readiness, provider, reliability, model-cost, and model-trace evidence can be handed to an enterprise reviewer without leaking provider credentials.
 
 Expected cost-ledger output:
 

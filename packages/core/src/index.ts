@@ -1,5 +1,10 @@
 export { createTraceStore } from "./trace-store.js";
 export { buildCostLedger, computeTokenCostUsd } from "./cost-ledger.js";
+export {
+  buildEvidencePackManifest,
+  redactEvidenceText,
+  renderEvidencePackMarkdown
+} from "./evidence-pack.js";
 export { diagnoseEvalResults } from "./failure-diagnosis.js";
 export { buildModelRunManifest } from "./model-run-manifest.js";
 export {
@@ -46,6 +51,14 @@ export type {
   VerifierResult,
   VerifierStatus
 } from "./types.js";
+export type {
+  EvidenceArtifactCategory,
+  EvidencePackArtifact,
+  EvidencePackArtifactInput,
+  EvidencePackManifest,
+  EvidencePackManifestInput,
+  EvidenceRedaction
+} from "./evidence-pack.js";
 export type {
   ReadinessGateDecision,
   ReadinessGateInput,
