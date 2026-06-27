@@ -14,7 +14,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Agent driver interface with deterministic `ScriptedDriver`.
 - Orchestrator loop: observe, decide, safety-check, act, verify, trace, measure.
 - Local target app with smoke form, invoice fixtures, legacy portal, approval gate, and prompt-injection fixture.
-- Next.js Studio with run launcher, metrics strip, screenshot panel, timeline, and inspector.
+- Next.js Studio with run launcher, metrics strip, screenshot panel, timeline, inspector, and readiness gate dashboard.
 - Model cost ledger with explicit source labels for scripted controls, model fixtures, dry runs, and future paid API calls.
 - Model run readiness manifest with env gates for paid execution and credential-safe reporting.
 - OpenAI Responses API benchmark with dry-run default, paid-run budget gate, task validators, reasoning-token capture, and sanitized runtime artifacts.
@@ -25,6 +25,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Reliability scorecard suite that reruns hard browser workflows and aggregates success, false-completion, stuck-loop, unsafe-block, and approval-stop rates.
 - Provider scorecard suite that runs OpenAI and Anthropic browser-control adapters over shared hard tasks behind explicit paid-run gates.
 - Readiness gate suite that converts reliability and provider scorecards into pass/warn/fail/blocked operational decisions with confidence bounds and cost thresholds.
+- Studio readiness dashboard that renders the default gate decision, thresholds, evidence classes, rule outcomes, and warnings.
 
 ## Verification Commands
 
@@ -131,6 +132,8 @@ The readiness gate suite writes `runs/latest/readiness-gate/readiness-inputs.jso
 The default run executes the deterministic reliability scorecard once and runs the provider scorecard as a dry run unless paid provider calls are explicitly enabled. The current default decision is `blocked`: the reliability evidence has 5/5 successful policy outcomes with small-sample confidence warnings, but provider evidence has 0 executed rows because paid provider calls are disabled.
 
 The gate computes Wilson confidence intervals for success, false-completion, and stuck-loop rates, then reports `pass`, `warn`, `fail`, or `blocked` with rule-level evidence. This is a release-style operational gate over executed evidence, not a model ranking.
+
+The Studio readiness dashboard renders the same default gate as a product surface: the blocked decision, thresholds, reliability evidence, provider evidence, rule table, and warnings are inspectable from `/readiness`.
 
 ### Cost-Ledger Suite
 

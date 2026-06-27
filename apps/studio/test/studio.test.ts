@@ -34,6 +34,7 @@ describe("TracePilot Studio", () => {
     await expectText("TracePilot Studio");
     await expectText("Run launcher");
     await expectText("Open trace");
+    await expectText("Readiness gate");
   }, 15000);
 
   it("renders the trace replay surface", async () => {
@@ -53,6 +54,18 @@ describe("TracePilot Studio", () => {
     await expectText("false-completion-before-receipt");
     await expectText("false_completion");
     await expectText("post_training_data");
+  }, 15000);
+
+  it("renders the readiness gate dashboard", async () => {
+    await page!.goto(`${origin}/readiness`, { waitUntil: "networkidle" });
+
+    await expectText("Readiness gate");
+    await expectText("Decision");
+    await expectText("blocked");
+    await expectText("Reliability evidence");
+    await expectText("Provider evidence");
+    await expectText("provider-executed-runs");
+    await expectText("Provider runs were not executed; status is skipped_paid_runs_disabled.");
   }, 15000);
 });
 
