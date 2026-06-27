@@ -120,6 +120,7 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - Studio provider and reliability scorecard drilldowns that load generated `runs/latest` artifacts when present, fall back to committed fixtures in fresh clones, and expose row-level evidence behind readiness decisions.
 - Studio trace replay model-evidence panel that surfaces per-step `model_api` metadata, selected-step token/cost details, run-level budget stops, and driver decision failures.
 - enterprise evidence-pack suite that writes redacted artifacts, SHA-256 hashes, a canonical manifest digest, and a Markdown audit readout for readiness, provider, reliability, cost, and trace evidence.
+- offline evidence-pack verifier that rechecks manifest digest, artifact hashes, byte counts, required enterprise evidence classes, and credential-redaction boundaries before a pack is trusted.
 
 Next build slices:
 
@@ -144,6 +145,7 @@ corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 corepack pnpm@9.15.4 run eval -- --suite model-browser
 corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
 corepack pnpm@9.15.4 run eval -- --suite evidence-pack
+corepack pnpm@9.15.4 run eval -- --suite evidence-pack-verify
 corepack pnpm@9.15.4 --filter @tracepilot/studio dev
 ```
 
@@ -196,6 +198,14 @@ evidence-pack artifacts=14 redacted=0 manifest=... report=...
 ```
 
 The evidence-pack suite creates `runs/latest/evidence-pack/enterprise-evidence-pack.json`, `enterprise-evidence-pack.md`, and a redacted `artifacts/` directory. The manifest records SHA-256 hashes for every redacted artifact and a canonical manifest digest, so readiness, provider, reliability, model-cost, and model-trace evidence can be handed to an enterprise reviewer without leaking provider credentials.
+
+Expected evidence-pack verifier output:
+
+```text
+evidence-pack-verify decision=pass artifacts=14 errors=0 warnings=0 report=...
+```
+
+The verifier suite creates a fresh evidence pack under `runs/latest/evidence-pack-verify/pack/`, then reads the copied redacted artifacts from disk and writes `enterprise-evidence-pack-verification.json` plus `enterprise-evidence-pack-verification.md`. It fails the pack if the manifest digest no longer matches, an artifact is missing, an artifact SHA-256 or byte count differs from the manifest, required enterprise evidence categories or source suites are absent, or copied artifacts contain unredacted provider credential patterns.
 
 Expected cost-ledger output:
 

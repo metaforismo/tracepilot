@@ -311,4 +311,28 @@ describe("run-evals CLI", () => {
     expect(stdout).not.toContain("test-openai-key");
     expect(stdout).not.toContain("test-anthropic-key");
   }, 120_000);
+
+  test("runs the enterprise evidence-pack verifier suite without leaking provider keys", async () => {
+    const { stdout } = await execFileAsync(
+      "corepack",
+      ["pnpm@9.15.4", "exec", "tsx", "evals/run-evals.ts", "--", "--suite", "evidence-pack-verify"],
+      {
+        cwd: process.cwd(),
+        timeout: 120_000,
+        env: {
+          ...process.env,
+          OPENAI_API_KEY: "test-openai-key",
+          ANTHROPIC_API_KEY: "test-anthropic-key",
+          TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
+        }
+      }
+    );
+
+    expect(stdout).toContain("evidence-pack-verify decision=pass");
+    expect(stdout).toContain("errors=0");
+    expect(stdout).toContain("warnings=0");
+    expect(stdout).toContain("report=");
+    expect(stdout).not.toContain("test-openai-key");
+    expect(stdout).not.toContain("test-anthropic-key");
+  }, 120_000);
 });
