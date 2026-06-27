@@ -17,7 +17,14 @@ export function TraceTimeline({ runId, steps, selectedStep }: { runId: string; s
           >
             <span className="mono">#{step.stepIndex}</span>
             <span>{step.decision.action.kind}</span>
-            <span>{step.verifier.reason}</span>
+            <span className="timelineReason">
+              <span>{step.verifier.reason}</span>
+              <span className="timelineBadges" aria-label={`Step ${step.stepIndex} evidence`}>
+                {step.decision.modelRun ? <span className="stepBadge">model_api</span> : null}
+                {step.tokenCostUsd !== undefined ? <span className="stepBadge">{formatUsd(step.tokenCostUsd)}</span> : null}
+                {isDriverDecisionFailure(step) ? <span className="stepBadge failure">driver failure</span> : null}
+              </span>
+            </span>
             <span className={`status ${step.verifier.status}`}>{step.verifier.status}</span>
           </Link>
         ))}
@@ -26,3 +33,15 @@ export function TraceTimeline({ runId, steps, selectedStep }: { runId: string; s
   );
 }
 
+function isDriverDecisionFailure(step: TraceStep): boolean {
+  return step.decision.reasoning.startsWith("Driver decision failed:");
+}
+
+function formatUsd(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 6,
+    minimumFractionDigits: 6,
+    style: "currency"
+  }).format(value);
+}

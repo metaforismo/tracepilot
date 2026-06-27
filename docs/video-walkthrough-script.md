@@ -76,6 +76,8 @@ Open `/readiness` in Studio and show the same blocked decision in the product UI
 
 Open `/scorecards/provider` and `/scorecards/reliability` to show the underlying rows that explain the readiness decision: provider rows are dry-run only, while deterministic reliability rows are executed and repeatable.
 
+Open `/runs/model-browser-negative`. Show the model-evidence panel: total model cost, budget-exceeded state, provider/model metadata, selected-step token usage, reasoning tokens, pricing, and the driver decision failure. Explain that this is the useful product behavior after a real browser-control failure: the run is bounded, inspectable, and tied to a specific failure class rather than disappearing into a generic model error.
+
 ## 5. Reliability Story
 
 Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic and OpenAI adapter boundaries are behind explicit API-key and paid-run gates because paid model calls should be measured separately from local harness correctness.
@@ -97,6 +99,8 @@ Point out that this is a fixture estimate, a dry-run readiness manifest, and a b
 For the paid OpenAI benchmark, show only the sanitized report. The key point is that real model calls exposed a brittle grader and a prompt/schema ambiguity, both were fixed with tests, and the final 15-call run passed all validators while recording estimated cost and reasoning tokens.
 
 For the model-browser run, show only the sanitized model-browser report and trace. The key point is that a real model controlled the legacy portal through screenshots and structured actions, while the harness recorded cost, verifier results, and a cheaper-model failure that became a concrete visual-grounding diagnosis. Mention that the same provider suite can now target `modal-interruption`.
+
+In Studio, show that the negative model-browser trace is inspectable step by step. The latest step preserves the driver decision failure, while step 1 shows the model API source, OpenAI model, token usage, reasoning-token count, pricing, latency, and estimated step cost.
 
 For the Anthropic computer-use run, show the dry-run report and mocked integration trace. The point is provider parity: Anthropic `tool_use` actions and OpenAI structured decisions both end up in the same verifier, trace, cost, and reporting surface, including the modal-interruption workflow.
 

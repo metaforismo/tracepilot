@@ -27,6 +27,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Readiness gate suite that converts reliability and provider scorecards into pass/warn/fail/blocked operational decisions with confidence bounds and cost thresholds.
 - Studio readiness dashboard that renders the default gate decision, thresholds, evidence classes, rule outcomes, and warnings.
 - Studio scorecard drilldowns for provider and reliability evidence, with generated `runs/latest` artifact loading and committed fixture fallback for clean clones.
+- Studio model-evidence trace replay for a negative browser-control run, including `model_api` metadata, selected-step token/cost details, budget-stop state, and preserved driver failure details.
 
 ## Verification Commands
 
@@ -137,6 +138,8 @@ The gate computes Wilson confidence intervals for success, false-completion, and
 The Studio readiness dashboard renders the same default gate as a product surface: the blocked decision, thresholds, reliability evidence, provider evidence, rule table, and warnings are inspectable from `/readiness`.
 
 Studio also exposes `/scorecards/provider` and `/scorecards/reliability` drilldowns. They read generated scorecard JSON from `runs/latest` when local eval artifacts exist and fall back to committed fixture rows otherwise. This keeps the readiness page useful in fresh clones while making local evidence inspectable down to provider/task rows, paid-call status, failure flags, approval stops, unsafe blocks, steps, cost, and warnings.
+
+Studio also exposes a committed `/runs/model-browser-negative` trace fixture. It is a compact, secret-free replay of the cheaper-model failure class from the model-browser report: the UI shows run-level model cost, budget-stop status, per-step `model_api` metadata, token usage, reasoning tokens, selected-step pricing, and the synthetic driver failure that the harness preserved instead of crashing the eval.
 
 ### Cost-Ledger Suite
 

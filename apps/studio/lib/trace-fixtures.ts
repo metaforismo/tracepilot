@@ -10,6 +10,10 @@ export type StudioRun = {
 };
 
 const fixtureRoot = join(process.cwd(), "fixtures", "runs");
+const runTitles: Record<string, string> = {
+  "smoke-form": "Smoke form",
+  "model-browser-negative": "Model browser negative run"
+};
 
 export async function listRuns(): Promise<Array<{ id: string; title: string; description: string }>> {
   return [
@@ -17,6 +21,11 @@ export async function listRuns(): Promise<Array<{ id: string; title: string; des
       id: "smoke-form",
       title: "Smoke form",
       description: "Two-step vendor form trace with deterministic success."
+    },
+    {
+      id: "model-browser-negative",
+      title: "Model browser negative run",
+      description: "Paid-model-style browser trace with model metadata, a budget stop, and driver failure evidence."
     }
   ];
 }
@@ -30,7 +39,7 @@ export async function loadRun(runId: string): Promise<StudioRun> {
 
   return {
     id: runId,
-    title: runId === "smoke-form" ? "Smoke form" : runId,
+    title: runTitles[runId] ?? runId,
     metrics: JSON.parse(metricsText) as RunMetrics,
     steps: traceText
       .trim()
@@ -44,4 +53,3 @@ export function selectStep(steps: TraceStep[], requested: string | undefined): T
   const index = requested === undefined ? steps.length - 1 : Number(requested);
   return steps[Math.min(Math.max(Number.isFinite(index) ? index : 0, 0), steps.length - 1)] ?? steps[0]!;
 }
-

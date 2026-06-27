@@ -4,6 +4,8 @@ export function MetricsStrip({ metrics }: { metrics: RunMetrics }) {
   const items = [
     ["Success", metrics.success ? "yes" : "no"],
     ["Steps", String(metrics.steps)],
+    ["Total model cost", formatUsd(metrics.totalCostUsd)],
+    ["Budget", metrics.budgetExceeded ? "Budget exceeded" : "within"],
     ["False complete", metrics.falseCompletion ? "yes" : "no"],
     ["Stuck loop", metrics.stuckLoop ? "yes" : "no"],
     ["Unsafe blocked", metrics.unsafeBlocked ? "yes" : "no"],
@@ -22,3 +24,11 @@ export function MetricsStrip({ metrics }: { metrics: RunMetrics }) {
   );
 }
 
+function formatUsd(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 6,
+    minimumFractionDigits: 6,
+    style: "currency"
+  }).format(value);
+}

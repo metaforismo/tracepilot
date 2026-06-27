@@ -1,0 +1,13 @@
+{
+  "runId": "model-browser-negative",
+  "taskId": "legacy-portal",
+  "success": false,
+  "steps": 4,
+  "falseCompletion": false,
+  "stuckLoop": true,
+  "unsafeBlocked": false,
+  "humanApprovals": 0,
+  "totalCostUsd": 0.010408,
+  "budgetExceeded": true,
+  "durationMs": 18420
+}
