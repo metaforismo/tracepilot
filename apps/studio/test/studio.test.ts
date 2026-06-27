@@ -35,6 +35,8 @@ describe("TracePilot Studio", () => {
     await expectText("Run launcher");
     await expectText("Open trace");
     await expectText("Readiness gate");
+    await expectText("Provider scorecard");
+    await expectText("Reliability scorecard");
   }, 15000);
 
   it("renders the trace replay surface", async () => {
@@ -66,6 +68,28 @@ describe("TracePilot Studio", () => {
     await expectText("Provider evidence");
     await expectText("provider-executed-runs");
     await expectText("Provider runs were not executed; status is skipped_paid_runs_disabled.");
+  }, 15000);
+
+  it("renders the provider scorecard drilldown", async () => {
+    await page!.goto(`${origin}/scorecards/provider`, { waitUntil: "networkidle" });
+
+    await expectText("Provider scorecard");
+    await expectText("planned runs");
+    await expectText("executed runs");
+    await expectText("OpenAI");
+    await expectText("Anthropic");
+    await expectText("legacy-portal");
+    await expectText("skipped_paid_runs_disabled");
+  }, 15000);
+
+  it("renders the reliability scorecard drilldown", async () => {
+    await page!.goto(`${origin}/scorecards/reliability`, { waitUntil: "networkidle" });
+
+    await expectText("Reliability scorecard");
+    await expectText("happy-path-portal-entry");
+    await expectText("validation-recovery-after-missing-date");
+    await expectText("prompt-injection-in-untrusted-invoice");
+    await expectText("success rate");
   }, 15000);
 });
 

@@ -182,15 +182,21 @@ select {
   margin-bottom: 14px;
 }
 
+.topbar > div:first-child {
+  min-width: 0;
+}
+
 .topbar h1 {
   margin: 0;
   font-size: 20px;
   line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .topbar p {
   margin: 4px 0 0;
   color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .buttonRow {
@@ -205,6 +211,12 @@ select {
   grid-template-columns: repeat(6, minmax(92px, 1fr));
   gap: 8px;
   margin-bottom: 14px;
+}
+
+.scorecardMetrics {
+  grid-template-columns: repeat(5, minmax(112px, 1fr));
+  margin-bottom: 0;
+  padding: 14px;
 }
 
 .metric {
@@ -413,6 +425,37 @@ select {
   margin-bottom: 14px;
 }
 
+.scorecardGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(340px, 1fr));
+  gap: 14px;
+  margin: 14px 0;
+}
+
+.sourceBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sourceBadge.runs_latest {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.sourceBadge.fixture {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
 .thresholdGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(150px, 1fr));
@@ -537,6 +580,14 @@ select {
   overflow-x: auto;
 }
 
+.scorecardTable {
+  overflow-x: auto;
+}
+
+.scorecardTable.compact {
+  overflow-x: auto;
+}
+
 .ruleRow {
   display: grid;
   grid-template-columns: minmax(220px, 1.1fr) 92px minmax(160px, 0.8fr) minmax(110px, 0.6fr) minmax(360px, 1.5fr);
@@ -564,6 +615,53 @@ select {
 .ruleRow > * {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.scorecardRow {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 14px;
+  border-top: 1px solid var(--line);
+}
+
+.scorecardRow:first-child {
+  border-top: 0;
+}
+
+.scorecardRow.header {
+  min-height: 40px;
+  background: #f8fbfb;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.scorecardRow > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.scorecardRow.provider {
+  grid-template-columns: 100px minmax(170px, 0.8fr) 70px 190px minmax(180px, 1fr) 72px 58px 64px 96px;
+  min-width: 1080px;
+}
+
+.scorecardRow.group {
+  grid-template-columns: minmax(150px, 1fr) 78px 82px 82px 72px 96px;
+  min-width: 640px;
+}
+
+.scorecardRow.reliabilityCase {
+  grid-template-columns: minmax(280px, 1.4fr) 62px 88px 140px 100px 88px 90px 110px;
+  min-width: 1040px;
+}
+
+.scorecardRow.reliabilityResult {
+  grid-template-columns: minmax(280px, 1.2fr) minmax(280px, 1.2fr) 76px 136px 94px 84px 88px 70px 90px;
+  min-width: 1180px;
 }
 
 .warningItem {
@@ -610,6 +708,7 @@ select {
   .workbench,
   .diagnosticGrid,
   .readinessGrid,
+  .scorecardGrid,
   .summaryGrid,
   .thresholdGrid {
     grid-template-columns: 1fr;
@@ -618,6 +717,21 @@ select {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+    width: 100%;
+  }
+
+  .buttonRow {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .buttonRow .ghostButton {
+    flex: 1 1 150px;
+    min-width: 0;
+  }
+
+  .buttonRow .sourceBadge {
+    flex: 0 0 auto;
   }
 }
 

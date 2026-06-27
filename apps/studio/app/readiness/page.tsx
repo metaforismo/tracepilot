@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, ArrowLeft, ClipboardCheck, TriangleAlert } from "lucide-react";
+import { Activity, ArrowLeft, BarChart3, ClipboardCheck, TriangleAlert } from "lucide-react";
 import type {
   ReadinessGateRule,
   ReadinessGateThresholds,
@@ -58,6 +58,14 @@ export default async function ReadinessPage() {
             <Link className="ghostButton" href="/diagnostics">
               <TriangleAlert size={15} />
               Diagnostics
+            </Link>
+            <Link className="ghostButton" href="/scorecards/provider">
+              <BarChart3 size={15} />
+              Provider scorecard
+            </Link>
+            <Link className="ghostButton" href="/scorecards/reliability">
+              <BarChart3 size={15} />
+              Reliability scorecard
             </Link>
             <Link className="ghostButton" href="/runs/smoke-form">
               <Activity size={15} />

@@ -117,12 +117,13 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - provider reliability scorecard that can run OpenAI and Anthropic browser-control adapters across the same hard tasks behind explicit paid-run gates.
 - readiness gate that turns reliability and provider scorecards into pass/warn/fail/blocked operational decisions with confidence bounds and cost thresholds.
 - Studio readiness gate dashboard that surfaces operational decision, rule outcomes, thresholds, reliability evidence, provider evidence, and warnings.
+- Studio provider and reliability scorecard drilldowns that load generated `runs/latest` artifacts when present, fall back to committed fixtures in fresh clones, and expose row-level evidence behind readiness decisions.
 
 Next build slices:
 
 1. Paid Anthropic Computer Use run evidence once an Anthropic key is available.
 2. Repeated paid provider scorecards with preserved failed traces.
-3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, provider scorecard drilldowns, and paid-readiness history.
+3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, and paid-readiness history.
 
 ## Run Locally
 

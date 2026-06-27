@@ -74,6 +74,8 @@ Show that the gate combines reliability evidence and provider evidence, then rep
 
 Open `/readiness` in Studio and show the same blocked decision in the product UI: reliability evidence is visible, provider evidence is visibly dry-run only, and the blocking rule points to missing executed provider rows.
 
+Open `/scorecards/provider` and `/scorecards/reliability` to show the underlying rows that explain the readiness decision: provider rows are dry-run only, while deterministic reliability rows are executed and repeatable.
+
 ## 5. Reliability Story
 
 Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic and OpenAI adapter boundaries are behind explicit API-key and paid-run gates because paid model calls should be measured separately from local harness correctness.
