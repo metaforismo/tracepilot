@@ -114,12 +114,13 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - real Anthropic Computer Use decision client that sends the `computer_20251124` tool definition, parses `tool_use` actions, records usage/cost metadata, and redacts API errors.
 - Anthropic computer-use suite that runs the same browser workflow contracts behind explicit paid-run gates.
 - repeated reliability scorecard suite that reruns hard browser workflows and reports success, false-completion, stuck-loop, unsafe-block, and approval-stop rates.
+- provider reliability scorecard that can run OpenAI and Anthropic browser-control adapters across the same hard tasks behind explicit paid-run gates.
 
 Next build slices:
 
 1. Paid Anthropic Computer Use run evidence once an Anthropic key is available.
-2. Cross-provider browser scorecards with confidence intervals over paid OpenAI and Anthropic runs.
-3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, and reliability-scorecard drilldowns.
+2. Repeated paid provider scorecards with confidence intervals and preserved failed traces.
+3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, and scorecard drilldowns.
 
 ## Run Locally
 
@@ -130,6 +131,7 @@ corepack pnpm@9.15.4 run eval -- --suite smoke
 corepack pnpm@9.15.4 run eval -- --suite invoice
 corepack pnpm@9.15.4 run eval -- --suite comparison
 corepack pnpm@9.15.4 run eval -- --suite reliability-scorecard
+corepack pnpm@9.15.4 run eval -- --suite provider-scorecard
 corepack pnpm@9.15.4 run eval -- --suite cost-ledger
 corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
@@ -163,6 +165,14 @@ reliability-scorecard runs=5 repetitions=1 success_rate=100.0% false_completion_
 ```
 
 The reliability-scorecard suite reruns the harder deterministic browser workflows and writes JSON/Markdown artifacts under `runs/latest/reliability-scorecard/`. It is meant to measure harness repeatability before paid provider scorecards are compared. Use `--repetitions 3` or higher for longer local runs.
+
+Expected provider-scorecard dry-run output:
+
+```text
+provider-scorecard status=skipped_paid_runs_disabled planned_runs=6 executed_runs=0 success_rate=0.0% total_cost_usd=0 report=... diagnosis=...
+```
+
+The provider-scorecard suite is the cross-provider browser-control path. By default it writes a dry-run plan under `runs/latest/provider-scorecard/`. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, provider API keys, and a budget such as `TRACEPILOT_PROVIDER_SCORECARD_MAX_USD=0.5`. The default task set is `legacy-portal`, `modal-interruption`, and `prompt-injection` across OpenAI and Anthropic adapters.
 
 Expected cost-ledger output:
 
@@ -222,6 +232,7 @@ The Anthropic computer-use suite is also env-gated. It makes no paid calls unles
 - [First Report](docs/results/first-report.md)
 - [Baseline Comparison](docs/results/baseline-comparison.md)
 - [Reliability Scorecard](docs/results/reliability-scorecard.md)
+- [Provider Scorecard](docs/results/provider-scorecard.md)
 - [Failure Diagnosis](docs/results/failure-diagnosis.md)
 - [Model Cost Ledger](docs/results/model-cost-ledger.md)
 - [Model Run Readiness](docs/results/model-readiness.md)

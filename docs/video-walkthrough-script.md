@@ -56,6 +56,14 @@ Show the scorecard report: five harder browser cases, successful policy outcomes
 
 Mention that longer local runs can use `--repetitions 3` or higher before comparing paid provider-backed scorecards.
 
+Then run the provider scorecard dry run:
+
+```bash
+corepack pnpm@9.15.4 run eval -- --suite provider-scorecard
+```
+
+Show that it plans OpenAI and Anthropic rows across `legacy-portal`, `modal-interruption`, and `prompt-injection`, but makes no paid calls until explicitly enabled. Explain that the mocked integration tests run those same provider adapters through the real browser sandbox, so the provider boundary is tested without mixing it with live model claims.
+
 ## 5. Reliability Story
 
 Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic and OpenAI adapter boundaries are behind explicit API-key and paid-run gates because paid model calls should be measured separately from local harness correctness.
@@ -68,6 +76,7 @@ corepack pnpm@9.15.4 run eval -- --suite model-readiness
 corepack pnpm@9.15.4 run eval -- --suite openai-benchmark
 corepack pnpm@9.15.4 run eval -- --suite model-browser
 corepack pnpm@9.15.4 run eval -- --suite anthropic-computer-use
+corepack pnpm@9.15.4 run eval -- --suite provider-scorecard
 ```
 
 Point out that this is a fixture estimate and a dry-run readiness manifest, not a paid API result. The useful product behavior is the reporting boundary: scripted controls, fixtures, dry runs, and future `model_api` runs cannot be mixed silently, and API key presence is recorded without leaking the key.
