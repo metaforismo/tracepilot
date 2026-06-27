@@ -26,6 +26,7 @@ This report covers the first executable TracePilot foundation. It is a local, de
 - Provider scorecard suite that runs OpenAI and Anthropic browser-control adapters over shared hard tasks behind explicit paid-run gates.
 - Readiness gate suite that converts reliability and provider scorecards into pass/warn/fail/blocked operational decisions with confidence bounds and cost thresholds.
 - Studio readiness dashboard that renders the default gate decision, thresholds, evidence classes, rule outcomes, and warnings.
+- Studio scorecard drilldowns for provider and reliability evidence, with generated `runs/latest` artifact loading and committed fixture fallback for clean clones.
 
 ## Verification Commands
 
@@ -134,6 +135,8 @@ The default run executes the deterministic reliability scorecard once and runs t
 The gate computes Wilson confidence intervals for success, false-completion, and stuck-loop rates, then reports `pass`, `warn`, `fail`, or `blocked` with rule-level evidence. This is a release-style operational gate over executed evidence, not a model ranking.
 
 The Studio readiness dashboard renders the same default gate as a product surface: the blocked decision, thresholds, reliability evidence, provider evidence, rule table, and warnings are inspectable from `/readiness`.
+
+Studio also exposes `/scorecards/provider` and `/scorecards/reliability` drilldowns. They read generated scorecard JSON from `runs/latest` when local eval artifacts exist and fall back to committed fixture rows otherwise. This keeps the readiness page useful in fresh clones while making local evidence inspectable down to provider/task rows, paid-call status, failure flags, approval stops, unsafe blocks, steps, cost, and warnings.
 
 ### Cost-Ledger Suite
 

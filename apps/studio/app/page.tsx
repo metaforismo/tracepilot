@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, ClipboardCheck, Play, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Activity, BarChart3, ClipboardCheck, Play, ShieldCheck, TriangleAlert } from "lucide-react";
 import { listRuns } from "../lib/trace-fixtures";
 
 export default async function HomePage() {
@@ -47,6 +47,14 @@ export default async function HomePage() {
             <Link className="ghostButton" href="/readiness">
               <ClipboardCheck size={15} />
               Readiness gate
+            </Link>
+            <Link className="ghostButton" href="/scorecards/provider">
+              <BarChart3 size={15} />
+              Provider scorecard
+            </Link>
+            <Link className="ghostButton" href="/scorecards/reliability">
+              <BarChart3 size={15} />
+              Reliability scorecard
             </Link>
             <Link className="ghostButton" href="/diagnostics">
               <TriangleAlert size={15} />

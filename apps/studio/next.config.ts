@@ -6,6 +6,9 @@ const appDir = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   typedRoutes: true,
+  outputFileTracingExcludes: {
+    "/scorecards/*": ["../../**/*"]
+  },
   turbopack: {
     root: join(appDir, "../..")
   }
