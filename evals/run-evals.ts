@@ -24,6 +24,7 @@ import { runOpenAIBenchmarkSuite } from "./openai-benchmark-suite.js";
 import { runModelBrowserSuite } from "./model-browser-suite.js";
 import { runAnthropicComputerUseSuite } from "./anthropic-computer-use-suite.js";
 import { runReliabilityScorecardSuite } from "./reliability-scorecard-suite.js";
+import { runProviderScorecardSuite } from "./provider-scorecard-suite.js";
 
 const { values } = parseArgs({
   args: normalizeArgs(process.argv.slice(2)),
@@ -39,6 +40,7 @@ if (
   values.suite !== "invoice" &&
   values.suite !== "comparison" &&
   values.suite !== "reliability-scorecard" &&
+  values.suite !== "provider-scorecard" &&
   values.suite !== "cost-ledger" &&
   values.suite !== "model-readiness" &&
   values.suite !== "openai-benchmark" &&
@@ -102,6 +104,14 @@ if (values.suite === "anthropic-computer-use") {
   });
   console.log(
     `reliability-scorecard runs=${result.summary.totalRuns} repetitions=${result.summary.repetitions} success_rate=${formatPercent(result.summary.successRate)} false_completion_rate=${formatPercent(result.summary.falseCompletionRate)} stuck_loop_rate=${formatPercent(result.summary.stuckLoopRate)} report=${result.artifacts.reportPath} diagnosis=${result.artifacts.diagnosisReportPath}`
+  );
+} else if (values.suite === "provider-scorecard") {
+  const result = await runProviderScorecardSuite({
+    runsDir: join(process.cwd(), "runs", "latest", "provider-scorecard"),
+    ...(values.repetitions === undefined ? {} : { repetitions: parsePositiveInteger("repetitions", values.repetitions) })
+  });
+  console.log(
+    `provider-scorecard status=${result.summary.status} planned_runs=${result.summary.plannedRuns} executed_runs=${result.summary.executedRuns} success_rate=${formatPercent(result.summary.successRate)} total_cost_usd=${result.summary.totalCostUsd} report=${result.artifacts.reportPath} diagnosis=${result.artifacts.diagnosisReportPath}`
   );
 } else if (values.suite === "invoice") {
   const summary = await runInvoiceSuite();
