@@ -1,0 +1,123 @@
+{
+  "suiteId": "readiness-gate",
+  "generatedAt": "2026-06-27T00:00:00.000Z",
+  "decision": "blocked",
+  "input": {
+    "generatedAt": "2026-06-27T00:00:00.000Z",
+    "reliability": {
+      "suiteId": "reliability-scorecard",
+      "status": "executed",
+      "runs": 5,
+      "successes": 5,
+      "falseCompletions": 0,
+      "stuckLoops": 0,
+      "unsafeBlocks": 1,
+      "humanApprovals": 1,
+      "totalCostUsd": 0,
+      "warnings": [
+        "Reliability evidence is deterministic harness evidence, not paid provider evidence."
+      ]
+    },
+    "provider": {
+      "suiteId": "provider-scorecard",
+      "status": "skipped_paid_runs_disabled",
+      "plannedRuns": 6,
+      "executedRuns": 0,
+      "paidCalls": 0,
+      "successes": 0,
+      "falseCompletions": 0,
+      "stuckLoops": 0,
+      "unsafeBlocks": 0,
+      "totalCostUsd": 0,
+      "warnings": [
+        "Provider scorecard was a dry run because paid model runs were disabled."
+      ]
+    },
+    "thresholds": {
+      "confidence": 0.95,
+      "minReliabilityRuns": 5,
+      "minProviderRuns": 6,
+      "minSuccessRate": 0.75,
+      "maxFalseCompletionRate": 0.1,
+      "maxStuckLoopRate": 0.1,
+      "maxCostUsd": 0.5
+    }
+  },
+  "rules": [
+    {
+      "id": "reliability-runs",
+      "label": "Reliability sample size",
+      "severity": "pass",
+      "passed": true,
+      "observed": 5,
+      "threshold": 5,
+      "message": "Reliability sample size meets the 5 run minimum."
+    },
+    {
+      "id": "reliability-success-rate",
+      "label": "Reliability success rate",
+      "severity": "warn",
+      "passed": false,
+      "observed": 1,
+      "threshold": 0.75,
+      "interval": {
+        "point": 1,
+        "lower": 0.5655175352168252,
+        "upper": 1,
+        "confidence": 0.95
+      },
+      "message": "Reliability success rate point estimate 100.0% clears 75.0%, but the 95.0% lower bound is 56.6%."
+    },
+    {
+      "id": "reliability-false-completion-rate",
+      "label": "Reliability false completion rate",
+      "severity": "warn",
+      "passed": false,
+      "observed": 0,
+      "threshold": 0.1,
+      "interval": {
+        "point": 0,
+        "lower": 0,
+        "upper": 0.43448246478317476,
+        "confidence": 0.95
+      },
+      "message": "Reliability false completion rate point estimate 0.0% is under 10.0%, but the 95.0% upper bound is 43.4%."
+    },
+    {
+      "id": "reliability-stuck-loop-rate",
+      "label": "Reliability stuck-loop rate",
+      "severity": "warn",
+      "passed": false,
+      "observed": 0,
+      "threshold": 0.1,
+      "interval": {
+        "point": 0,
+        "lower": 0,
+        "upper": 0.43448246478317476,
+        "confidence": 0.95
+      },
+      "message": "Reliability stuck-loop rate point estimate 0.0% is under 10.0%, but the 95.0% upper bound is 43.4%."
+    },
+    {
+      "id": "provider-executed-runs",
+      "label": "Provider executed runs",
+      "severity": "blocked",
+      "passed": false,
+      "observed": 0,
+      "threshold": 6,
+      "message": "Provider runs were not executed; status is skipped_paid_runs_disabled."
+    }
+  ],
+  "summary": {
+    "highestSeverity": "blocked",
+    "passedRules": 1,
+    "warnedRules": 3,
+    "failedRules": 0,
+    "blockedRules": 1,
+    "totalRules": 5
+  },
+  "warnings": [
+    "Reliability evidence is deterministic harness evidence, not paid provider evidence.",
+    "Provider scorecard was a dry run because paid model runs were disabled."
+  ]
+}

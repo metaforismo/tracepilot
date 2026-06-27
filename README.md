@@ -101,7 +101,7 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - deterministic `ScriptedDriver` for offline evals;
 - env-gated Anthropic driver boundary for future paid computer-use calls;
 - orchestrator loop for observe, decide, safety-check, act, verify, trace, and measure;
-- Next.js Studio UI with run launcher, metrics strip, screenshot panel, timeline, and inspector;
+- Next.js Studio UI with run launcher, metrics strip, screenshot panel, timeline, inspector, and readiness gate dashboard;
 - invoice-to-legacy-portal target fixtures with validation recovery, modal interruption, approval, and prompt-injection cases;
 - real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`;
 - baseline-vs-TracePilot comparison suite with JSON and Markdown artifacts;
@@ -116,12 +116,13 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - repeated reliability scorecard suite that reruns hard browser workflows and reports success, false-completion, stuck-loop, unsafe-block, and approval-stop rates.
 - provider reliability scorecard that can run OpenAI and Anthropic browser-control adapters across the same hard tasks behind explicit paid-run gates.
 - readiness gate that turns reliability and provider scorecards into pass/warn/fail/blocked operational decisions with confidence bounds and cost thresholds.
+- Studio readiness gate dashboard that surfaces operational decision, rule outcomes, thresholds, reliability evidence, provider evidence, and warnings.
 
 Next build slices:
 
 1. Paid Anthropic Computer Use run evidence once an Anthropic key is available.
 2. Repeated paid provider scorecards with preserved failed traces.
-3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, readiness gates, and scorecard drilldowns.
+3. Studio surfacing for per-step `model_api` metadata, budget stops, driver error traces, provider scorecard drilldowns, and paid-readiness history.
 
 ## Run Locally
 

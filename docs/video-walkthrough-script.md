@@ -72,6 +72,8 @@ corepack pnpm@9.15.4 run eval -- --suite readiness-gate
 
 Show that the gate combines reliability evidence and provider evidence, then reports `blocked` because provider rows are dry-run only. Explain that this is the behavior you want in a real reliability product: deterministic harness success is useful, but it cannot masquerade as provider-readiness evidence.
 
+Open `/readiness` in Studio and show the same blocked decision in the product UI: reliability evidence is visible, provider evidence is visibly dry-run only, and the blocking rule points to missing executed provider rows.
+
 ## 5. Reliability Story
 
 Explain that the project starts with deterministic drivers and local evals so reliability work is cheap and reproducible. The Anthropic and OpenAI adapter boundaries are behind explicit API-key and paid-run gates because paid model calls should be measured separately from local harness correctness.

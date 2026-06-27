@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Activity, Play, ShieldCheck, TriangleAlert } from "lucide-react";
+import { Activity, ClipboardCheck, Play, ShieldCheck, TriangleAlert } from "lucide-react";
 import { listRuns } from "../lib/trace-fixtures";
 
 export default async function HomePage() {
@@ -44,6 +44,10 @@ export default async function HomePage() {
             <p>Start from a saved trace fixture, then inspect verifier evidence step by step.</p>
           </div>
           <div className="buttonRow">
+            <Link className="ghostButton" href="/readiness">
+              <ClipboardCheck size={15} />
+              Readiness gate
+            </Link>
             <Link className="ghostButton" href="/diagnostics">
               <TriangleAlert size={15} />
               Diagnostics
