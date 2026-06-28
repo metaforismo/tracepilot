@@ -1,5 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { notFound } from "next/navigation";
 import type { RunMetrics, TraceStep } from "@tracepilot/core";
 
 export type StudioRun = {
@@ -32,6 +33,13 @@ export async function listRuns(): Promise<Array<{ id: string; title: string; des
 
 export async function loadRun(runId: string): Promise<StudioRun> {
   const runDir = join(fixtureRoot, runId);
+  try {
+    await access(join(runDir, "metrics.json"));
+    await access(join(runDir, "trace.jsonl"));
+  } catch {
+    notFound();
+  }
+
   const [metricsText, traceText] = await Promise.all([
     readFile(join(runDir, "metrics.json"), "utf8"),
     readFile(join(runDir, "trace.jsonl"), "utf8")
@@ -50,6 +58,19 @@ export async function loadRun(runId: string): Promise<StudioRun> {
 }
 
 export function selectStep(steps: TraceStep[], requested: string | undefined): TraceStep {
-  const index = requested === undefined ? steps.length - 1 : Number(requested);
-  return steps[Math.min(Math.max(Number.isFinite(index) ? index : 0, 0), steps.length - 1)] ?? steps[0]!;
+  if (steps.length === 0) {
+    notFound();
+  }
+
+  if (requested === undefined) {
+    return steps[steps.length - 1]!;
+  }
+
+  const parsed = Number.parseInt(requested, 10);
+  if (!Number.isFinite(parsed)) {
+    return steps[steps.length - 1]!;
+  }
+
+  const match = steps.find((step) => step.stepIndex === parsed);
+  return match ?? steps[steps.length - 1]!;
 }

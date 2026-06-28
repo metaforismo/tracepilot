@@ -10,7 +10,12 @@ export function ScreenshotPanel({ step }: { step: TraceStep }) {
         <span className="meta">{step.observation.viewport.width}x{step.observation.viewport.height}</span>
       </div>
       <div className="screenshotFrame">
-        <img src={src} alt={`Observation ${step.observation.stepId}`} />
+        <img
+          alt={`Observation ${step.observation.stepId}`}
+          decoding="async"
+          loading="lazy"
+          src={src}
+        />
       </div>
     </section>
   );
@@ -21,4 +26,3 @@ function normalizeScreenshotPath(path: string): string {
   if (path.startsWith("http")) return path;
   return `/${path}`;
 }
-

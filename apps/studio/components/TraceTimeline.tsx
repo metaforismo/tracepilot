@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { TraceStep } from "@tracepilot/core";
+import { formatUsd } from "../lib/format";
 
 export function TraceTimeline({ runId, steps, selectedStep }: { runId: string; steps: TraceStep[]; selectedStep: TraceStep }) {
   return (
@@ -8,12 +9,14 @@ export function TraceTimeline({ runId, steps, selectedStep }: { runId: string; s
         <h2>Trace timeline</h2>
         <span className="meta">{steps.length} steps</span>
       </div>
-      <div className="timeline">
+      <div className="timeline" role="list">
         {steps.map((step) => (
           <Link
+            aria-current={step.stepIndex === selectedStep.stepIndex ? "step" : undefined}
             className={`timelineRow ${step.stepIndex === selectedStep.stepIndex ? "active" : ""}`}
             href={`/runs/${runId}?step=${step.stepIndex}`}
             key={step.stepIndex}
+            role="listitem"
           >
             <span className="mono">#{step.stepIndex}</span>
             <span>{step.decision.action.kind}</span>
@@ -35,13 +38,4 @@ export function TraceTimeline({ runId, steps, selectedStep }: { runId: string; s
 
 function isDriverDecisionFailure(step: TraceStep): boolean {
   return step.decision.reasoning.startsWith("Driver decision failed:");
-}
-
-function formatUsd(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    maximumFractionDigits: 6,
-    minimumFractionDigits: 6,
-    style: "currency"
-  }).format(value);
 }

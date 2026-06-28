@@ -75,7 +75,25 @@ img {
   outline-offset: 3px;
 }
 
+.skipLink {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--green);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.skipLink:focus {
+  top: 16px;
+}
+
 .shell {
+  position: relative;
   min-height: 100dvh;
   display: grid;
   grid-template-columns: minmax(248px, 280px) minmax(0, 1fr);
@@ -195,6 +213,12 @@ img {
   background: rgb(255 255 255 / 72%);
 }
 
+.taskItem--active {
+  border-color: var(--green);
+  background: var(--green-soft);
+  box-shadow: inset 3px 0 0 var(--green);
+}
+
 a.taskItem:hover,
 .runCard:hover,
 .workflowStep:hover {
@@ -244,6 +268,12 @@ a.taskItem:hover,
   border: 1px solid var(--line);
   background: rgb(255 255 255 / 82%);
   color: var(--ink);
+}
+
+.ghostButton.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 .primaryButton:hover,
@@ -312,6 +342,48 @@ a.taskItem:hover,
   gap: 8px;
   justify-content: flex-end;
   max-width: 520px;
+}
+
+.stepNavigator {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.stepCounter {
+  min-width: 108px;
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.stepCounter strong {
+  color: var(--ink);
+  font-family: "SFMono-Regular", "Geist Mono", Consolas, "Liberation Mono", monospace;
+}
+
+.emptyState {
+  display: grid;
+  gap: 14px;
+  max-width: 560px;
+  padding: 28px 0;
+}
+
+.emptyState h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 690;
+}
+
+.emptyState p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .overviewGrid {
@@ -524,6 +596,18 @@ a.taskItem:hover,
   font-size: 18px;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
+}
+
+.metric--pass strong {
+  color: var(--green);
+}
+
+.metric--warn strong {
+  color: var(--amber);
+}
+
+.metric--fail strong {
+  color: var(--red);
 }
 
 .evidenceMetricTile {
@@ -1145,6 +1229,11 @@ a.taskItem:hover,
 
   .buttonRow .sourceBadge {
     flex: 0 0 auto;
+  }
+
+  .stepNavigator {
+    justify-content: flex-start;
+    width: 100%;
   }
 }
 

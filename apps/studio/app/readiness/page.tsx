@@ -1,11 +1,14 @@
 import Link from "next/link";
-import { Activity, ArrowLeft, BarChart3, ClipboardCheck, TriangleAlert } from "lucide-react";
+import { Activity, BarChart3, ClipboardCheck, TriangleAlert } from "lucide-react";
 import type {
   ReadinessGateRule,
   ReadinessGateThresholds,
   ReadinessProviderEvidence,
   ReadinessReliabilityEvidence
 } from "@tracepilot/core";
+import { Metric } from "../../components/Metric";
+import { StudioShell } from "../../components/StudioShell";
+import { formatPercent, formatUsdCompact } from "../../lib/format";
 import { loadReadinessGate } from "../../lib/readiness-fixtures";
 
 export default async function ReadinessPage() {
@@ -13,147 +16,136 @@ export default async function ReadinessPage() {
   const generatedAt = new Date(gate.generatedAt).toISOString();
 
   return (
-    <main className="shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <div className="brandMark"><ClipboardCheck size={18} /></div>
-          <div className="brandText">
-            <strong>TracePilot Studio</strong>
-            <span>Readiness gate</span>
+    <StudioShell
+      icon={<ClipboardCheck size={18} />}
+      subtitle="Readiness gate"
+      sidebar={
+        <>
+          <span className="sectionLabel">Decision</span>
+          <div className="taskItem">
+            <strong>Decision</strong>
+            <small>{generatedAt}</small>
+            <span className={`status ${gate.decision}`}>{gate.decision}</span>
           </div>
-        </div>
 
-        <Link className="ghostButton" href="/">
-          <ArrowLeft size={15} />
-          Runs
-        </Link>
-
-        <span className="sectionLabel">Decision</span>
-        <div className="taskItem">
-          <strong>Decision</strong>
-          <small>{generatedAt}</small>
-          <span className={`status ${gate.decision}`}>{gate.decision}</span>
-        </div>
-
-        <span className="sectionLabel">Evidence</span>
-        <div className="taskList">
-          <a className="taskItem" href="#reliability-evidence">
-            <strong>Reliability evidence</strong>
-            <small>{gate.input.reliability.runs} deterministic runs</small>
-          </a>
-          <a className="taskItem" href="#provider-evidence">
-            <strong>Provider evidence</strong>
-            <small>{gate.input.provider.executedRuns} of {gate.input.provider.plannedRuns} rows executed</small>
-          </a>
-        </div>
-      </aside>
-
-      <section className="main">
-        <div className="topbar">
-          <div>
-            <h1>Readiness gate</h1>
-            <p>Operational decision from reliability and provider scorecard evidence.</p>
+          <span className="sectionLabel">Evidence</span>
+          <div className="taskList">
+            <a className="taskItem" href="#reliability-evidence">
+              <strong>Reliability evidence</strong>
+              <small>{gate.input.reliability.runs} deterministic runs</small>
+            </a>
+            <a className="taskItem" href="#provider-evidence">
+              <strong>Provider evidence</strong>
+              <small>{gate.input.provider.executedRuns} of {gate.input.provider.plannedRuns} rows executed</small>
+            </a>
           </div>
-          <div className="buttonRow">
-            <Link className="ghostButton" href="/diagnostics">
-              <TriangleAlert size={15} />
-              Diagnostics
-            </Link>
-            <Link className="ghostButton" href="/scorecards/provider">
-              <BarChart3 size={15} />
-              Provider scorecard
-            </Link>
-            <Link className="ghostButton" href="/scorecards/reliability">
-              <BarChart3 size={15} />
-              Reliability scorecard
-            </Link>
-            <Link className="ghostButton" href="/runs/smoke-form">
-              <Activity size={15} />
-              Open trace
-            </Link>
-          </div>
+        </>
+      }
+    >
+      <div className="topbar">
+        <div>
+          <h1>Readiness gate</h1>
+          <p>Operational decision from reliability and provider scorecard evidence.</p>
         </div>
-
-        <div className="diagnosticGrid">
-          <section className="panel" aria-label="Readiness summary">
-            <div className="panelHeader">
-              <h2>Summary</h2>
-              <span className="meta">{gate.summary.totalRules} rules</span>
-            </div>
-            <div className="summaryGrid readinessSummary">
-              <Metric label="passed" value={gate.summary.passedRules} />
-              <Metric label="warned" value={gate.summary.warnedRules} />
-              <Metric label="failed" value={gate.summary.failedRules} />
-              <Metric label="blocked" value={gate.summary.blockedRules} />
-              <Metric label="total" value={gate.summary.totalRules} />
-            </div>
-          </section>
-
-          <section className="panel" aria-label="Readiness thresholds">
-            <div className="panelHeader">
-              <h2>Thresholds</h2>
-              <span className="meta">{formatPercent(gate.input.thresholds.confidence)} confidence</span>
-            </div>
-            <div className="thresholdGrid">
-              {thresholdRows(gate.input.thresholds).map((row) => (
-                <div className="thresholdItem" key={row.label}>
-                  <span>{row.label}</span>
-                  <strong>{row.value}</strong>
-                </div>
-              ))}
-            </div>
-          </section>
+        <div className="buttonRow">
+          <Link className="ghostButton" href="/diagnostics">
+            <TriangleAlert size={15} />
+            Diagnostics
+          </Link>
+          <Link className="ghostButton" href="/scorecards/provider">
+            <BarChart3 size={15} />
+            Provider scorecard
+          </Link>
+          <Link className="ghostButton" href="/scorecards/reliability">
+            <BarChart3 size={15} />
+            Reliability scorecard
+          </Link>
+          <Link className="ghostButton" href="/runs/smoke-form">
+            <Activity size={15} />
+            Open trace
+          </Link>
         </div>
+      </div>
 
-        <div className="readinessGrid">
-          <EvidencePanel
-            id="reliability-evidence"
-            title="Reliability evidence"
-            meta={gate.input.reliability.status}
-            rows={reliabilityRows(gate.input.reliability)}
-          />
-          <EvidencePanel
-            id="provider-evidence"
-            title="Provider evidence"
-            meta={gate.input.provider.status}
-            rows={providerRows(gate.input.provider)}
-          />
-        </div>
-
-        <section className="panel" aria-label="Readiness rule outcomes">
+      <div className="diagnosticGrid">
+        <section className="panel" aria-label="Readiness summary">
           <div className="panelHeader">
-            <h2>Rule outcomes</h2>
-            <span className="meta">{gate.summary.highestSeverity}</span>
+            <h2>Summary</h2>
+            <span className="meta">{gate.summary.totalRules} rules</span>
           </div>
-          <div className="ruleTable">
-            <div className="ruleRow header">
-              <span>Rule</span>
-              <span>Severity</span>
-              <span>Observed</span>
-              <span>Threshold</span>
-              <span>Message</span>
-            </div>
-            {gate.rules.map((rule) => (
-              <RuleRow key={rule.id} rule={rule} />
-            ))}
+          <div className="summaryGrid readinessSummary">
+            <Metric label="passed" tone="pass" value={gate.summary.passedRules} />
+            <Metric label="warned" tone="warn" value={gate.summary.warnedRules} />
+            <Metric label="failed" tone="fail" value={gate.summary.failedRules} />
+            <Metric label="blocked" tone="warn" value={gate.summary.blockedRules} />
+            <Metric label="total" value={gate.summary.totalRules} />
           </div>
         </section>
 
-        {gate.warnings.length > 0 ? (
-          <section className="panel" aria-label="Readiness warnings">
-            <div className="panelHeader">
-              <h2>Warnings</h2>
-              <span className="meta">{gate.warnings.length} active</span>
-            </div>
-            <div className="warningList">
-              {gate.warnings.map((warning) => (
-                <div className="warningItem" key={warning}>{warning}</div>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        <section className="panel" aria-label="Readiness thresholds">
+          <div className="panelHeader">
+            <h2>Thresholds</h2>
+            <span className="meta">{formatPercent(gate.input.thresholds.confidence)} confidence</span>
+          </div>
+          <div className="thresholdGrid">
+            {thresholdRows(gate.input.thresholds).map((row) => (
+              <div className="thresholdItem" key={row.label}>
+                <span>{row.label}</span>
+                <strong>{row.value}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="readinessGrid">
+        <EvidencePanel
+          id="reliability-evidence"
+          title="Reliability evidence"
+          meta={gate.input.reliability.status}
+          rows={reliabilityRows(gate.input.reliability)}
+        />
+        <EvidencePanel
+          id="provider-evidence"
+          title="Provider evidence"
+          meta={gate.input.provider.status}
+          rows={providerRows(gate.input.provider)}
+        />
+      </div>
+
+      <section className="panel" aria-label="Readiness rule outcomes">
+        <div className="panelHeader">
+          <h2>Rule outcomes</h2>
+          <span className="meta">{gate.summary.highestSeverity}</span>
+        </div>
+        <div className="ruleTable">
+          <div className="ruleRow header">
+            <span>Rule</span>
+            <span>Severity</span>
+            <span>Observed</span>
+            <span>Threshold</span>
+            <span>Message</span>
+          </div>
+          {gate.rules.map((rule) => (
+            <RuleRow key={rule.id} rule={rule} />
+          ))}
+        </div>
       </section>
-    </main>
+
+      {gate.warnings.length > 0 ? (
+        <section className="panel" aria-label="Readiness warnings">
+          <div className="panelHeader">
+            <h2>Warnings</h2>
+            <span className="meta">{gate.warnings.length} active</span>
+          </div>
+          <div className="warningList">
+            {gate.warnings.map((warning) => (
+              <div className="warningItem" key={warning}>{warning}</div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </StudioShell>
   );
 }
 
@@ -188,15 +180,6 @@ function RuleRow(props: { rule: ReadinessGateRule }) {
   );
 }
 
-function Metric(props: { label: string; value: string | number }) {
-  return (
-    <div className="metric">
-      <span>{props.label}</span>
-      <strong>{props.value}</strong>
-    </div>
-  );
-}
-
 function reliabilityRows(evidence: ReadinessReliabilityEvidence): Array<{ label: string; value: string | number }> {
   return [
     { label: "suite", value: evidence.suiteId },
@@ -206,7 +189,7 @@ function reliabilityRows(evidence: ReadinessReliabilityEvidence): Array<{ label:
     { label: "stuck loops", value: evidence.stuckLoops },
     { label: "unsafe blocks", value: evidence.unsafeBlocks },
     { label: "human approvals", value: evidence.humanApprovals },
-    { label: "total cost", value: formatUsd(evidence.totalCostUsd) }
+    { label: "total cost", value: formatUsdCompact(evidence.totalCostUsd) }
   ];
 }
 
@@ -221,7 +204,7 @@ function providerRows(evidence: ReadinessProviderEvidence): Array<{ label: strin
     { label: "false completions", value: evidence.falseCompletions },
     { label: "stuck loops", value: evidence.stuckLoops },
     { label: "unsafe blocks", value: evidence.unsafeBlocks },
-    { label: "total cost", value: formatUsd(evidence.totalCostUsd) }
+    { label: "total cost", value: formatUsdCompact(evidence.totalCostUsd) }
   ];
 }
 
@@ -233,7 +216,7 @@ function thresholdRows(thresholds: ReadinessGateThresholds): Array<{ label: stri
     { label: "min success lower bound", value: formatPercent(thresholds.minSuccessRate) },
     { label: "max false completion upper bound", value: formatPercent(thresholds.maxFalseCompletionRate) },
     { label: "max stuck-loop upper bound", value: formatPercent(thresholds.maxStuckLoopRate) },
-    { label: "max provider cost", value: formatUsd(thresholds.maxCostUsd) }
+    { label: "max provider cost", value: formatUsdCompact(thresholds.maxCostUsd) }
   ];
 }
 
@@ -244,7 +227,7 @@ function formatObserved(rule: ReadinessGateRule): string {
       : `${formatPercent(rule.observed)} (${formatPercent(rule.interval.lower)}-${formatPercent(rule.interval.upper)})`;
   }
   if (rule.id === "provider-cost") {
-    return formatUsd(rule.observed);
+    return formatUsdCompact(rule.observed);
   }
   return String(rule.observed);
 }
@@ -254,15 +237,7 @@ function formatThreshold(rule: ReadinessGateRule): string {
     return formatPercent(rule.threshold);
   }
   if (rule.id === "provider-cost") {
-    return formatUsd(rule.threshold);
+    return formatUsdCompact(rule.threshold);
   }
   return String(rule.threshold);
-}
-
-function formatPercent(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
-}
-
-function formatUsd(value: number): string {
-  return `$${value.toFixed(6)}`;
 }

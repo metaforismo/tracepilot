@@ -1,4 +1,5 @@
 import type { ModelDecisionMetadata, RunMetrics, TraceStep } from "@tracepilot/core";
+import { formatNumber, formatUsd } from "../lib/format";
 
 type ModelEvidencePanelProps = {
   metrics: RunMetrics;
@@ -106,17 +107,4 @@ function EvidenceRow({ label, value }: { label: string; value: string }) {
 
 function isDriverDecisionFailure(step: TraceStep): boolean {
   return step.decision.reasoning.startsWith("Driver decision failed:");
-}
-
-function formatNumber(value: number): string {
-  return new Intl.NumberFormat("en-US").format(value);
-}
-
-function formatUsd(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    currency: "USD",
-    maximumFractionDigits: 6,
-    minimumFractionDigits: 6,
-    style: "currency"
-  }).format(value);
 }
