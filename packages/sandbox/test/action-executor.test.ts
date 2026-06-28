@@ -100,4 +100,69 @@ describe("BrowserSandbox and executeAction", () => {
     await expect(vendor.inputValue()).resolves.toBe("Contoso Research");
     expect(result.ok).toBe(true);
   });
+
+  it("passes multi-click counts through to Playwright", async () => {
+    target = await startTargetServer();
+    const root = await mkdtemp(join(tmpdir(), "tracepilot-sandbox-"));
+    const traceStore = await createTraceStore(root, "sandbox-multi-click");
+
+    sandbox = await BrowserSandbox.launch({
+      task: {
+        id: "smoke-form",
+        title: "Smoke form",
+        instruction: "Select text using a native multi-click action.",
+        startUrl: `${target.origin}/smoke-form`,
+        maxSteps: 4
+      },
+      traceStore
+    });
+
+    const vendor = sandbox.page.locator("#vendor");
+    await vendor.fill("Acme Labs");
+    const vendorBox = await vendor.boundingBox();
+    expect(vendorBox).not.toBeNull();
+
+    const result = await executeAction(sandbox.page, {
+      kind: "click",
+      x: vendorBox!.x + vendorBox!.width / 2,
+      y: vendorBox!.y + vendorBox!.height / 2,
+      clickCount: 3
+    });
+
+    const selection = await vendor.evaluate((element) => {
+      const input = element as HTMLInputElement;
+      return { start: input.selectionStart, end: input.selectionEnd };
+    });
+    expect(result.ok).toBe(true);
+    expect(selection).toEqual({ start: 0, end: "Acme Labs".length });
+  });
+
+  it("treats tab-separated model typing as field navigation", async () => {
+    target = await startTargetServer();
+    const root = await mkdtemp(join(tmpdir(), "tracepilot-sandbox-"));
+    const traceStore = await createTraceStore(root, "sandbox-tab-type");
+
+    sandbox = await BrowserSandbox.launch({
+      task: {
+        id: "legacy-portal",
+        title: "Legacy portal",
+        instruction: "Fill the invoice form using a model-emitted tab-separated type action.",
+        startUrl: `${target.origin}/legacy-portal`,
+        maxSteps: 4
+      },
+      traceStore
+    });
+
+    await sandbox.page.locator("#vendor").click();
+    const result = await executeAction(sandbox.page, {
+      kind: "type",
+      text: "Acme Labs\t1200\t2026-06-26\tIT60X0542811101000000123456"
+    });
+
+    await expect(sandbox.page.locator("#vendor").inputValue()).resolves.toBe("Acme Labs");
+    await expect(sandbox.page.locator("#amount").inputValue()).resolves.toBe("1200");
+    await expect(sandbox.page.locator("#date").inputValue()).resolves.toBe("2026-06-26");
+    await expect(sandbox.page.locator("#iban").inputValue()).resolves.toBe("IT60X0542811101000000123456");
+    expect(result.ok).toBe(true);
+  });
 });

@@ -45,9 +45,9 @@ comparison success_delta=83.3% false_completion_delta=-50.0% report=.../runs/lat
 
 ## Why This Matters
 
-For Anthropic Computer Use, this demonstrates the product engineering layer around a computer-use model: sandboxing, action execution, guardrails, traces, and readouts.
+This demonstrates the product engineering layer around a computer-use model: sandboxing, action execution, guardrails, traces, and readouts.
 
-For OpenAI Agent Post-Training, this demonstrates the research and systems loop around computer-use behavior: environments, grader-like success criteria, diagnostics, reproducible evals, and hypotheses that can become training data or product fixes.
+It also demonstrates the eval loop around computer-use behavior: environments, grader-like success criteria, diagnostics, reproducible evals, and hypotheses that can become training data or product fixes.
 
 The companion [Failure Diagnosis Casebook](failure-diagnosis.md) turns these eval outcomes into specific failure classes, model-behavior hypotheses, and intervention owners.
 

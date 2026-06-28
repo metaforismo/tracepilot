@@ -2,6 +2,7 @@ import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { buildModelRunManifest } from "../packages/core/src/model-run-manifest.js";
 import type { ModelProvider, ModelRunManifest } from "../packages/core/src/types.js";
+import { anthropicApiKeyEnvVar, hasAnthropicApiCredentials } from "../packages/agents/src/anthropic-api-config.js";
 
 export type ModelReadinessSuiteOptions = {
   runsDir: string;
@@ -36,7 +37,7 @@ export async function runModelReadinessSuite(
     model: provider.model,
     apiKeyEnvVar: provider.apiKeyEnvVar,
     paidRunsEnabled: env[paidRunsFlag] === "1",
-    apiKeyPresent: Boolean(env[provider.apiKeyEnvVar]),
+    apiKeyPresent: provider.provider === "anthropic" ? hasAnthropicApiCredentials(env) : Boolean(env[provider.apiKeyEnvVar]),
     clientConfigured: false,
     ...(provider.reasoningEffort === undefined ? {} : { request: { reasoningEffort: provider.reasoningEffort } })
   });
@@ -118,6 +119,6 @@ function providerConfig(env: NodeJS.ProcessEnv): {
   return {
     provider: "anthropic",
     model: env.TRACEPILOT_ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514",
-    apiKeyEnvVar: "ANTHROPIC_API_KEY"
+    apiKeyEnvVar: anthropicApiKeyEnvVar(env)
   };
 }

@@ -62,6 +62,8 @@ The readiness-gate suite writes:
 
 The default CLI run executes the deterministic reliability scorecard once, runs the provider scorecard in dry-run mode unless paid provider runs are explicitly enabled, and emits a `blocked` decision when provider evidence is planned but not executed. The gate uses Wilson confidence intervals for success, false-completion, and stuck-loop rates; dry-run provider evidence cannot pass readiness.
 
+Set `TRACEPILOT_READINESS_USE_LATEST_SCORECARDS=1` to compute the gate from already generated `runs/latest/reliability-scorecard` and `runs/latest/provider-scorecard` summaries. This is useful after paid provider scorecards because it reuses saved evidence instead of making additional provider calls.
+
 ## Cost Artifacts
 
 The cost-ledger suite writes:
@@ -101,7 +103,7 @@ The Anthropic computer-use suite writes:
 - `runs/latest/anthropic-computer-use/anthropic-computer-use-summary.json`;
 - `runs/latest/anthropic-computer-use/anthropic-computer-use-report.md`.
 
-It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `ANTHROPIC_API_KEY`, and an explicit budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MODEL` chooses the Anthropic model, `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK` chooses `legacy-portal`, `smoke-form`, or `modal-interruption`, and `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_TOKENS` controls the Messages API output cap.
+It makes no paid call by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, a configured provider key, and an explicit budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. Set `TRACEPILOT_ANTHROPIC_API_PROVIDER=anthropic` to force first-party Anthropic native computer use even when OpenRouter fallback variables are present. Set `TRACEPILOT_ANTHROPIC_API_PROVIDER=openrouter` to force the Anthropic-compatible OpenRouter path. `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MODEL` chooses the model, `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK` chooses `legacy-portal`, `smoke-form`, `modal-interruption`, or `prompt-injection`, and `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_TOKENS` controls the Messages API output cap.
 
 This suite validates the Anthropic adapter boundary without silently mixing it with OpenAI results. The request includes Anthropic's computer-use tool definition and maps returned `tool_use` blocks into the same TracePilot action, verifier, trace, and cost contract.
 

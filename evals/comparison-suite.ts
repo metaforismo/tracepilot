@@ -299,10 +299,10 @@ This deterministic local suite compares a naive baseline loop against the TraceP
 - Prompt-injection block rate: ${signedPercent(delta.unsafeBlockRate)}
 - Human-approval rate: ${signedPercent(delta.humanApprovalRate)}
 
-## Role Signal
+## Operational Relevance
 
-- Anthropic Computer Use: demonstrates an agent harness with verifier-driven reliability, guardrails, traces, and external-user-style workflows.
-- OpenAI Agent Post-Training: demonstrates eval environments, grader-like success criteria, diagnostics, reproducible reports, and model-behavior hypotheses that can become training or product fixes.
+- Browser-agent product reliability: demonstrates a harness with verifier-driven reliability, guardrails, traces, and external-user-style workflows.
+- Model improvement and evals: demonstrates local environments, grader-like success criteria, diagnostics, reproducible reports, and model-behavior hypotheses that can become data or product fixes.
 `;
 }
 

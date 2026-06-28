@@ -92,6 +92,13 @@ export function redactEvidenceText(text: string): { text: string; redactions: Ev
     "anthropic_api_key",
     counts
   );
+  redacted = replaceNamedSecret(
+    redacted,
+    "OPENROUTER_API_KEY",
+    "[REDACTED_OPENROUTER_API_KEY]",
+    "anthropic_api_key",
+    counts
+  );
   redacted = replaceAndCount(
     redacted,
     new RegExp(`${"sk"}-${"proj"}-[A-Za-z0-9_-]+`, "g"),
@@ -103,6 +110,13 @@ export function redactEvidenceText(text: string): { text: string; redactions: Ev
     redacted,
     new RegExp(`${"sk"}-${"ant"}-[A-Za-z0-9_-]+`, "g"),
     "[REDACTED_ANTHROPIC_API_KEY]",
+    "anthropic_api_key",
+    counts
+  );
+  redacted = replaceAndCount(
+    redacted,
+    /sk-or-v1-[A-Za-z0-9_-]+/g,
+    "[REDACTED_OPENROUTER_API_KEY]",
     "anthropic_api_key",
     counts
   );

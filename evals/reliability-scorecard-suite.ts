@@ -328,10 +328,10 @@ This deterministic local suite reruns the harder browser workflows and reports r
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | ${rows.join(" |\n| ")} |
 
-## Role Signal
+## Operational Relevance
 
-- Anthropic Computer Use: demonstrates repeatable browser-agent reliability measurement across interruptions, validation recovery, safety boundaries, and human-approval gates.
-- OpenAI Agent Post-Training: demonstrates eval environments, aggregate grader-style readouts, failure categories, and repeatable traces that can become model-improvement or harness-improvement signal.
+- Browser-agent reliability measurement: covers interruptions, validation recovery, safety boundaries, and human-approval gates.
+- Model improvement and evals: provides aggregate grader-style readouts, failure categories, and repeatable traces that can become model-improvement or harness-improvement signal.
 `;
 }
 

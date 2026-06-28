@@ -1,10 +1,23 @@
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { AnthropicComputerUseDriver, type AnthropicComputerUseFetch } from "../packages/agents/src/index.js";
+import {
+  anthropicApiKeyEnvVar,
+  anthropicComputerUseToolMode,
+  anthropicMessagesUrl,
+  hasAnthropicApiCredentials,
+  resolveAnthropicApiKey,
+  usesOpenRouterAnthropicApi
+} from "../packages/agents/src/anthropic-api-config.js";
+import type { AnthropicComputerUseToolMode } from "../packages/agents/src/index.js";
 import type { RunMetrics, TaskSpec } from "../packages/core/src/types.js";
 import { runTask } from "../packages/harness/src/orchestrator.js";
 import { startTargetServer } from "../apps/targets/src/server.js";
-import { createModalInterruptionTask, createPortalTask } from "./tasks/invoice-to-portal.js";
+import {
+  createMaliciousInvoiceTask,
+  createModalInterruptionTask,
+  createPortalTask
+} from "./tasks/invoice-to-portal.js";
 import { createSmokeFormTask } from "./tasks/smoke-form.js";
 
 export type AnthropicComputerUseStatus = "skipped_paid_runs_disabled" | "skipped_missing_api_key" | "executed";
@@ -15,6 +28,7 @@ export type AnthropicComputerUseSummary = {
   paidCall: boolean;
   provider: "anthropic";
   model: string;
+  toolMode: AnthropicComputerUseToolMode;
   taskId: string;
   success: boolean;
   falseCompletion: boolean;
@@ -58,6 +72,8 @@ export async function runAnthropicComputerUseSuite(
   const taskId = env.TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK ?? "legacy-portal";
   const maxCostUsd = parseUsd(env.TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD, 0.25);
   const maxTokens = parsePositiveInteger(env.TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_TOKENS, 700);
+  const useOpenRouter = usesOpenRouterAnthropicApi(env);
+  const toolMode = anthropicComputerUseToolMode(env, useOpenRouter);
   const artifacts = {
     summaryPath: join(options.runsDir, "anthropic-computer-use-summary.json"),
     reportPath: join(options.runsDir, "anthropic-computer-use-report.md")
@@ -68,6 +84,7 @@ export async function runAnthropicComputerUseSuite(
       status: "skipped_paid_runs_disabled",
       generatedAt,
       model,
+      toolMode,
       taskId,
       maxCostUsd,
       warning: `Paid model runs are disabled; set ${paidRunsFlag}=1 to execute the Anthropic computer-use suite.`
@@ -76,14 +93,15 @@ export async function runAnthropicComputerUseSuite(
     return { summary, artifacts };
   }
 
-  if (!env.ANTHROPIC_API_KEY) {
+  if (!hasAnthropicApiCredentials(env)) {
     const summary = skippedSummary({
       status: "skipped_missing_api_key",
       generatedAt,
       model,
+      toolMode,
       taskId,
       maxCostUsd,
-      warning: "ANTHROPIC_API_KEY is required to execute the Anthropic computer-use suite."
+      warning: `${anthropicApiKeyEnvVar(env)} is required to execute the Anthropic computer-use suite.`
     });
     await writeArtifacts(artifacts, summary);
     return { summary, artifacts };
@@ -92,14 +110,21 @@ export async function runAnthropicComputerUseSuite(
   const target = await startTargetServer();
   try {
     const task = taskFor(taskId, target.origin);
+    const apiKey = resolveAnthropicApiKey(env);
+    if (!apiKey) {
+      throw new Error(`${anthropicApiKeyEnvVar(env)} is required to execute the Anthropic computer-use suite.`);
+    }
     const result = await runTask({
       runsDir: options.runsDir,
       task,
       maxCostUsd,
       driver: new AnthropicComputerUseDriver({
-        apiKey: env.ANTHROPIC_API_KEY,
+        apiKey,
         model,
         maxTokens,
+        messagesUrl: anthropicMessagesUrl(env),
+        useOpenRouter,
+        toolMode,
         enablePaidCalls: true,
         ...(options.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl })
       })
@@ -110,6 +135,7 @@ export async function runAnthropicComputerUseSuite(
       paidCall: true,
       provider: "anthropic",
       model,
+      toolMode,
       taskId,
       success: result.metrics.success,
       falseCompletion: result.metrics.falseCompletion,
@@ -133,6 +159,7 @@ function skippedSummary(params: {
   status: Extract<AnthropicComputerUseStatus, "skipped_paid_runs_disabled" | "skipped_missing_api_key">;
   generatedAt: string;
   model: string;
+  toolMode: AnthropicComputerUseToolMode;
   taskId: string;
   maxCostUsd: number;
   warning: string;
@@ -143,6 +170,7 @@ function skippedSummary(params: {
     paidCall: false,
     provider: "anthropic",
     model: params.model,
+    toolMode: params.toolMode,
     taskId: params.taskId,
     success: false,
     falseCompletion: false,
@@ -165,6 +193,9 @@ function taskFor(taskId: string, origin: string): TaskSpec {
   }
   if (taskId === "smoke-form") {
     return createSmokeFormTask(origin);
+  }
+  if (taskId === "prompt-injection" || taskId === "malicious-invoice") {
+    return createMaliciousInvoiceTask(origin);
   }
 
   throw new Error(`Unknown Anthropic computer-use task: ${taskId}`);
@@ -196,6 +227,7 @@ ${summary.paidCall ? "" : "No paid Anthropic computer-use call was made.\n"}
 | Paid call | ${summary.paidCall ? "yes" : "no"} |
 | Provider | \`${summary.provider}\` |
 | Model | \`${summary.model}\` |
+| Tool mode | \`${summary.toolMode}\` |
 | Task | \`${summary.taskId}\` |
 | Success | ${summary.success ? "yes" : "no"} |
 | False completion | ${summary.falseCompletion ? "yes" : "no"} |
@@ -210,7 +242,7 @@ ${summary.paidCall ? "" : "No paid Anthropic computer-use call was made.\n"}
 
 - Anthropic calls are disabled unless \`${paidRunsFlag}=1\`.
 - Artifacts record key presence and model metadata, not API key values.
-- Computer-use request shape follows Anthropic's Messages API computer tool docs.
+- Tool mode \`native_computer\` sends Anthropic's native computer tool. Tool mode \`action_tool\` sends a portable custom action tool for Anthropic-compatible providers that do not pass through native computer-use tools.
 - Pricing source: [Anthropic pricing](https://docs.anthropic.com/en/docs/about-claude/pricing), standard first-party Claude API prices per MTok.
 - This is a small operational browser run, not a broad benchmark ranking.
 

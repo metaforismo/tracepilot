@@ -73,6 +73,25 @@ describe("evidence pack verifier", () => {
     expect(report.summary.leakedArtifacts).toBe(1);
   });
 
+  test("fails when copied artifacts contain raw OpenRouter token patterns", () => {
+    const pack = createEnterprisePack();
+    const copiedArtifacts = redactedArtifactContents(pack.artifacts).map((item, index) =>
+      index === 0 ? { ...item, content: "provider token sk-or-v1-testsecret1234567890 leaked" } : item
+    );
+
+    const report = verifyEvidencePack({
+      manifest: pack.manifest,
+      artifacts: copiedArtifacts,
+      requiredCategories: [],
+      requiredSourceSuites: [],
+      generatedAt: "2026-06-27T10:01:00.000Z"
+    });
+
+    expect(report.decision).toBe("fail");
+    expect(issueCodes(report)).toContain("secret_pattern_detected");
+    expect(report.summary.leakedArtifacts).toBe(1);
+  });
+
   test("detects manifest digest mismatch and unmanifested artifacts", () => {
     const pack = createEnterprisePack();
     const report = verifyEvidencePack({

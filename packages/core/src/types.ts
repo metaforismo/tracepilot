@@ -9,7 +9,7 @@ export type ActionKind =
   | "requestHumanApproval";
 
 export type AgentAction =
-  | { kind: "click"; x: number; y: number; expected?: string }
+  | { kind: "click"; x: number; y: number; clickCount?: number; expected?: string }
   | { kind: "type"; text: string; expected?: string }
   | { kind: "press"; key: string; expected?: string }
   | { kind: "scroll"; deltaX: number; deltaY: number; expected?: string }

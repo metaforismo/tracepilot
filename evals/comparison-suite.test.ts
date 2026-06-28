@@ -48,8 +48,8 @@ describe("runComparisonSuite", () => {
     const report = await readFile(join(runsDir, "comparison-report.md"), "utf8");
     expect(report).toContain("# Baseline vs TracePilot Comparison");
     expect(report).toContain("| TracePilot | 6 | 6 | 100.0% |");
-    expect(report).toContain("OpenAI Agent Post-Training");
-    expect(report).toContain("Anthropic Computer Use");
+    expect(report).toContain("Operational Relevance");
+    expect(report).toContain("Browser-agent product reliability");
 
     const diagnosisJson = await readFile(join(runsDir, "failure-diagnosis.json"), "utf8");
     expect(diagnosisJson).toContain("false_completion");

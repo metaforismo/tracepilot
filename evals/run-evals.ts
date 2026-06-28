@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createTraceStore } from "../packages/core/src/trace-store.js";
 import type { Observation, RunMetrics, TraceStep } from "../packages/core/src/types.js";
@@ -23,8 +23,8 @@ import { runModelReadinessSuite } from "./model-readiness-suite.js";
 import { runOpenAIBenchmarkSuite } from "./openai-benchmark-suite.js";
 import { runModelBrowserSuite } from "./model-browser-suite.js";
 import { runAnthropicComputerUseSuite } from "./anthropic-computer-use-suite.js";
-import { runReliabilityScorecardSuite } from "./reliability-scorecard-suite.js";
-import { runProviderScorecardSuite } from "./provider-scorecard-suite.js";
+import { runReliabilityScorecardSuite, type ReliabilityScorecardSummary } from "./reliability-scorecard-suite.js";
+import { runProviderScorecardSuite, type ProviderScorecardSummary } from "./provider-scorecard-suite.js";
 import { runReadinessGateSuite } from "./readiness-gate-suite.js";
 import { runEvidencePackSuite } from "./evidence-pack-suite.js";
 import { runEvidencePackVerifySuite } from "./evidence-pack-verify-suite.js";
@@ -134,8 +134,12 @@ if (values.suite === "evidence-pack-verify") {
     `provider-scorecard status=${result.summary.status} planned_runs=${result.summary.plannedRuns} executed_runs=${result.summary.executedRuns} success_rate=${formatPercent(result.summary.successRate)} total_cost_usd=${result.summary.totalCostUsd} report=${result.artifacts.reportPath} diagnosis=${result.artifacts.diagnosisReportPath}`
   );
 } else if (values.suite === "readiness-gate") {
+  const latestScorecards = process.env.TRACEPILOT_READINESS_USE_LATEST_SCORECARDS === "1"
+    ? await loadLatestScorecardSummaries()
+    : {};
   const result = await runReadinessGateSuite({
     runsDir: join(process.cwd(), "runs", "latest", "readiness-gate"),
+    ...latestScorecards,
     ...(values.repetitions === undefined
       ? {}
       : { reliabilityRepetitions: parsePositiveInteger("repetitions", values.repetitions) })
@@ -159,6 +163,21 @@ function normalizeArgs(args: string[]): string[] {
 
 function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+async function loadLatestScorecardSummaries(): Promise<{
+  reliabilitySummary: ReliabilityScorecardSummary;
+  providerSummary: ProviderScorecardSummary;
+}> {
+  return {
+    reliabilitySummary: await readJson(join(process.cwd(), "runs", "latest", "reliability-scorecard", "reliability-scorecard.json")),
+    providerSummary: await readJson(join(process.cwd(), "runs", "latest", "provider-scorecard", "provider-scorecard.json"))
+  };
+}
+
+async function readJson<T>(path: string): Promise<T> {
+  const text = await readFile(path, "utf8");
+  return JSON.parse(text) as T;
 }
 
 function parsePositiveInteger(name: string, value: string): number {

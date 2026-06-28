@@ -74,6 +74,8 @@ corepack pnpm@9.15.4 run eval -- --suite evidence-pack-verify
 | Anthropic computer-use dry run | `anthropic-computer-use status=skipped_paid_runs_disabled paid_call=false success=false steps=0 total_cost_usd=0 report=...` |
 | Anthropic computer-use mocked integration | Mocked Anthropic `tool_use` responses completed the real browser legacy portal workflow in `11` steps with `model_api` trace metadata |
 | Anthropic computer-use mocked modal integration | Mocked Anthropic `tool_use` responses dismissed a blocking portal notice and completed the same interrupted browser workflow in `11` steps |
+| Anthropic-compatible OpenRouter action-tool run | `anthropic/claude-sonnet-4.6` completed `smoke-form` in `6` browser steps for `$0.053109` using `toolMode=action_tool` |
+| OpenRouter native computer-use passthrough probe | `toolMode=native_computer` reached OpenRouter but was rejected before billable tokens with `tools[0].type: Unknown server-tool shorthand` |
 | Enterprise evidence pack | `evidence-pack artifacts=14 redacted=0 manifest=... report=...` |
 | Enterprise evidence-pack verifier | `evidence-pack-verify decision=pass artifacts=14 errors=0 warnings=0 report=...` |
 
@@ -197,9 +199,11 @@ Real paid browser runs also drove concrete harness fixes:
 
 The Anthropic computer-use suite writes `runs/latest/anthropic-computer-use/anthropic-computer-use-summary.json` and `runs/latest/anthropic-computer-use/anthropic-computer-use-report.md`.
 
-It is a dry run by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, `ANTHROPIC_API_KEY`, and a budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. The adapter sends Anthropic's computer-use tool definition with viewport dimensions and maps returned `tool_use` blocks into TracePilot click, type, press, scroll, wait, and finish actions. `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK` supports `legacy-portal`, `smoke-form`, and `modal-interruption`.
+It is a dry run by default. Paid execution requires `TRACEPILOT_ENABLE_PAID_MODEL_RUNS=1`, a configured provider key, and a budget such as `TRACEPILOT_ANTHROPIC_COMPUTER_USE_MAX_USD=0.25`. `TRACEPILOT_ANTHROPIC_API_PROVIDER=anthropic` forces the first-party Anthropic endpoint and `ANTHROPIC_API_KEY`; `TRACEPILOT_ANTHROPIC_API_PROVIDER=openrouter` forces the Anthropic-compatible OpenRouter endpoint and `OPENROUTER_API_KEY`. The adapter supports two tool modes: `native_computer`, which sends Anthropic's native computer-use tool definition with viewport dimensions, and `action_tool`, which sends a portable `tracepilot_action` custom tool for Anthropic-compatible providers that do not pass through the native computer-use tool. Returned `tool_use` blocks map into TracePilot click, type, press, scroll, wait, and finish actions. `TRACEPILOT_ANTHROPIC_COMPUTER_USE_TASK` supports `legacy-portal`, `smoke-form`, `modal-interruption`, and `prompt-injection`.
 
-The current verification uses mocked Anthropic Messages API responses but real Playwright browser execution, including the interrupted portal workflow. That keeps the provider boundary honest: the run proves request construction, action parsing, verifier integration, trace writing, cost accounting, and secret-safe reports, but it is not a paid Anthropic model-performance result.
+The mocked Anthropic verification uses real Playwright browser execution, including the interrupted portal workflow. That keeps the provider boundary honest: the mocked run proves request construction, action parsing, verifier integration, trace writing, cost accounting, and secret-safe reports.
+
+The current real OpenRouter evidence has two parts. First, a forced `native_computer` probe used `anthropic/claude-sonnet-4.6` on `smoke-form` with a `$0.02` cap and reached the Anthropic-compatible endpoint, then failed at provider validation with HTTP 400 because the endpoint rejected the native `computer_20251124` tool type as an unknown server-tool shorthand. TracePilot recorded this as a one-step failed run with no leaked key material and `$0.000000` estimated token cost. Second, the default OpenRouter `action_tool` mode completed the same `smoke-form` workflow in `6` steps for `$0.053109`, with no false completion, stuck loop, unsafe block, or budget exceedance. This is provider-compatibility evidence plus a small successful Anthropic-compatible browser-control run; it is not a broad model ranking or proof that OpenRouter passes through Anthropic's native computer-use tool. A first-party Anthropic run should use `TRACEPILOT_ANTHROPIC_API_PROVIDER=anthropic` so OpenRouter fallback settings cannot change the endpoint or auth mode.
 
 ### Enterprise Evidence-Pack Suite
 
@@ -220,7 +224,7 @@ This turns the evidence pack from a report into a checkable contract: an externa
 ## Limitations
 
 - This is a local deterministic suite, not an OSWorld-scale benchmark.
-- The Anthropic computer-use adapter can make paid calls behind explicit env gates, but this report has not recorded a paid Anthropic run yet.
+- The Anthropic computer-use adapter has recorded a paid OpenRouter Anthropic-compatible `action_tool` run, but this report has not recorded a first-party Anthropic native computer-use run yet.
 - The comparison report does not yet use a paid model driver.
 - The reliability scorecard is deterministic harness evidence; it is not a paid provider quality ranking.
 - The provider scorecard dry run and mocked integration coverage are not live provider quality rankings.
@@ -229,7 +233,7 @@ This turns the evidence pack from a report into a checkable contract: an externa
 - The model-readiness result is a dry-run manifest, not model-performance evidence.
 - The OpenAI paid run is a small operational benchmark and harness-readiness check, not a broad model-quality ranking.
 - The model-browser paid runs are small operational browser-control checks, not broad computer-use model rankings.
-- The Anthropic computer-use result is mocked at the API boundary until a real paid run is explicitly enabled.
+- The native Anthropic computer-use result is mocked at the API boundary until a first-party Anthropic run is explicitly enabled; OpenRouter action-tool evidence is reported separately.
 - Evidence-pack hashes cover redacted evidence-pack artifacts, not unredacted source files.
 - Evidence-pack verification is an integrity and completeness check, not a cryptographic signature; teams should compare the manifest SHA-256 against an out-of-band digest when exchanging packs.
 - The invoice fixtures are HTML first; PDF and spreadsheet fixtures are planned after the browser workflow remains stable.
@@ -239,6 +243,6 @@ This turns the evidence pack from a report into a checkable contract: an externa
 The next report should add:
 
 - paid `model_api` cost per successful task across repeated browser-control runs;
-- a real paid Anthropic Computer Use run under the same trace contract;
+- a first-party Anthropic native Computer Use run under the same trace contract;
 - repeated paid provider-backed readiness gates with preserved failed traces;
 - provider failure-class scorecards over more browser workflows, including validation recovery and approval boundaries.

@@ -85,6 +85,83 @@ describe("AnthropicComputerUseDecisionClient", () => {
     expect((requestBody as { max_tokens: number }).max_tokens).toBe(700);
   });
 
+  it("defaults OpenRouter-compatible endpoints to a portable action tool instead of the native computer tool", async () => {
+    const context = await contextWithScreenshot();
+    let requestBody: Record<string, unknown> | undefined;
+    const observedHeaders: Record<string, string>[] = [];
+    const fetchImpl = vi.fn(async (_url: string, init: { headers: Record<string, string>; body: string }) => {
+      requestBody = JSON.parse(init.body) as Record<string, unknown>;
+      observedHeaders.push(init.headers);
+      return jsonResponse({
+        id: "msg_openrouter",
+        model: "anthropic/claude-sonnet-4",
+        stop_reason: "tool_use",
+        content: [
+          {
+            type: "tool_use",
+            id: "toolu_type_vendor",
+            name: "tracepilot_action",
+            input: {
+              action: "type",
+              text: "Acme Labs",
+              reason: "The vendor field is focused, so type the vendor name."
+            }
+          }
+        ],
+        usage: { input_tokens: 10, output_tokens: 10 }
+      });
+    });
+
+    const client = new AnthropicComputerUseDecisionClient({
+      apiKey: "test-openrouter-key",
+      fetchImpl,
+      messagesUrl: "https://openrouter.ai/api/v1/messages",
+      useOpenRouter: true
+    });
+
+    await expect(client.decide(context, { model: "anthropic/claude-sonnet-4" })).resolves.toMatchObject({
+      action: { kind: "type", text: "Acme Labs" },
+      reasoning: "The vendor field is focused, so type the vendor name.",
+      modelRun: {
+        provider: "anthropic",
+        model: "anthropic/claude-sonnet-4",
+        resolvedModel: "anthropic/claude-sonnet-4"
+      }
+    });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://openrouter.ai/api/v1/messages",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.not.objectContaining({
+          "x-api-key": expect.any(String)
+        })
+      })
+    );
+    expect(fetchImpl).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer test-openrouter-key",
+          "anthropic-version": "2023-06-01"
+        })
+      })
+    );
+    expect(observedHeaders.every((headers) => !("anthropic-beta" in headers))).toBe(true);
+    expect(requestBody?.tools).toEqual([
+      expect.objectContaining({
+        name: "tracepilot_action",
+        input_schema: expect.objectContaining({
+          type: "object"
+        })
+      })
+    ]);
+    expect(JSON.stringify(requestBody?.tools)).not.toContain("allOf");
+    expect(JSON.stringify(requestBody?.tools)).not.toContain("oneOf");
+    expect(JSON.stringify(requestBody?.tools)).not.toContain("anyOf");
+    expect(JSON.stringify(requestBody?.tools)).not.toContain("computer_20251124");
+    expect(requestBody?.tool_choice).toEqual({ type: "tool", name: "tracepilot_action" });
+  });
+
   it("maps keyboard, typing, scrolling, and final text outputs", async () => {
     const context = await contextWithScreenshot();
     const makeDecision = async (content: unknown[]) => {
@@ -122,6 +199,94 @@ describe("AnthropicComputerUseDecisionClient", () => {
     await expect(makeDecision([{ type: "text", text: "The receipt page is visible." }])).resolves.toMatchObject({
       action: { kind: "finish", summary: "The receipt page is visible." }
     });
+  });
+
+  it("maps native multi-click computer actions without losing click count", async () => {
+    const context = await contextWithScreenshot();
+    const makeDecision = async (action: string) => {
+      const client = new AnthropicComputerUseDecisionClient({
+        apiKey: "test-anthropic-key",
+        fetchImpl: vi.fn(async () =>
+          jsonResponse({
+            id: `msg_${action}`,
+            model: "claude-sonnet-4-6-20261124",
+            stop_reason: "tool_use",
+            content: [
+              {
+                type: "tool_use",
+                id: `toolu_${action}`,
+                name: "computer",
+                input: { action, coordinate: [320, 240] }
+              }
+            ],
+            usage: { input_tokens: 10, output_tokens: 10 }
+          })
+        )
+      });
+      return client.decide(context, { model: "claude-sonnet-4-6" });
+    };
+
+    await expect(makeDecision("double_click")).resolves.toMatchObject({
+      action: { kind: "click", x: 320, y: 240, clickCount: 2 }
+    });
+    await expect(makeDecision("triple_click")).resolves.toMatchObject({
+      action: { kind: "click", x: 320, y: 240, clickCount: 3 }
+    });
+  });
+
+  it("includes recovery guidance when prior focus clicks produced uncertain verifier outcomes", async () => {
+    const context = await contextWithScreenshot();
+    context.steps = [
+      {
+        runId: "smoke",
+        stepIndex: 0,
+        observation: context.observation,
+        decision: {
+          action: { kind: "click", x: 388, y: 197 },
+          reasoning: "Click vendor field.",
+          confidence: 0.8
+        },
+        verifier: {
+          status: "uncertain",
+          reason: "Action completed but verifier did not observe state change."
+        },
+        latencyMs: 100
+      }
+    ];
+    let requestBody: Record<string, unknown> | undefined;
+    const fetchImpl = vi.fn(async (_url: string, init: { body: string }) => {
+      requestBody = JSON.parse(init.body) as Record<string, unknown>;
+      return jsonResponse({
+        model: "anthropic/claude-sonnet-4",
+        content: [
+          {
+            type: "tool_use",
+            id: "toolu_type_after_uncertain_click",
+            name: "tracepilot_action",
+            input: {
+              action: "type",
+              text: "Acme Labs",
+              reason: "The prior click likely focused the field; type instead of repeating the click."
+            }
+          }
+        ],
+        usage: { input_tokens: 10, output_tokens: 10 }
+      });
+    });
+
+    const client = new AnthropicComputerUseDecisionClient({
+      apiKey: "test-openrouter-key",
+      fetchImpl,
+      messagesUrl: "https://openrouter.ai/api/v1/messages",
+      useOpenRouter: true
+    });
+
+    await client.decide(context, { model: "anthropic/claude-sonnet-4" });
+
+    expect(JSON.stringify(requestBody)).toContain("Do not repeat the same click");
+    expect(JSON.stringify(requestBody)).toContain("Focus-only clicks often create no observable verifier change");
+    expect(JSON.stringify(requestBody)).toContain("For click actions, include numeric x and y");
+    expect(JSON.stringify(requestBody)).toContain("prefer pressing Return or Enter");
   });
 
   it("redacts API keys from Anthropic API and network errors", async () => {

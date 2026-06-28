@@ -25,6 +25,7 @@ export type {
   AnthropicComputerUseDecisionOptions,
   AnthropicComputerUseFetch
 } from "./anthropic-computer-use-decision-client.js";
+export type { AnthropicApiProvider, AnthropicComputerUseToolMode } from "./anthropic-api-config.js";
 export type {
   OpenAIDecisionClient,
   OpenAIResponsesDriverOptions

@@ -32,7 +32,16 @@ model-readiness provider=anthropic model=claude-sonnet-4-20250514 status=skipped
 | Paid call | `false` |
 | Provider | `anthropic` |
 | Model | `claude-sonnet-4-20250514` |
-| API key env var | `ANTHROPIC_API_KEY` |
+| API key env var | `ANTHROPIC_API_KEY` or `OPENROUTER_API_KEY` |
+
+For OpenRouter-backed Anthropic readiness, configure:
+
+```bash
+OPENROUTER_API_KEY=... \
+ANTHROPIC_API_BASE_URL=https://openrouter.ai/api \
+TRACEPILOT_ANTHROPIC_MODEL=anthropic/claude-sonnet-4 \
+corepack pnpm@9.15.4 run eval -- --suite model-readiness
+```
 
 ## OpenAI Readiness
 

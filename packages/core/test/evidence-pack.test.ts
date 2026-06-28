@@ -10,15 +10,19 @@ describe("evidence pack", () => {
     const openAiKey = ["sk", "proj", "testsecret1234567890"].join("-");
     const anotherOpenAiKey = ["sk", "proj", "anothersecret1234567890"].join("-");
     const anthropicKey = ["sk", "ant", "testsecret1234567890"].join("-");
+    const openRouterKey = "sk-or-v1-testsecret1234567890";
     const openAiNamedSecret = "test-openai-key";
     const anthropicNamedSecret = "test-anthropic-key";
+    const openRouterNamedSecret = "test-openrouter-key";
     const input = [
       `OPENAI_API_KEY=${openAiKey}`,
       `ANTHROPIC_API_KEY=${anthropicKey}`,
+      `OPENROUTER_API_KEY=${openRouterKey}`,
       `Authorization: Bearer ${anotherOpenAiKey}`,
       JSON.stringify({
         OPENAI_API_KEY: openAiNamedSecret,
-        ANTHROPIC_API_KEY: anthropicNamedSecret
+        ANTHROPIC_API_KEY: anthropicNamedSecret,
+        OPENROUTER_API_KEY: openRouterNamedSecret
       })
     ].join("\n");
 
@@ -26,14 +30,17 @@ describe("evidence pack", () => {
 
     expect(result.text).toContain("OPENAI_API_KEY=[REDACTED_OPENAI_API_KEY]");
     expect(result.text).toContain("ANTHROPIC_API_KEY=[REDACTED_ANTHROPIC_API_KEY]");
+    expect(result.text).toContain("OPENROUTER_API_KEY=[REDACTED_OPENROUTER_API_KEY]");
     expect(result.text).toContain("Bearer [REDACTED_OPENAI_API_KEY]");
     expect(result.text).not.toContain(openAiKey);
     expect(result.text).not.toContain(anthropicKey);
+    expect(result.text).not.toContain(openRouterKey);
     expect(result.text).not.toContain(openAiNamedSecret);
     expect(result.text).not.toContain(anthropicNamedSecret);
+    expect(result.text).not.toContain(openRouterNamedSecret);
     expect(result.redactions).toEqual([
       { type: "openai_api_key", count: 3 },
-      { type: "anthropic_api_key", count: 2 }
+      { type: "anthropic_api_key", count: 4 }
     ]);
   });
 

@@ -32,10 +32,13 @@ export default async function RunPage({ params, searchParams }: PageProps) {
           Runs
         </Link>
 
-        <span className="sectionLabel">Mode</span>
-        <div className="modeSwitch" aria-label="Agent mode">
-          <span>Baseline</span>
-          <span className="active">TracePilot</span>
+        <span className="sectionLabel">Evidence</span>
+        <div className="taskItem">
+          <strong>{run.metrics.totalCostUsd > 0 ? "Model API trace" : "Replay fixture"}</strong>
+          <small>{run.metrics.totalCostUsd > 0 ? "Provider metadata and verifier evidence." : "Deterministic replay with verifier evidence."}</small>
+          <span className={`status ${run.metrics.totalCostUsd > 0 ? "warn" : "pass"}`}>
+            {run.metrics.totalCostUsd > 0 ? "paid" : "local"}
+          </span>
         </div>
 
         <span className="sectionLabel">Selected</span>

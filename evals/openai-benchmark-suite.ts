@@ -594,7 +594,7 @@ const benchmarkTasks: BenchmarkTask[] = [
     title: "Technical positioning summary",
     maxOutputTokens: 500,
     prompt:
-      "Write 160 to 240 words, no markdown, explaining why TracePilot is relevant to computer-use agent reliability roles. Mention traces, evals, guardrails, cost accounting, and external-user readiness.",
+      "Write 160 to 240 words, no markdown, explaining why TracePilot is relevant to computer-use agent reliability evaluation. Mention traces, evals, guardrails, cost accounting, and external-user readiness.",
     validate(outputText) {
       const lower = outputText.toLowerCase();
       const required = ["trace", "eval", "guardrail", "cost", "external"];

@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
   buildEvidencePackManifest,
@@ -9,6 +9,8 @@ import {
 } from "../packages/core/src/evidence-pack.js";
 import { runCostLedgerSuite } from "./cost-ledger-suite.js";
 import { runReadinessGateSuite } from "./readiness-gate-suite.js";
+import type { ProviderScorecardSummary } from "./provider-scorecard-suite.js";
+import type { ReliabilityScorecardSummary } from "./reliability-scorecard-suite.js";
 
 export type EvidencePackSuiteOptions = {
   runsDir: string;
@@ -34,15 +36,25 @@ export async function runEvidencePackSuite(options: EvidencePackSuiteOptions): P
   const artifactsDir = join(options.runsDir, "artifacts");
   const readinessDir = join(sourcesDir, "readiness-gate");
   const costLedgerDir = join(sourcesDir, "cost-ledger");
+  const useLatestScorecards = process.env.TRACEPILOT_EVIDENCE_PACK_USE_LATEST_SCORECARDS === "1";
+  const latestScorecards = useLatestScorecards ? await loadLatestScorecardSummaries() : {};
 
   await runReadinessGateSuite({
     runsDir: readinessDir,
     generatedAt,
-    providerEnv: {
-      ...process.env,
-      TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
-    }
+    ...latestScorecards,
+    ...(useLatestScorecards
+      ? {}
+      : {
+          providerEnv: {
+            ...process.env,
+            TRACEPILOT_ENABLE_PAID_MODEL_RUNS: "0"
+          }
+        })
   });
+  if (useLatestScorecards) {
+    await copyLatestScorecardArtifacts(readinessDir);
+  }
   await runCostLedgerSuite({
     runsDir: costLedgerDir,
     generatedAt
@@ -63,7 +75,9 @@ export async function runEvidencePackSuite(options: EvidencePackSuiteOptions): P
     producer: "tracepilot",
     artifacts: artifactInputs,
     warnings: [
-      "Provider rows in the default evidence pack are dry-run rows unless paid provider scorecards are explicitly enabled upstream.",
+      useLatestScorecards
+        ? "Evidence pack readiness uses existing runs/latest scorecard summaries; it does not re-run paid provider calls."
+        : "Provider rows in the default evidence pack are dry-run rows unless paid provider scorecards are explicitly enabled upstream.",
       "Artifact hashes cover redacted evidence-pack bytes, not unredacted source files."
     ]
   });
@@ -235,6 +249,36 @@ async function modelBrowserNegativeArtifacts(): Promise<EvidencePackArtifactInpu
       sourcePath: join(root, "apps", "studio", "public", "fixtures", "model-browser-negative.svg")
     })
   ]);
+}
+
+async function loadLatestScorecardSummaries(): Promise<{
+  reliabilitySummary: ReliabilityScorecardSummary;
+  providerSummary: ProviderScorecardSummary;
+}> {
+  return {
+    reliabilitySummary: await readJson(join(process.cwd(), "runs", "latest", "reliability-scorecard", "reliability-scorecard.json")),
+    providerSummary: await readJson(join(process.cwd(), "runs", "latest", "provider-scorecard", "provider-scorecard.json"))
+  };
+}
+
+async function copyLatestScorecardArtifacts(readinessDir: string): Promise<void> {
+  await Promise.all([
+    cp(
+      join(process.cwd(), "runs", "latest", "reliability-scorecard"),
+      join(readinessDir, "reliability-scorecard"),
+      { recursive: true, force: true }
+    ),
+    cp(
+      join(process.cwd(), "runs", "latest", "provider-scorecard"),
+      join(readinessDir, "provider-scorecard"),
+      { recursive: true, force: true }
+    )
+  ]);
+}
+
+async function readJson<T>(path: string): Promise<T> {
+  const text = await readFile(path, "utf8");
+  return JSON.parse(text) as T;
 }
 
 async function sourceArtifact(params: Omit<EvidencePackArtifactInput, "content"> & { sourcePath: string }): Promise<EvidencePackArtifactInput> {

@@ -6,6 +6,13 @@ import {
   type AnthropicComputerUseFetch,
   type OpenAIResponsesFetch
 } from "../packages/agents/src/index.js";
+import {
+  anthropicApiKeyEnvVar,
+  anthropicMessagesUrl,
+  hasAnthropicApiCredentials,
+  resolveAnthropicApiKey,
+  usesOpenRouterAnthropicApi
+} from "../packages/agents/src/anthropic-api-config.js";
 import { diagnoseEvalResults } from "../packages/core/src/failure-diagnosis.js";
 import type { EvalCaseResult, FailureDiagnosisReport, RunMetrics, TaskSpec } from "../packages/core/src/types.js";
 import { runTask } from "../packages/harness/src/orchestrator.js";
@@ -187,7 +194,7 @@ async function executeRows(params: {
             continue;
           }
 
-          if (provider === "anthropic" && !params.env.ANTHROPIC_API_KEY) {
+          if (provider === "anthropic" && !hasAnthropicApiCredentials(params.env)) {
             rows.push(
               skippedRow({
                 provider,
@@ -195,7 +202,7 @@ async function executeRows(params: {
                 attempt,
                 config: params.config,
                 status: "skipped_missing_api_key",
-                warning: "ANTHROPIC_API_KEY is required to execute Anthropic provider scorecard rows."
+                warning: `${anthropicApiKeyEnvVar(params.env)} is required to execute Anthropic provider scorecard rows.`
               })
             );
             continue;
@@ -203,7 +210,7 @@ async function executeRows(params: {
 
           const task = taskFor({ taskId, origin: target.origin, provider, attempt });
           const openaiApiKey = params.env.OPENAI_API_KEY;
-          const anthropicApiKey = params.env.ANTHROPIC_API_KEY;
+          const anthropicApiKey = resolveAnthropicApiKey(params.env);
           const result = await runTask({
             runsDir: join(params.options.runsDir, "traces", provider),
             task,
@@ -221,9 +228,11 @@ async function executeRows(params: {
                       : { fetchImpl: params.options.openaiFetchImpl })
                   })
                 : new AnthropicComputerUseDriver({
-                    apiKey: requiredApiKey(anthropicApiKey, "ANTHROPIC_API_KEY"),
+                    apiKey: requiredApiKey(anthropicApiKey, anthropicApiKeyEnvVar(params.env)),
                     model: params.config.anthropicModel,
                     maxTokens: params.config.anthropicMaxTokens,
+                    messagesUrl: anthropicMessagesUrl(params.env),
+                    useOpenRouter: usesOpenRouterAnthropicApi(params.env),
                     enablePaidCalls: true,
                     ...(params.options.anthropicFetchImpl === undefined
                       ? {}

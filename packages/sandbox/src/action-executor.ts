@@ -28,10 +28,10 @@ export async function executeAction(page: Page, action: AgentAction): Promise<Ac
 async function performAction(page: Page, action: AgentAction): Promise<void> {
   switch (action.kind) {
     case "click":
-      await page.mouse.click(action.x, action.y);
+      await page.mouse.click(action.x, action.y, { clickCount: action.clickCount ?? 1 });
       return;
     case "type":
-      await page.keyboard.type(action.text);
+      await typeText(page, action.text);
       return;
     case "press":
       await page.keyboard.press(normalizeKey(action.key));
@@ -48,6 +48,18 @@ async function performAction(page: Page, action: AgentAction): Promise<void> {
     case "finish":
     case "requestHumanApproval":
       return;
+  }
+}
+
+async function typeText(page: Page, text: string): Promise<void> {
+  const parts = text.split("\t");
+  for (const [index, part] of parts.entries()) {
+    if (part.length > 0) {
+      await page.keyboard.insertText(part);
+    }
+    if (index < parts.length - 1) {
+      await page.keyboard.press("Tab");
+    }
   }
 }
 

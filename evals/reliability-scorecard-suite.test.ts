@@ -85,8 +85,8 @@ describe("runReliabilityScorecardSuite", () => {
     const report = await readFile(join(runsDir, "reliability-scorecard.md"), "utf8");
     expect(report).toContain("# Reliability Scorecard");
     expect(report).toContain("| modal-interruption-blocking-form | 2 | 2 | 100.0% |");
-    expect(report).toContain("OpenAI Agent Post-Training");
-    expect(report).toContain("Anthropic Computer Use");
+    expect(report).toContain("Operational Relevance");
+    expect(report).toContain("Browser-agent reliability measurement");
 
     const diagnosisReport = await readFile(join(runsDir, "reliability-diagnosis.md"), "utf8");
     expect(diagnosisReport).toContain("# Reliability Diagnosis");

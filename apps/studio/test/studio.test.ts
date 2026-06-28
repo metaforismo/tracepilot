@@ -86,11 +86,10 @@ describe("TracePilot Studio", () => {
 
     await expectText("Readiness gate");
     await expectText("Decision");
-    await expectText("blocked");
     await expectText("Reliability evidence");
     await expectText("Provider evidence");
-    await expectText("provider-executed-runs");
-    await expectText("Provider runs were not executed; status is skipped_paid_runs_disabled.");
+    await expectText("provider");
+    await expectText("Rule outcomes");
   }, 15000);
 
   it("renders the provider scorecard drilldown", async () => {
@@ -99,10 +98,11 @@ describe("TracePilot Studio", () => {
     await expectText("Provider scorecard");
     await expectText("planned runs");
     await expectText("executed runs");
-    await expectText("OpenAI");
     await expectText("Anthropic");
+    await expectText("success rate");
+    await expectText("paid calls");
     await expectText("legacy-portal");
-    await expectText("skipped_paid_runs_disabled");
+    await expectText("prompt-injection");
   }, 15000);
 
   it("renders the reliability scorecard drilldown", async () => {

@@ -16,10 +16,11 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <span className="sectionLabel">Mode</span>
-        <div className="modeSwitch" aria-label="Agent mode">
-          <span>Baseline</span>
-          <span className="active">TracePilot</span>
+        <span className="sectionLabel">Evidence</span>
+        <div className="taskItem">
+          <strong>TracePilot harness</strong>
+          <small>Trace replay, verifier evidence, guardrails, and cost metadata.</small>
+          <span className="status pass">active</span>
         </div>
 
         <span className="sectionLabel">Tasks</span>

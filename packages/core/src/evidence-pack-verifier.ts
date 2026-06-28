@@ -503,10 +503,11 @@ function detectSecretLeaks(content: string): number {
   return (
     countMatches(
       content,
-      /(?:^|[\s,{])["']?(?:OPENAI_API_KEY|ANTHROPIC_API_KEY)["']?\s*[:=]\s*["']?(?!\[REDACTED_)[^\s"',}]+["']?/g
+      /(?:^|[\s,{])["']?(?:OPENAI_API_KEY|ANTHROPIC_API_KEY|OPENROUTER_API_KEY)["']?\s*[:=]\s*["']?(?!\[REDACTED_)[^\s"',}]+["']?/g
     ) +
     countMatches(content, new RegExp(`${"sk"}-${"proj"}-[A-Za-z0-9_-]+`, "g")) +
     countMatches(content, new RegExp(`${"sk"}-${"ant"}-[A-Za-z0-9_-]+`, "g")) +
+    countMatches(content, /sk-or-v1-[A-Za-z0-9_-]+/g) +
     countMatches(content, /Bearer\s+(?!\[REDACTED_)[A-Za-z0-9._~+/=-]{24,}/g)
   );
 }

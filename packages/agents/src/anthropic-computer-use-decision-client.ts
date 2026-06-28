@@ -2,6 +2,13 @@ import { readFile } from "node:fs/promises";
 import { computeTokenCostUsd } from "@tracepilot/core";
 import type { AgentAction, DriverDecision, ModelPricing, TokenUsage } from "@tracepilot/core";
 import type { AgentDriverContext } from "./agent-driver.js";
+import {
+  anthropicComputerUseToolMode,
+  anthropicMessagesUrl,
+  anthropicRequestHeaders,
+  type AnthropicComputerUseToolMode,
+  usesOpenRouterAnthropicApi
+} from "./anthropic-api-config.js";
 
 export type AnthropicComputerUseFetch = (
   input: string,
@@ -20,6 +27,9 @@ export type AnthropicComputerUseDecisionClientOptions = {
   apiKey: string;
   fetchImpl?: AnthropicComputerUseFetch;
   maxTokens?: number;
+  messagesUrl?: string;
+  useOpenRouter?: boolean;
+  toolMode?: AnthropicComputerUseToolMode;
 };
 
 export type AnthropicComputerUseDecisionOptions = {
@@ -53,6 +63,17 @@ type AnthropicComputerInput = {
   scroll_amount?: unknown;
 };
 
+type TracePilotActionInput = {
+  action?: unknown;
+  x?: unknown;
+  y?: unknown;
+  text?: unknown;
+  direction?: unknown;
+  amount?: unknown;
+  summary?: unknown;
+  reason?: unknown;
+};
+
 export class AnthropicComputerUseDriverError extends Error {
   constructor(message: string) {
     super(message);
@@ -64,11 +85,17 @@ export class AnthropicComputerUseDecisionClient {
   private readonly apiKey: string;
   private readonly fetchImpl: AnthropicComputerUseFetch;
   private readonly maxTokens: number;
+  private readonly messagesUrl: string;
+  private readonly useOpenRouter: boolean;
+  private readonly toolMode: AnthropicComputerUseToolMode;
 
   constructor(options: AnthropicComputerUseDecisionClientOptions) {
     this.apiKey = options.apiKey;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.maxTokens = options.maxTokens ?? 700;
+    this.messagesUrl = options.messagesUrl ?? anthropicMessagesUrl();
+    this.useOpenRouter = options.useOpenRouter ?? usesOpenRouterAnthropicApi();
+    this.toolMode = options.toolMode ?? anthropicComputerUseToolMode(process.env, this.useOpenRouter);
   }
 
   async decide(context: AgentDriverContext, options: AnthropicComputerUseDecisionOptions): Promise<DriverDecision> {
@@ -78,19 +105,17 @@ export class AnthropicComputerUseDecisionClient {
       await buildRequestBody({
         context,
         model: options.model,
-        maxTokens: options.maxTokens ?? this.maxTokens
+        maxTokens: options.maxTokens ?? this.maxTokens,
+        toolMode: this.toolMode
       })
     );
 
     try {
-      const response = await this.fetchImpl("https://api.anthropic.com/v1/messages", {
+      const response = await this.fetchImpl(this.messagesUrl, {
         method: "POST",
-        headers: {
-          "x-api-key": this.apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-beta": "computer-use-2025-11-24",
-          "content-type": "application/json"
-        },
+        headers: anthropicRequestHeaders(this.apiKey, this.useOpenRouter, {
+          includeComputerUseBeta: this.toolMode === "native_computer"
+        }),
         body
       });
       const rawBody = await response.text();
@@ -133,6 +158,7 @@ async function buildRequestBody(params: {
   context: AgentDriverContext;
   model: string;
   maxTokens: number;
+  toolMode: AnthropicComputerUseToolMode;
 }): Promise<Record<string, unknown>> {
   const content: Array<Record<string, unknown>> = [
     {
@@ -152,9 +178,27 @@ async function buildRequestBody(params: {
     });
   }
 
-  return {
+  const common = {
     model: params.model,
     max_tokens: params.maxTokens,
+    messages: [
+      {
+        role: "user",
+        content
+      }
+    ]
+  };
+
+  if (params.toolMode === "action_tool") {
+    return {
+      ...common,
+      tools: [tracePilotActionToolSchema()],
+      tool_choice: { type: "tool", name: "tracepilot_action" }
+    };
+  }
+
+  return {
+    ...common,
     tools: [
       {
         type: "computer_20251124",
@@ -162,12 +206,6 @@ async function buildRequestBody(params: {
         display_width_px: params.context.observation.viewport.width,
         display_height_px: params.context.observation.viewport.height,
         display_number: 1
-      }
-    ],
-    messages: [
-      {
-        role: "user",
-        content
       }
     ]
   };
@@ -182,21 +220,54 @@ function renderComputerUsePrompt(context: AgentDriverContext): string {
     )
     .join("\n");
 
-  return `You are controlling a browser inside TracePilot with Anthropic's computer-use tool.
+  return `You are controlling a browser inside TracePilot with an Anthropic-compatible browser action tool.
 
 Goal: ${context.task.instruction}
 Current URL: ${context.observation.url}
 Current title: ${context.observation.title}
 Viewport: ${context.observation.viewport.width}x${context.observation.viewport.height}
 
-Use the computer tool for browser actions. Prefer reliable keyboard navigation on simple forms.
+Use the provided tool for browser actions. Prefer reliable keyboard navigation on simple forms.
 If the visible page already proves the goal state, answer normally instead of using a tool.
+For click actions, include numeric x and y viewport coordinates.
+After filling a simple form, prefer pressing Return or Enter to submit when the active field is likely focused.
+Do not repeat the same click after the verifier reports uncertain progress or no visible state change.
+Focus-only clicks often create no observable verifier change; after focusing a field, type the intended value or use Tab/Enter rather than clicking the same spot again.
+If a recent action was uncertain, choose a different recovery action and explain why.
 
 Recent history:
 ${history || "No previous steps."}
 
 Visible page text and field values:
 ${context.observation.domText ?? "(no DOM text captured)"}`;
+}
+
+function tracePilotActionToolSchema(): Record<string, unknown> {
+  return {
+    name: "tracepilot_action",
+    description:
+      "Choose exactly one next browser action for TracePilot's local UI automation harness. Use finish only when the visible state proves the task is complete.",
+    input_schema: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        action: {
+          type: "string",
+          enum: ["click", "type", "press", "scroll", "wait", "finish"],
+          description:
+            "The next browser action to execute. click needs x and y. type and press need text. scroll needs direction. finish needs summary."
+        },
+        x: { type: "number", description: "Click x coordinate in viewport pixels." },
+        y: { type: "number", description: "Click y coordinate in viewport pixels." },
+        text: { type: "string", description: "Text to type, or the key name to press." },
+        direction: { type: "string", enum: ["up", "down", "left", "right"], description: "Scroll direction." },
+        amount: { type: "number", description: "Scroll amount in coarse wheel units." },
+        summary: { type: "string", description: "Completion summary when action is finish." },
+        reason: { type: "string", description: "Brief reason for the chosen action." }
+      },
+      required: ["action", "reason"]
+    }
+  };
 }
 
 async function readScreenshotAsBase64(path: string): Promise<string | undefined> {
@@ -210,15 +281,32 @@ async function readScreenshotAsBase64(path: string): Promise<string | undefined>
 
 function decisionFromPayload(payload: AnthropicResponsePayload): Omit<DriverDecision, "modelRun"> {
   const text = textFromPayload(payload);
-  const toolUse = payload.content?.find(
+  const computerToolUse = payload.content?.find(
     (block): block is Extract<AnthropicContentBlock, { type: "tool_use" }> =>
       block.type === "tool_use" && block.name === "computer"
   );
 
-  if (toolUse) {
+  if (computerToolUse) {
     return {
-      action: actionFromComputerInput(toolUse.input),
-      reasoning: text || `Anthropic requested computer action ${toolUse.input?.action ?? "unknown"}.`,
+      action: actionFromComputerInput(computerToolUse.input),
+      reasoning: text || `Anthropic requested computer action ${computerToolUse.input?.action ?? "unknown"}.`,
+      confidence: 0.8
+    };
+  }
+
+  const actionToolUse = payload.content?.find(
+    (block): block is Extract<AnthropicContentBlock, { type: "tool_use" }> =>
+      block.type === "tool_use" && block.name === "tracepilot_action"
+  );
+  if (actionToolUse) {
+    const input = actionToolUse.input as TracePilotActionInput | undefined;
+    const action = actionFromTracePilotActionInput(input);
+    return {
+      action,
+      reasoning:
+        stringFromUnknown(input?.reason) ||
+        text ||
+        `Anthropic-compatible action tool requested ${String(input?.action ?? "unknown")}.`,
       confidence: 0.8
     };
   }
@@ -234,11 +322,57 @@ function decisionFromPayload(payload: AnthropicResponsePayload): Omit<DriverDeci
   throw new AnthropicComputerUseDriverError("Anthropic response did not contain a computer tool_use or text answer.");
 }
 
+function actionFromTracePilotActionInput(input: TracePilotActionInput | undefined): AgentAction {
+  switch (input?.action) {
+    case "click":
+      return { kind: "click", x: numberOrThrow(input.x, "click requires numeric x."), y: numberOrThrow(input.y, "click requires numeric y.") };
+    case "type":
+      return { kind: "type", text: stringOrThrow(input.text, "type requires non-empty text.") };
+    case "press":
+      return { kind: "press", key: normalizeKeyName(stringOrThrow(input.text, "press requires non-empty text.")) };
+    case "scroll":
+      return scrollActionFromTracePilotInput(input);
+    case "wait":
+      return { kind: "wait", ms: 1000 };
+    case "finish":
+      return { kind: "finish", summary: stringOrThrow(input.summary ?? input.reason, "finish requires a summary.") };
+    default:
+      throw new AnthropicComputerUseDriverError(
+        `Unsupported Anthropic-compatible action tool action: ${String(input?.action ?? "missing")}.`
+      );
+  }
+}
+
+function scrollActionFromTracePilotInput(input: TracePilotActionInput): AgentAction {
+  const amount = typeof input.amount === "number" && Number.isFinite(input.amount) ? input.amount : 1;
+  const pixels = Math.max(1, amount) * 480;
+  switch (input.direction) {
+    case "up":
+      return { kind: "scroll", deltaX: 0, deltaY: -pixels };
+    case "down":
+      return { kind: "scroll", deltaX: 0, deltaY: pixels };
+    case "left":
+      return { kind: "scroll", deltaX: -pixels, deltaY: 0 };
+    case "right":
+      return { kind: "scroll", deltaX: pixels, deltaY: 0 };
+    default:
+      throw new AnthropicComputerUseDriverError("scroll requires direction up, down, left, or right.");
+  }
+}
+
 function actionFromComputerInput(input: AnthropicComputerInput | undefined): AgentAction {
   switch (input?.action) {
     case "left_click": {
       const [x, y] = coordinateOrThrow(input.coordinate, "left_click requires a numeric coordinate.");
       return { kind: "click", x, y };
+    }
+    case "double_click": {
+      const [x, y] = coordinateOrThrow(input.coordinate, "double_click requires a numeric coordinate.");
+      return { kind: "click", x, y, clickCount: 2 };
+    }
+    case "triple_click": {
+      const [x, y] = coordinateOrThrow(input.coordinate, "triple_click requires a numeric coordinate.");
+      return { kind: "click", x, y, clickCount: 3 };
     }
     case "type":
       return { kind: "type", text: stringOrThrow(input.text, "type requires non-empty text.") };
@@ -291,12 +425,24 @@ function coordinateOrThrow(value: unknown, message: string): [number, number] {
   throw new AnthropicComputerUseDriverError(message);
 }
 
+function numberOrThrow(value: unknown, message: string): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  throw new AnthropicComputerUseDriverError(message);
+}
+
 function stringOrThrow(value: unknown, message: string): string {
   if (typeof value === "string" && value.trim().length > 0) {
     return value;
   }
 
   throw new AnthropicComputerUseDriverError(message);
+}
+
+function stringFromUnknown(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim().length > 0 ? value : undefined;
 }
 
 function normalizeKeyName(key: string): string {
