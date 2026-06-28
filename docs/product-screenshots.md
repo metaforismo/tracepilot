@@ -4,11 +4,11 @@ Date: 2026-06-28
 
 These screenshots show the current TracePilot Studio product surfaces. They are committed under `docs/assets/` so reviewers can inspect the UI without running the local app first.
 
-## Run Launcher
+## Studio Overview
 
-The launcher is the first surface for starting repeatable browser-agent workflows.
+The overview is the first surface for opening traces, checking readiness, and reviewing provider evidence.
 
-![TracePilot run launcher](assets/studio-run-launcher.png)
+![TracePilot Studio overview](assets/studio-run-launcher.png)
 
 ## Trace Replay
 

@@ -25,7 +25,7 @@ TracePilot treats those as product problems, not just model problems. The system
 
 TracePilot has four core surfaces:
 
-- **Task Launcher:** Start a browser or desktop workflow from a natural-language task and a repeatable fixture.
+- **Studio Overview:** Start repeatable browser workflows, inspect current readiness, and jump into provider or diagnostic evidence.
 - **Trace Viewer:** Replay screenshots, actions, observations, verifier decisions, retries, costs, latency, and final outcomes.
 - **Reliability Harness:** Detect false completion, stuck loops, unsafe actions, repeated mis-clicks, and missing expected state changes.
 - **Eval Dashboard:** Compare a baseline agent against verifier/retry policies on task success rate, cost per successful task, stuck-loop rate, and prompt-injection resistance.
@@ -34,9 +34,9 @@ TracePilot has four core surfaces:
 
 See the full screenshot gallery in [Product Screenshots](docs/product-screenshots.md).
 
-Run launcher:
+Studio overview:
 
-![TracePilot run launcher](docs/assets/studio-run-launcher.png)
+![TracePilot Studio overview](docs/assets/studio-run-launcher.png)
 
 Readiness gate:
 
@@ -91,7 +91,7 @@ flowchart TD
   D --> E["Verifier: goal state, action effect, unsafe content"]
   E --> F["Trace store: steps, artifacts, metrics"]
   E -->|retry or re-plan| B
-  F --> G["Studio UI: launcher, replay, dashboard"]
+  F --> G["Studio UI: overview, replay, dashboard"]
 ```
 
 ## Stack
@@ -138,7 +138,7 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - deterministic `ScriptedDriver` for offline evals;
 - env-gated Anthropic driver boundary for future paid computer-use calls;
 - orchestrator loop for observe, decide, safety-check, act, verify, trace, and measure;
-- Next.js Studio UI with run launcher, metrics strip, screenshot panel, timeline, inspector, and readiness gate dashboard;
+- Next.js Studio UI with overview, metrics strip, screenshot panel, timeline, inspector, and readiness gate dashboard;
 - invoice-to-legacy-portal target fixtures with validation recovery, modal interruption, approval, and prompt-injection cases;
 - real smoke eval that writes `runs/latest/metrics.json` and `runs/latest/smoke-form/trace.jsonl`;
 - baseline-vs-TracePilot comparison suite with JSON and Markdown artifacts;

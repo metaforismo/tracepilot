@@ -13,8 +13,9 @@ describe("scorecard artifact loaders", () => {
 
     expect(provider.source.kind).toBe("fixture");
     expect(provider.summary.suiteId).toBe("provider-scorecard");
-    expect(provider.rows).toHaveLength(6);
-    expect(provider.rows[0]?.provider).toBe("openai");
+    expect(provider.summary.status).toBe("executed");
+    expect(provider.rows).toHaveLength(9);
+    expect(provider.rows[0]?.provider).toBe("anthropic");
     expect(reliability.source.kind).toBe("fixture");
     expect(reliability.summary.suiteId).toBe("reliability-scorecard");
     expect(reliability.results).toHaveLength(5);

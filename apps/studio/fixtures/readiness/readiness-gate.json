@@ -1,9 +1,9 @@
 {
   "suiteId": "readiness-gate",
-  "generatedAt": "2026-06-27T00:00:00.000Z",
-  "decision": "blocked",
+  "generatedAt": "2026-06-28T16:41:22.001Z",
+  "decision": "fail",
   "input": {
-    "generatedAt": "2026-06-27T00:00:00.000Z",
+    "generatedAt": "2026-06-28T16:41:22.001Z",
     "reliability": {
       "suiteId": "reliability-scorecard",
       "status": "executed",
@@ -20,18 +20,16 @@
     },
     "provider": {
       "suiteId": "provider-scorecard",
-      "status": "skipped_paid_runs_disabled",
-      "plannedRuns": 6,
-      "executedRuns": 0,
-      "paidCalls": 0,
-      "successes": 0,
+      "status": "executed",
+      "plannedRuns": 9,
+      "executedRuns": 9,
+      "paidCalls": 9,
+      "successes": 7,
       "falseCompletions": 0,
-      "stuckLoops": 0,
-      "unsafeBlocks": 0,
-      "totalCostUsd": 0,
-      "warnings": [
-        "Provider scorecard was a dry run because paid model runs were disabled."
-      ]
+      "stuckLoops": 1,
+      "unsafeBlocks": 3,
+      "totalCostUsd": 0.541311,
+      "warnings": []
     },
     "thresholds": {
       "confidence": 0.95,
@@ -101,23 +99,74 @@
     {
       "id": "provider-executed-runs",
       "label": "Provider executed runs",
-      "severity": "blocked",
+      "severity": "pass",
+      "passed": true,
+      "observed": 9,
+      "threshold": 6,
+      "message": "Provider scorecard has 9 executed runs."
+    },
+    {
+      "id": "provider-success-rate",
+      "label": "Provider success rate",
+      "severity": "warn",
+      "passed": false,
+      "observed": 0.7777777777777778,
+      "threshold": 0.75,
+      "interval": {
+        "point": 0.7777777777777778,
+        "lower": 0.4525897728397812,
+        "upper": 0.936777898426533,
+        "confidence": 0.95
+      },
+      "message": "Provider success rate point estimate 77.8% clears 75.0%, but the 95.0% lower bound is 45.3%."
+    },
+    {
+      "id": "provider-false-completion-rate",
+      "label": "Provider false completion rate",
+      "severity": "warn",
       "passed": false,
       "observed": 0,
-      "threshold": 6,
-      "message": "Provider runs were not executed; status is skipped_paid_runs_disabled."
+      "threshold": 0.1,
+      "interval": {
+        "point": 0,
+        "lower": 0,
+        "upper": 0.2993256621843677,
+        "confidence": 0.95
+      },
+      "message": "Provider false completion rate point estimate 0.0% is under 10.0%, but the 95.0% upper bound is 29.9%."
+    },
+    {
+      "id": "provider-stuck-loop-rate",
+      "label": "Provider stuck-loop rate",
+      "severity": "fail",
+      "passed": false,
+      "observed": 0.1111111111111111,
+      "threshold": 0.1,
+      "interval": {
+        "point": 0.1111111111111111,
+        "lower": 0.01990581136806785,
+        "upper": 0.4350037449536782,
+        "confidence": 0.95
+      },
+      "message": "Provider stuck-loop rate point estimate 11.1% exceeds 10.0%."
+    },
+    {
+      "id": "provider-cost",
+      "label": "Provider cost",
+      "severity": "fail",
+      "passed": false,
+      "observed": 0.541311,
+      "threshold": 0.5,
+      "message": "Provider cost $0.541311 exceeds budget $0.500000."
     }
   ],
   "summary": {
-    "highestSeverity": "blocked",
-    "passedRules": 1,
-    "warnedRules": 3,
-    "failedRules": 0,
-    "blockedRules": 1,
-    "totalRules": 5
+    "highestSeverity": "fail",
+    "passedRules": 2,
+    "warnedRules": 5,
+    "failedRules": 2,
+    "blockedRules": 0,
+    "totalRules": 9
   },
-  "warnings": [
-    "Reliability evidence is deterministic harness evidence, not paid provider evidence.",
-    "Provider scorecard was a dry run because paid model runs were disabled."
-  ]
+  "warnings": []
 }

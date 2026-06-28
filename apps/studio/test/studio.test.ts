@@ -28,15 +28,16 @@ afterAll(async () => {
 });
 
 describe("TracePilot Studio", () => {
-  it("renders the run launcher", async () => {
+  it("renders the Studio overview", async () => {
     await page!.goto(origin, { waitUntil: "networkidle" });
 
     await expectText("TracePilot Studio");
-    await expectText("Run launcher");
+    await expectText("Current release signal");
+    await expectText("Workflow");
     await expectText("Open trace");
     await expectText("Readiness gate");
     await expectText("Provider scorecard");
-    await expectText("Reliability scorecard");
+    await expectText("Provider runs");
     await expectText("Model browser negative run");
   }, 15000);
 
