@@ -13,8 +13,10 @@ export function ScreenshotPanel({ step }: { step: TraceStep }) {
         <img
           alt={`Observation ${step.observation.stepId}`}
           decoding="async"
-          loading="lazy"
+          height={step.observation.viewport.height}
+          loading="eager"
           src={src}
+          width={step.observation.viewport.width}
         />
       </div>
     </section>
