@@ -17,6 +17,10 @@
     "./readiness-history": {
       "types": "./src/readiness-history.ts",
       "import": "./src/readiness-history.ts"
+    },
+    "./provider-history": {
+      "types": "./src/provider-history.ts",
+      "import": "./src/provider-history.ts"
     }
   },
   "scripts": {
