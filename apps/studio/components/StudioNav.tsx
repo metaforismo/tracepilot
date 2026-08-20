@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, BarChart3, ClipboardCheck, Gauge, TriangleAlert } from "lucide-react";
+import { Activity, BarChart3, ClipboardCheck, Gauge, GitCompareArrows, TriangleAlert } from "lucide-react";
 
 type StudioRoute =
   | "/"
   | "/diagnostics"
+  | "/history"
   | "/readiness"
   | "/scorecards/provider"
   | "/scorecards/reliability";
@@ -21,6 +22,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/", label: "Overview", icon: Gauge, exact: true },
   { href: "/readiness", label: "Readiness", icon: ClipboardCheck },
+  { href: "/history", label: "Readiness history", icon: GitCompareArrows },
   { href: "/scorecards/provider", label: "Provider scorecard", icon: BarChart3 },
   { href: "/scorecards/reliability", label: "Reliability scorecard", icon: BarChart3 },
   { href: "/diagnostics", label: "Diagnostics", icon: TriangleAlert }

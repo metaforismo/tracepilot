@@ -23,9 +23,10 @@ TracePilot treats those as product problems, not just model problems. The system
 
 ## Product Shape
 
-TracePilot has four core surfaces:
+TracePilot has five core surfaces:
 
 - **Studio Overview:** Start repeatable browser workflows, inspect current readiness, and jump into provider or diagnostic evidence.
+- **Readiness History:** Preserve release gates over time, graph reliability and cost, and flag threshold-crossing regressions before promotion.
 - **Trace Viewer:** Replay screenshots, actions, observations, verifier decisions, retries, costs, latency, and final outcomes.
 - **Reliability Harness:** Detect false completion, stuck loops, unsafe actions, repeated mis-clicks, and missing expected state changes.
 - **Eval Dashboard:** Compare a baseline agent against verifier/retry policies on task success rate, cost per successful task, stuck-loop rate, and prompt-injection resistance.
@@ -91,7 +92,7 @@ flowchart TD
   D --> E["Verifier: goal state, action effect, unsafe content"]
   E --> F["Trace store: steps, artifacts, metrics"]
   E -->|retry or re-plan| B
-  F --> G["Studio UI: overview, replay, dashboard"]
+  F --> G["Studio UI: overview, replay, gates, history"]
 ```
 
 ## Stack
@@ -101,7 +102,7 @@ flowchart TD
 - **Browser control:** Playwright.
 - **Product UI:** Next.js.
 - **Agent layer:** Pluggable driver interface, starting with a deterministic scripted driver, an Anthropic Computer Use decision client, and an OpenAI Responses decision client.
-- **Storage:** Local JSONL/JSON artifacts for traces, metrics, screenshots, scorecards, and evidence packs.
+- **Storage:** Local JSONL/JSON artifacts for traces, metrics, screenshots, scorecards, readiness history, and evidence packs.
 - **Testing:** Vitest for unit tests, Playwright for integration tasks, reproducible eval runner for metrics.
 
 ## Eval Metrics
@@ -154,6 +155,8 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 - provider reliability scorecard that can run OpenAI and Anthropic browser-control adapters across the same hard tasks behind explicit paid-run gates.
 - readiness gate that turns reliability and provider scorecards into pass/warn/fail/blocked operational decisions with confidence bounds and cost thresholds.
 - Studio readiness gate dashboard that surfaces operational decision, rule outcomes, thresholds, reliability evidence, provider evidence, and warnings.
+- persistent readiness history that upserts repeated gates, retains the latest 90 snapshots, computes release-to-release regressions, serializes concurrent writers, validates artifact integrity, and atomically writes JSON and Markdown artifacts.
+- Studio regression control room with accessible SVG trends for provider success, stuck loops, and cost per successful run, plus active-regression and release-timeline drilldowns.
 - Studio provider and reliability scorecard drilldowns that load generated `runs/latest` artifacts when present, fall back to committed fixtures in fresh clones, and expose row-level evidence behind readiness decisions.
 - Studio trace replay model-evidence panel that surfaces per-step `model_api` metadata, selected-step token/cost details, run-level budget stops, and driver decision failures.
 - enterprise evidence-pack suite that writes redacted artifacts, SHA-256 hashes, a canonical manifest digest, and a Markdown audit readout for readiness, provider, reliability, cost, and trace evidence.
@@ -162,11 +165,19 @@ TracePilot is now an executable TypeScript workspace. The current foundation inc
 
 Next build slices:
 
-1. First-party Anthropic Computer Use success evidence once a first-party Anthropic key or OpenRouter native computer-use passthrough is available.
-2. Repeated paid provider scorecards with preserved failed traces.
-3. Studio paid-readiness history across repeated provider-backed gates.
+1. Preserve task- and model-level history so a release regression can be traced to a specific workflow, provider, and model revision.
+2. Promote readiness history into the signed enterprise evidence pack and verify its snapshot chain offline.
+3. Add an explicit baseline-promotion workflow with approver identity, release notes, and rollback evidence.
 
 ## Run Locally
+
+Every `readiness-gate` run now appends an idempotent snapshot to `runs/history/readiness-gate/readiness-history.json` and writes a portable Markdown report beside it. Optional release metadata can be attached without changing the artifact schema:
+
+```bash
+TRACEPILOT_RELEASE_LABEL=release-2026.08 \
+TRACEPILOT_REVISION=$(git rev-parse --short HEAD) \
+corepack pnpm@9.15.4 run eval -- --suite readiness-gate
+```
 
 ```bash
 corepack pnpm@9.15.4 install

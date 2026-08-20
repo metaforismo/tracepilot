@@ -17,6 +17,14 @@ export {
   renderReadinessGateMarkdown,
   wilsonInterval
 } from "./readiness-gate.js";
+export {
+  appendReadinessHistory,
+  buildReadinessHistory,
+  createReadinessHistorySnapshot,
+  defaultReadinessRegressionThresholds,
+  renderReadinessHistoryMarkdown,
+  validateReadinessHistory
+} from "./readiness-history.js";
 export { summarizeEvalComparison } from "./eval-summary.js";
 export { isStuckLoop } from "./loop-detector.js";
 export { inspectUntrustedContent, validateSensitiveAction } from "./safety-policy.js";
@@ -88,3 +96,17 @@ export type {
   WilsonInterval,
   WilsonIntervalInput
 } from "./readiness-gate.js";
+export type {
+  BuildReadinessHistoryOptions,
+  ReadinessHistoryEntry,
+  ReadinessHistoryResult,
+  ReadinessHistorySnapshot,
+  ReadinessHistorySnapshotSource,
+  ReadinessHistorySource,
+  ReadinessHistoryTrend,
+  ReadinessRegression,
+  ReadinessRegressionBand,
+  ReadinessRegressionMetric,
+  ReadinessRegressionSeverity,
+  ReadinessRegressionThresholds
+} from "./readiness-history.js";

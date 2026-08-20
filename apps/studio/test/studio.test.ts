@@ -15,6 +15,8 @@ beforeAll(async () => {
     cwd: process.cwd(),
     env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" }
   });
+  server.stdout.resume();
+  server.stderr.resume();
 
   await waitForHttp(origin);
   browser = await chromium.launch({ headless: true });
@@ -93,6 +95,20 @@ describe("TracePilot Studio", () => {
     await expectText("Rule outcomes");
   }, 15000);
 
+  it("renders the readiness history regression control room", async () => {
+    await page!.goto(`${origin}/history`, { waitUntil: "networkidle" });
+
+    await expectText("Readiness history");
+    await expectText("Release regression control room");
+    await expectText("Provider success rate");
+    await expectText("Stuck-loop rate");
+    await expectText("Cost per successful run");
+    await expectText("Active regressions");
+    await expectText("Current committed gate");
+    await expectText("Committed fixture fallback");
+    await expect(page!.locator("svg[role='img']").count()).resolves.toBe(3);
+  }, 15000);
+
   it("renders the provider scorecard drilldown", async () => {
     await page!.goto(`${origin}/scorecards/provider`, { waitUntil: "networkidle" });
 
@@ -118,7 +134,13 @@ describe("TracePilot Studio", () => {
 });
 
 async function expectText(text: string): Promise<void> {
-  await expect(page!.getByText(text).first().isVisible()).resolves.toBe(true);
+  const locator = page!.getByText(text).first();
+  try {
+    await locator.waitFor({ state: "visible", timeout: 5000 });
+  } catch (error) {
+    const body = await page!.locator("body").innerText().catch(() => "<body unavailable>");
+    throw new Error(`Expected visible text ${JSON.stringify(text)} at ${page!.url()} body=${JSON.stringify(body.slice(0, 1600))}`, { cause: error });
+  }
 }
 
 async function waitForHttp(url: string): Promise<void> {
