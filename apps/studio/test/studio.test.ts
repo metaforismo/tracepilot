@@ -158,13 +158,21 @@ describe("TracePilot Studio", () => {
 });
 
 async function expectText(text: string): Promise<void> {
-  const locator = page!.getByText(text).first();
-  try {
-    await locator.waitFor({ state: "visible", timeout: 5000 });
-  } catch (error) {
-    const body = await page!.locator("body").innerText().catch(() => "<body unavailable>");
-    throw new Error(`Expected visible text ${JSON.stringify(text)} at ${page!.url()} body=${JSON.stringify(body.slice(0, 1600))}`, { cause: error });
+  const matches = page!.getByText(text);
+  const deadline = Date.now() + 5000;
+
+  while (Date.now() < deadline) {
+    const count = await matches.count();
+    for (let index = 0; index < count; index += 1) {
+      if (await matches.nth(index).isVisible()) return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50));
   }
+
+  const body = await page!.locator("body").innerText().catch(() => "<body unavailable>");
+  throw new Error(
+    `Expected visible text ${JSON.stringify(text)} at ${page!.url()} body=${JSON.stringify(body.slice(0, 1600))}`
+  );
 }
 
 async function waitForHttp(url: string): Promise<void> {
