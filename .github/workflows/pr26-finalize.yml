@@ -279,3 +279,5 @@ jobs:
           git diff --cached --name-only
           git commit -m "fix: harden readiness trend and mobile navigation"
           git push origin HEAD:feat/readiness-history
+
+# Retrigger after workflow registration.
