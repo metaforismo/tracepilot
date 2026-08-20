@@ -7,7 +7,7 @@ import type {
   ReliabilityScorecardCaseSummary,
   ReliabilityScorecardResult
 } from "../../../lib/scorecard-artifacts";
-import { loadReliabilityScorecard } from "../../../lib/scorecard-artifacts";
+import { loadReliabilityScorecard } from "../../../lib/scorecard-runtime-artifacts";
 
 export const dynamic = "force-dynamic";
 

@@ -7,7 +7,7 @@ import type {
   ProviderScorecardGroupSummary,
   ProviderScorecardRow
 } from "../../../lib/scorecard-artifacts";
-import { loadProviderScorecard } from "../../../lib/scorecard-artifacts";
+import { loadProviderScorecard } from "../../../lib/scorecard-runtime-artifacts";
 
 export const dynamic = "force-dynamic";
 
