@@ -13,7 +13,7 @@ import { Metric } from "../components/Metric";
 import { StudioShell } from "../components/StudioShell";
 import { formatPercent, formatUsdCompact, shortDate } from "../lib/format";
 import { loadReadinessGate } from "../lib/readiness-fixtures";
-import { loadProviderScorecard } from "../lib/scorecard-artifacts";
+import { loadProviderScorecard } from "../lib/scorecard-runtime-artifacts";
 import { listRuns } from "../lib/trace-fixtures";
 
 export default async function HomePage() {
