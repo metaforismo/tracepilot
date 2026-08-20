@@ -17,6 +17,7 @@ import { diagnoseEvalResults } from "../packages/core/src/failure-diagnosis.js";
 import type { EvalCaseResult, FailureDiagnosisReport, RunMetrics, TaskSpec } from "../packages/core/src/types.js";
 import { runTask } from "../packages/harness/src/orchestrator.js";
 import { startTargetServer } from "../apps/targets/src/server.js";
+import { persistProviderHistory } from "./provider-history-artifacts.js";
 import {
   createMaliciousInvoiceTask,
   createModalInterruptionTask,
@@ -42,6 +43,10 @@ export type ProviderScorecardSuiteOptions = {
   headless?: boolean;
   openaiFetchImpl?: OpenAIResponsesFetch;
   anthropicFetchImpl?: AnthropicComputerUseFetch;
+  historyDir?: string;
+  historyLabel?: string;
+  historyRevision?: string;
+  historyRetention?: number;
 };
 
 export type ProviderScorecardRow = {
@@ -106,6 +111,8 @@ export type ProviderScorecardSuiteResult = {
     reportPath: string;
     diagnosisPath: string;
     diagnosisReportPath: string;
+    historyPath: string;
+    historyReportPath: string;
   };
 };
 
@@ -162,7 +169,27 @@ export async function runProviderScorecardSuite(
   await writeFile(artifacts.diagnosisPath, `${JSON.stringify(diagnosis, null, 2)}\n`, "utf8");
   await writeFile(artifacts.diagnosisReportPath, renderProviderDiagnosisMarkdown(diagnosis), "utf8");
 
-  return { summary, rows, diagnosis, artifacts };
+  const historyArtifacts = await persistProviderHistory({
+    runsDir: options.runsDir,
+    generatedAt,
+    rows,
+    warnings: summary.warnings,
+    ...(options.historyDir === undefined ? {} : { historyDir: options.historyDir }),
+    ...((options.historyLabel ?? env.TRACEPILOT_RELEASE_LABEL) === undefined
+      ? {}
+      : { label: options.historyLabel ?? env.TRACEPILOT_RELEASE_LABEL }),
+    ...((options.historyRevision ?? env.TRACEPILOT_REVISION ?? env.GITHUB_SHA) === undefined
+      ? {}
+      : { revision: options.historyRevision ?? env.TRACEPILOT_REVISION ?? env.GITHUB_SHA }),
+    ...(options.historyRetention === undefined ? {} : { retention: options.historyRetention })
+  });
+
+  return {
+    summary,
+    rows,
+    diagnosis,
+    artifacts: { ...artifacts, ...historyArtifacts }
+  };
 }
 
 async function executeRows(params: {
@@ -481,53 +508,7 @@ export function renderProviderScorecardMarkdown(summary: ProviderScorecardSummar
     ].join(" | ")
   );
 
-  return `# Provider Reliability Scorecard
-
-Generated at: ${summary.generatedAt}
-
-Status: \`${summary.status}\`
-
-${summary.executedRuns === 0 ? "No paid provider scorecard calls were made.\n" : ""}
-This suite runs the same TracePilot browser-control contracts through OpenAI and Anthropic adapters. It keeps deterministic harness results separate from provider-backed runs, preserves failed traces, and reports cost from model metadata.
-
-## Summary
-
-| Metric | Value |
-| --- | ---: |
-| Planned runs | ${summary.plannedRuns} |
-| Executed runs | ${summary.executedRuns} |
-| Skipped runs | ${summary.skippedRuns} |
-| Paid calls | ${summary.paidCalls} |
-| Successes | ${summary.successes} |
-| Success rate | ${formatPercent(summary.successRate)} |
-| False completion rate | ${formatPercent(summary.falseCompletionRate)} |
-| Stuck-loop rate | ${formatPercent(summary.stuckLoopRate)} |
-| Unsafe blocks | ${summary.unsafeBlocks} |
-| Total estimated cost | ${formatUsd(summary.totalCostUsd)} |
-
-## Providers
-
-| Provider | Executed runs | Successes | Success rate | False completion rate | Stuck-loop rate | Unsafe blocks | Cost |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| ${providerRows.join(" |\n| ")} |
-
-## Tasks
-
-| Task | Executed runs | Successes | Success rate | Unsafe block rate | Median success steps |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| ${taskRows.join(" |\n| ")} |
-
-## Boundaries
-
-- Provider calls are disabled unless \`${paidRunsFlag}=1\`.
-- API key values are never written to scorecard artifacts.
-- Prompt-injection blocks are counted as successful policy outcomes and still diagnosed as blocked behavior.
-- This is an operational browser-control scorecard, not a broad model ranking.
-
-## Warnings
-
-${summary.warnings.length > 0 ? summary.warnings.map((warning) => `- ${warning}`).join("\n") : "- None."}
-`;
+  return `# Provider Reliability Scorecard\n\nGenerated at: ${summary.generatedAt}\n\nStatus: \`${summary.status}\`\n\n${summary.executedRuns === 0 ? "No paid provider scorecard calls were made.\n" : ""}This suite runs the same TracePilot browser-control contracts through OpenAI and Anthropic adapters. It keeps deterministic harness results separate from provider-backed runs, preserves failed traces, and reports cost from model metadata.\n\n## Summary\n\n| Metric | Value |\n| --- | ---: |\n| Planned runs | ${summary.plannedRuns} |\n| Executed runs | ${summary.executedRuns} |\n| Skipped runs | ${summary.skippedRuns} |\n| Paid calls | ${summary.paidCalls} |\n| Successes | ${summary.successes} |\n| Success rate | ${formatPercent(summary.successRate)} |\n| False completion rate | ${formatPercent(summary.falseCompletionRate)} |\n| Stuck-loop rate | ${formatPercent(summary.stuckLoopRate)} |\n| Unsafe blocks | ${summary.unsafeBlocks} |\n| Total estimated cost | ${formatUsd(summary.totalCostUsd)} |\n\n## Providers\n\n| Provider | Executed runs | Successes | Success rate | False completion rate | Stuck-loop rate | Unsafe blocks | Cost |\n| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| ${providerRows.join(" |\n| ")} |\n\n## Tasks\n\n| Task | Executed runs | Successes | Success rate | Unsafe block rate | Median success steps |\n| --- | ---: | ---: | ---: | ---: | ---: |\n| ${taskRows.join(" |\n| ")} |\n\n## Boundaries\n\n- Provider calls are disabled unless \`${paidRunsFlag}=1\`.\n- API key values are never written to scorecard artifacts.\n- Prompt-injection blocks are counted as successful policy outcomes and still diagnosed as blocked behavior.\n- This is an operational browser-control scorecard, not a broad model ranking.\n\n## Warnings\n\n${summary.warnings.length > 0 ? summary.warnings.map((warning) => `- ${warning}`).join("\n") : "- None."}\n`;
 }
 
 export function renderProviderDiagnosisMarkdown(report: FailureDiagnosisReport): string {
@@ -544,41 +525,14 @@ export function renderProviderDiagnosisMarkdown(report: FailureDiagnosisReport):
   const categoryRows = report.summary.categories.map((item) => `| ${item.category} | ${item.count} |`);
   const categoriesBlock =
     categoryRows.length > 0
-      ? `| Category | Count |
-| --- | ---: |
-${categoryRows.join("\n")}`
+      ? `| Category | Count |\n| --- | ---: |\n${categoryRows.join("\n")}`
       : "No diagnosis categories were produced.";
   const runsBlock =
     rows.length > 0
-      ? `| Case | Task id | Category | Severity | Outcome | Evidence |
-| --- | --- | --- | --- | --- | --- |
-| ${rows.join(" |\n| ")} |`
+      ? `| Case | Task id | Category | Severity | Outcome | Evidence |\n| --- | --- | --- | --- | --- | --- |\n| ${rows.join(" |\n| ")} |`
       : "No executed provider runs were diagnosed.";
 
-  return `# Provider Scorecard Diagnosis
-
-Generated at: ${report.generatedAt}
-
-Suite: \`${report.suiteId}\`
-
-## Summary
-
-| Metric | Value |
-| --- | ---: |
-| Diagnosed runs | ${report.summary.total} |
-| Evaluator successes | ${report.summary.successes} |
-| Evaluator failures | ${report.summary.failures} |
-| Policy blocks | ${report.summary.blocked} |
-| Highest severity | ${report.summary.highestSeverity} |
-
-## Categories
-
-${categoriesBlock}
-
-## Runs
-
-${runsBlock}
-`;
+  return `# Provider Scorecard Diagnosis\n\nGenerated at: ${report.generatedAt}\n\nSuite: \`${report.suiteId}\`\n\n## Summary\n\n| Metric | Value |\n| --- | ---: |\n| Diagnosed runs | ${report.summary.total} |\n| Evaluator successes | ${report.summary.successes} |\n| Evaluator failures | ${report.summary.failures} |\n| Policy blocks | ${report.summary.blocked} |\n| Highest severity | ${report.summary.highestSeverity} |\n\n## Categories\n\n${categoriesBlock}\n\n## Runs\n\n${runsBlock}\n`;
 }
 
 type ProviderConfig = {
