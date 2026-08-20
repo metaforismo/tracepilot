@@ -25,6 +25,15 @@ export {
   renderReadinessHistoryMarkdown,
   validateReadinessHistory
 } from "./readiness-history.js";
+export {
+  appendProviderHistory,
+  buildProviderHistory,
+  createProviderHistorySnapshot,
+  defaultProviderRegressionThresholds,
+  latestProviderModelTransitions,
+  renderProviderHistoryMarkdown,
+  validateProviderHistory
+} from "./provider-history.js";
 export { summarizeEvalComparison } from "./eval-summary.js";
 export { isStuckLoop } from "./loop-detector.js";
 export { inspectUntrustedContent, validateSensitiveAction } from "./safety-policy.js";
@@ -110,3 +119,21 @@ export type {
   ReadinessRegressionSeverity,
   ReadinessRegressionThresholds
 } from "./readiness-history.js";
+export type {
+  BuildProviderHistoryOptions,
+  ProviderHistoryEntry,
+  ProviderHistoryResult,
+  ProviderHistoryRow,
+  ProviderHistoryRowStatus,
+  ProviderHistorySlice,
+  ProviderHistorySnapshot,
+  ProviderHistorySnapshotSource,
+  ProviderHistorySource,
+  ProviderHistoryTrend,
+  ProviderModelTransition,
+  ProviderRegression,
+  ProviderRegressionBand,
+  ProviderRegressionMetric,
+  ProviderRegressionSeverity,
+  ProviderRegressionThresholds
+} from "./provider-history.js";
