@@ -1,0 +1,343 @@
+{
+  "suiteId": "readiness-history",
+  "generatedAt": "2026-06-28T16:41:22.001Z",
+  "source": "fixture",
+  "retention": 90,
+  "regressionThresholds": {
+    "successRateDrop": {
+      "warn": 0.05,
+      "fail": 0.1
+    },
+    "falseCompletionRateIncrease": {
+      "warn": 0.02,
+      "fail": 0.05
+    },
+    "stuckLoopRateIncrease": {
+      "warn": 0.02,
+      "fail": 0.05
+    },
+    "costPerSuccessIncreaseRatio": {
+      "warn": 0.25,
+      "fail": 0.5
+    }
+  },
+  "snapshots": [
+    {
+      "id": "readiness-20260623090000000",
+      "generatedAt": "2026-06-23T09:00:00.000Z",
+      "label": "Dry-run gate",
+      "source": "fixture",
+      "decision": "blocked",
+      "reliability": {
+        "runs": 5,
+        "successRate": 1,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0
+      },
+      "provider": {
+        "status": "skipped_paid_runs_disabled",
+        "plannedRuns": 6,
+        "executedRuns": 0,
+        "paidCalls": 0,
+        "successRate": null,
+        "falseCompletionRate": null,
+        "stuckLoopRate": null,
+        "totalCostUsd": 0,
+        "costPerSuccessUsd": null
+      },
+      "thresholds": {
+        "minSuccessRate": 0.75,
+        "maxFalseCompletionRate": 0.1,
+        "maxStuckLoopRate": 0.1,
+        "maxCostUsd": 0.5
+      },
+      "rules": {
+        "passed": 1,
+        "warned": 3,
+        "failed": 0,
+        "blocked": 1,
+        "total": 5
+      },
+      "warnings": [
+        "Reliability evidence is deterministic harness evidence, not paid provider evidence."
+      ],
+      "note": "Paid provider execution disabled."
+    },
+    {
+      "id": "readiness-20260624090000000",
+      "generatedAt": "2026-06-24T09:00:00.000Z",
+      "label": "Provider pilot",
+      "source": "fixture",
+      "decision": "fail",
+      "reliability": {
+        "runs": 5,
+        "successRate": 1,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0
+      },
+      "provider": {
+        "status": "executed",
+        "plannedRuns": 6,
+        "executedRuns": 6,
+        "paidCalls": 6,
+        "successRate": 0.6666666666666666,
+        "falseCompletionRate": 0.16666666666666666,
+        "stuckLoopRate": 0.16666666666666666,
+        "totalCostUsd": 0.18,
+        "costPerSuccessUsd": 0.045
+      },
+      "thresholds": {
+        "minSuccessRate": 0.75,
+        "maxFalseCompletionRate": 0.1,
+        "maxStuckLoopRate": 0.1,
+        "maxCostUsd": 0.5
+      },
+      "rules": {
+        "passed": 2,
+        "warned": 4,
+        "failed": 3,
+        "blocked": 0,
+        "total": 9
+      },
+      "warnings": [
+        "Reliability evidence is deterministic harness evidence, not paid provider evidence."
+      ]
+    },
+    {
+      "id": "readiness-20260625090000000",
+      "generatedAt": "2026-06-25T09:00:00.000Z",
+      "label": "Verifier recovery",
+      "source": "fixture",
+      "decision": "fail",
+      "reliability": {
+        "runs": 5,
+        "successRate": 1,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0
+      },
+      "provider": {
+        "status": "executed",
+        "plannedRuns": 6,
+        "executedRuns": 6,
+        "paidCalls": 6,
+        "successRate": 0.8333333333333334,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0.16666666666666666,
+        "totalCostUsd": 0.23,
+        "costPerSuccessUsd": 0.046
+      },
+      "thresholds": {
+        "minSuccessRate": 0.75,
+        "maxFalseCompletionRate": 0.1,
+        "maxStuckLoopRate": 0.1,
+        "maxCostUsd": 0.5
+      },
+      "rules": {
+        "passed": 2,
+        "warned": 6,
+        "failed": 1,
+        "blocked": 0,
+        "total": 9
+      },
+      "warnings": [
+        "Reliability evidence is deterministic harness evidence, not paid provider evidence."
+      ]
+    },
+    {
+      "id": "readiness-20260626090000000",
+      "generatedAt": "2026-06-26T09:00:00.000Z",
+      "label": "Cross-provider gate",
+      "source": "fixture",
+      "decision": "warn",
+      "reliability": {
+        "runs": 5,
+        "successRate": 1,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0
+      },
+      "provider": {
+        "status": "executed",
+        "plannedRuns": 8,
+        "executedRuns": 8,
+        "paidCalls": 8,
+        "successRate": 0.875,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0,
+        "totalCostUsd": 0.32,
+        "costPerSuccessUsd": 0.045714285714285714
+      },
+      "thresholds": {
+        "minSuccessRate": 0.75,
+        "maxFalseCompletionRate": 0.1,
+        "maxStuckLoopRate": 0.1,
+        "maxCostUsd": 0.5
+      },
+      "rules": {
+        "passed": 3,
+        "warned": 6,
+        "failed": 0,
+        "blocked": 0,
+        "total": 9
+      },
+      "warnings": [
+        "Reliability evidence is deterministic harness evidence, not paid provider evidence."
+      ]
+    },
+    {
+      "id": "readiness-20260627090000000",
+      "generatedAt": "2026-06-27T09:00:00.000Z",
+      "label": "Direct provider evidence",
+      "source": "fixture",
+      "decision": "warn",
+      "reliability": {
+        "runs": 5,
+        "successRate": 1,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0
+      },
+      "provider": {
+        "status": "executed",
+        "plannedRuns": 9,
+        "executedRuns": 9,
+        "paidCalls": 9,
+        "successRate": 0.8888888888888888,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0,
+        "totalCostUsd": 0.46,
+        "costPerSuccessUsd": 0.0575
+      },
+      "thresholds": {
+        "minSuccessRate": 0.75,
+        "maxFalseCompletionRate": 0.1,
+        "maxStuckLoopRate": 0.1,
+        "maxCostUsd": 0.5
+      },
+      "rules": {
+        "passed": 3,
+        "warned": 6,
+        "failed": 0,
+        "blocked": 0,
+        "total": 9
+      },
+      "warnings": [
+        "Reliability evidence is deterministic harness evidence, not paid provider evidence."
+      ]
+    },
+    {
+      "id": "readiness-20260628164122001",
+      "generatedAt": "2026-06-28T16:41:22.001Z",
+      "label": "Current committed gate",
+      "source": "fixture",
+      "decision": "fail",
+      "reliability": {
+        "runs": 5,
+        "successRate": 1,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0
+      },
+      "provider": {
+        "status": "executed",
+        "plannedRuns": 9,
+        "executedRuns": 9,
+        "paidCalls": 9,
+        "successRate": 0.7777777777777778,
+        "falseCompletionRate": 0,
+        "stuckLoopRate": 0.1111111111111111,
+        "totalCostUsd": 0.541311,
+        "costPerSuccessUsd": 0.07733014285714286
+      },
+      "thresholds": {
+        "minSuccessRate": 0.75,
+        "maxFalseCompletionRate": 0.1,
+        "maxStuckLoopRate": 0.1,
+        "maxCostUsd": 0.5
+      },
+      "rules": {
+        "passed": 2,
+        "warned": 5,
+        "failed": 2,
+        "blocked": 0,
+        "total": 9
+      },
+      "warnings": [
+        "Reliability evidence is deterministic harness evidence, not paid provider evidence."
+      ],
+      "note": "Matches the committed readiness fixture."
+    }
+  ],
+  "regressions": [
+    {
+      "id": "readiness-20260627090000000:provider-cost-per-success",
+      "metric": "provider-cost-per-success",
+      "severity": "warn",
+      "previousSnapshotId": "readiness-20260626090000000",
+      "currentSnapshotId": "readiness-20260627090000000",
+      "previousValue": 0.045714285714285714,
+      "currentValue": 0.0575,
+      "delta": 0.2578125,
+      "threshold": 0.25,
+      "message": "Provider cost per successful run increased 25.8%, from $0.045714 to $0.057500."
+    },
+    {
+      "id": "readiness-20260628164122001:decision",
+      "metric": "decision",
+      "severity": "fail",
+      "previousSnapshotId": "readiness-20260627090000000",
+      "currentSnapshotId": "readiness-20260628164122001",
+      "previousValue": "warn",
+      "currentValue": "fail",
+      "delta": 1,
+      "threshold": null,
+      "message": "Readiness decision deteriorated from warn to fail."
+    },
+    {
+      "id": "readiness-20260628164122001:provider-success-rate",
+      "metric": "provider-success-rate",
+      "severity": "fail",
+      "previousSnapshotId": "readiness-20260627090000000",
+      "currentSnapshotId": "readiness-20260628164122001",
+      "previousValue": 0.8888888888888888,
+      "currentValue": 0.7777777777777778,
+      "delta": 0.11111111111111105,
+      "threshold": 0.1,
+      "message": "Provider success rate fell 11.1 pp, from 88.9% to 77.8%."
+    },
+    {
+      "id": "readiness-20260628164122001:provider-stuck-loop-rate",
+      "metric": "provider-stuck-loop-rate",
+      "severity": "fail",
+      "previousSnapshotId": "readiness-20260627090000000",
+      "currentSnapshotId": "readiness-20260628164122001",
+      "previousValue": 0,
+      "currentValue": 0.1111111111111111,
+      "delta": 0.1111111111111111,
+      "threshold": 0.05,
+      "message": "Provider stuck-loop rate rose 11.1 pp, from 0.0% to 11.1%."
+    },
+    {
+      "id": "readiness-20260628164122001:provider-cost-per-success",
+      "metric": "provider-cost-per-success",
+      "severity": "warn",
+      "previousSnapshotId": "readiness-20260627090000000",
+      "currentSnapshotId": "readiness-20260628164122001",
+      "previousValue": 0.0575,
+      "currentValue": 0.07733014285714286,
+      "delta": 0.3448720496894411,
+      "threshold": 0.25,
+      "message": "Provider cost per successful run increased 34.5%, from $0.057500 to $0.077330."
+    }
+  ],
+  "summary": {
+    "snapshotCount": 6,
+    "generatedSnapshots": 0,
+    "fixtureSnapshots": 6,
+    "latestSnapshotId": "readiness-20260628164122001",
+    "latestDecision": "fail",
+    "trend": "regressing",
+    "activeRegressions": 4,
+    "totalRegressions": 5
+  },
+  "warnings": [
+    "This committed history is a representative Studio fallback. Run the readiness-gate suite repeatedly to replace it with generated release evidence."
+  ]
+}

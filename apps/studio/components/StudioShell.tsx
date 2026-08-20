@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { StudioNav } from "./StudioNav";
+import styles from "./StudioShell.module.css";
 
 type StudioShellProps = {
   children: ReactNode;
@@ -15,6 +16,10 @@ export function StudioShell({ children, icon, subtitle, sidebar }: StudioShellPr
         Skip to content
       </a>
 
+      <div className={styles.mobileNav}>
+        <StudioNav ariaLabel="Mobile Studio navigation" />
+      </div>
+
       <aside className="sidebar">
         <div className="brand">
           <div className="brandMark">{icon}</div>
@@ -24,7 +29,9 @@ export function StudioShell({ children, icon, subtitle, sidebar }: StudioShellPr
           </div>
         </div>
 
-        <StudioNav />
+        <div className={styles.desktopNav}>
+          <StudioNav />
+        </div>
 
         {sidebar}
       </aside>

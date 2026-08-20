@@ -8,6 +8,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,4 +22,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @tracepilot/studio exec playwright install --with-deps chromium
-      - run: pnpm run ci
+      - name: Verify repository
+        run: pnpm run ci
+      - name: Build production artifacts
+        run: pnpm run build

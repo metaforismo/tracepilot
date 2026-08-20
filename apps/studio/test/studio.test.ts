@@ -15,6 +15,8 @@ beforeAll(async () => {
     cwd: process.cwd(),
     env: { ...process.env, NEXT_TELEMETRY_DISABLED: "1" }
   });
+  server.stdout.resume();
+  server.stderr.resume();
 
   await waitForHttp(origin);
   browser = await chromium.launch({ headless: true });
@@ -93,6 +95,20 @@ describe("TracePilot Studio", () => {
     await expectText("Rule outcomes");
   }, 15000);
 
+  it("renders the readiness history regression control room", async () => {
+    await page!.goto(`${origin}/history`, { waitUntil: "networkidle" });
+
+    await expectText("Readiness history");
+    await expectText("Release regression control room");
+    await expectText("Provider success rate");
+    await expectText("Stuck-loop rate");
+    await expectText("Cost per successful run");
+    await expectText("Active regressions");
+    await expectText("Current committed gate");
+    await expectText("Committed fixture fallback");
+    await expect(page!.locator("svg[role='img']").count()).resolves.toBe(3);
+  }, 15000);
+
   it("renders the provider scorecard drilldown", async () => {
     await page!.goto(`${origin}/scorecards/provider`, { waitUntil: "networkidle" });
 
@@ -115,10 +131,48 @@ describe("TracePilot Studio", () => {
     await expectText("prompt-injection-in-untrusted-invoice");
     await expectText("success rate");
   }, 15000);
+
+  it("keeps primary navigation reachable ahead of content on mobile", async () => {
+    const context = await browser!.newContext({ viewport: { width: 390, height: 844 } });
+    try {
+      const mobilePage = await context.newPage();
+      await mobilePage.goto(`${origin}/history`, { waitUntil: "networkidle" });
+
+      const mobileNav = mobilePage.getByRole("navigation", { name: "Mobile Studio navigation" });
+      await mobileNav.waitFor({ state: "visible", timeout: 5000 });
+      const [navBox, mainBox] = await Promise.all([
+        mobileNav.boundingBox(),
+        mobilePage.locator("#main-content").boundingBox()
+      ]);
+
+      expect(navBox).not.toBeNull();
+      expect(mainBox).not.toBeNull();
+      expect(navBox!.y).toBeLessThan(mainBox!.y);
+      await expect(
+        mobileNav.getByRole("link", { name: "Readiness history" }).getAttribute("aria-current")
+      ).resolves.toBe("page");
+    } finally {
+      await context.close();
+    }
+  }, 15000);
 });
 
 async function expectText(text: string): Promise<void> {
-  await expect(page!.getByText(text).first().isVisible()).resolves.toBe(true);
+  const matches = page!.getByText(text);
+  const deadline = Date.now() + 5000;
+
+  while (Date.now() < deadline) {
+    const count = await matches.count();
+    for (let index = 0; index < count; index += 1) {
+      if (await matches.nth(index).isVisible()) return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  const body = await page!.locator("body").innerText().catch(() => "<body unavailable>");
+  throw new Error(
+    `Expected visible text ${JSON.stringify(text)} at ${page!.url()} body=${JSON.stringify(body.slice(0, 1600))}`
+  );
 }
 
 async function waitForHttp(url: string): Promise<void> {

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, BarChart3, ClipboardCheck, Gauge, TriangleAlert } from "lucide-react";
+import { Activity, BarChart3, ClipboardCheck, Gauge, GitCompareArrows, TriangleAlert } from "lucide-react";
 
 type StudioRoute =
   | "/"
   | "/diagnostics"
+  | "/history"
   | "/readiness"
   | "/scorecards/provider"
   | "/scorecards/reliability";
@@ -18,9 +19,14 @@ type NavItem = {
   exact?: boolean;
 };
 
+type StudioNavProps = {
+  ariaLabel?: string;
+};
+
 const navItems: NavItem[] = [
   { href: "/", label: "Overview", icon: Gauge, exact: true },
   { href: "/readiness", label: "Readiness", icon: ClipboardCheck },
+  { href: "/history", label: "Readiness history", icon: GitCompareArrows },
   { href: "/scorecards/provider", label: "Provider scorecard", icon: BarChart3 },
   { href: "/scorecards/reliability", label: "Reliability scorecard", icon: BarChart3 },
   { href: "/diagnostics", label: "Diagnostics", icon: TriangleAlert }
@@ -31,11 +37,11 @@ function isActive(pathname: string, href: StudioRoute, exact?: boolean): boolean
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function StudioNav() {
+export function StudioNav({ ariaLabel = "Studio navigation" }: StudioNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="sidebarActions" aria-label="Studio navigation">
+    <nav className="sidebarActions" aria-label={ariaLabel}>
       {navItems.map(({ href, label, icon: Icon, exact }) => (
         <Link
           aria-current={isActive(pathname, href, exact) ? "page" : undefined}
