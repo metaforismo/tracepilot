@@ -1,0 +1,281 @@
+name: Finalize PR 26 review
+
+on:
+  push:
+    branches:
+      - feat/readiness-history
+    paths:
+      - ".github/workflows/pr26-finalize.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/readiness-history
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Apply final review fixes
+        shell: bash
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text()
+              if old not in text:
+                  raise SystemExit(f"Expected marker not found in {path}: {old[:120]!r}")
+              file.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "packages/core/src/readiness-history.ts",
+              '''  const improved =
+              decisionRank(current.decision) < decisionRank(previous.decision) ||
+              increased(current.provider.successRate, previous.provider.successRate) ||
+              decreased(current.provider.falseCompletionRate, previous.provider.falseCompletionRate) ||
+              decreased(current.provider.stuckLoopRate, previous.provider.stuckLoopRate) ||
+              decreased(current.provider.costPerSuccessUsd, previous.provider.costPerSuccessUsd);
+
+            return improved ? "improving" : "stable";''',
+              '''  const decisionDelta = decisionRank(current.decision) - decisionRank(previous.decision);
+            const improved =
+              decisionDelta < 0 ||
+              increased(current.provider.successRate, previous.provider.successRate) ||
+              decreased(current.provider.falseCompletionRate, previous.provider.falseCompletionRate) ||
+              decreased(current.provider.stuckLoopRate, previous.provider.stuckLoopRate) ||
+              decreased(current.provider.costPerSuccessUsd, previous.provider.costPerSuccessUsd);
+            const worsened =
+              decisionDelta > 0 ||
+              decreased(current.provider.successRate, previous.provider.successRate) ||
+              increased(current.provider.falseCompletionRate, previous.provider.falseCompletionRate) ||
+              increased(current.provider.stuckLoopRate, previous.provider.stuckLoopRate) ||
+              increased(current.provider.costPerSuccessUsd, previous.provider.costPerSuccessUsd);
+
+            return improved && !worsened ? "improving" : "stable";'''
+          )
+
+          replace_once(
+              "packages/core/test/readiness-history.test.ts",
+              '''  test("renders a portable Markdown audit readout", () => {''',
+              '''  test("keeps mixed sub-threshold movement stable instead of calling it improving", () => {
+            const previous = gate({
+              generatedAt: "2026-06-25T10:00:00.000Z",
+              providerRuns: 100,
+              providerSuccesses: 95,
+              providerStuckLoops: 0,
+              providerCostUsd: 0.2
+            });
+            const current = gate({
+              generatedAt: "2026-06-26T10:00:00.000Z",
+              providerRuns: 100,
+              providerSuccesses: 96,
+              providerStuckLoops: 1,
+              providerCostUsd: 0.2
+            });
+
+            const history = buildReadinessHistory([{ gate: previous }, { gate: current }]);
+
+            expect(history.regressions).toHaveLength(0);
+            expect(history.summary.trend).toBe("stable");
+          });
+
+          test("renders a portable Markdown audit readout", () => {'''
+          )
+
+          replace_once(
+              "apps/studio/components/StudioNav.tsx",
+              '''export function StudioNav() {
+            const pathname = usePathname();
+
+            return (
+              <nav className="sidebarActions" aria-label="Studio navigation">''',
+              '''type StudioNavProps = {
+            ariaLabel?: string;
+          };
+
+          export function StudioNav({ ariaLabel = "Studio navigation" }: StudioNavProps) {
+            const pathname = usePathname();
+
+            return (
+              <nav className="sidebarActions" aria-label={ariaLabel}>'''
+          )
+
+          replace_once(
+              "apps/studio/components/StudioShell.tsx",
+              '''import { StudioNav } from "./StudioNav";''',
+              '''import { StudioNav } from "./StudioNav";
+          import styles from "./StudioShell.module.css";'''
+          )
+          replace_once(
+              "apps/studio/components/StudioShell.tsx",
+              '''      <aside className="sidebar">
+                <div className="brand">''',
+              '''      <div className={styles.mobileNav}>
+                <StudioNav ariaLabel="Mobile Studio navigation" />
+              </div>
+
+              <aside className="sidebar">
+                <div className="brand">'''
+          )
+          replace_once(
+              "apps/studio/components/StudioShell.tsx",
+              '''        <StudioNav />
+
+                {sidebar}''',
+              '''        <div className={styles.desktopNav}>
+                  <StudioNav />
+                </div>
+
+                {sidebar}'''
+          )
+
+          Path("apps/studio/components/StudioShell.module.css").write_text('''.mobileNav {
+            display: none;
+          }
+
+          .desktopNav {
+            display: block;
+          }
+
+          @media (max-width: 980px) {
+            .mobileNav {
+              position: sticky;
+              top: 8px;
+              z-index: 50;
+              order: 0;
+              display: block;
+              min-width: 0;
+              padding: 6px;
+              border: 1px solid var(--sidebar-line);
+              border-radius: var(--radius-md);
+              background: rgb(22 22 26 / 94%);
+              box-shadow: 0 12px 32px rgb(24 24 27 / 16%);
+              backdrop-filter: blur(14px);
+            }
+
+            .desktopNav {
+              display: none;
+            }
+
+            .mobileNav :global(.sidebarActions) {
+              display: flex;
+              gap: 6px;
+              overflow-x: auto;
+              overscroll-behavior-inline: contain;
+              scrollbar-width: thin;
+              scroll-snap-type: inline proximity;
+            }
+
+            .mobileNav :global(.navLink) {
+              flex: 0 0 auto;
+              min-height: 38px;
+              padding-inline: 10px;
+              scroll-snap-align: start;
+              white-space: nowrap;
+            }
+          }
+          ''')
+
+          replace_once(
+              "apps/studio/test/studio.test.ts",
+              '''  it("renders the reliability scorecard drilldown", async () => {
+                await page!.goto(`${origin}/scorecards/reliability`, { waitUntil: "networkidle" });
+
+                await expectText("Reliability scorecard");
+                await expectText("happy-path-portal-entry");
+                await expectText("validation-recovery-after-missing-date");
+                await expectText("prompt-injection-in-untrusted-invoice");
+                await expectText("success rate");
+              }, 15000);
+          });''',
+              '''  it("renders the reliability scorecard drilldown", async () => {
+                await page!.goto(`${origin}/scorecards/reliability`, { waitUntil: "networkidle" });
+
+                await expectText("Reliability scorecard");
+                await expectText("happy-path-portal-entry");
+                await expectText("validation-recovery-after-missing-date");
+                await expectText("prompt-injection-in-untrusted-invoice");
+                await expectText("success rate");
+              }, 15000);
+
+              it("keeps primary navigation reachable ahead of content on mobile", async () => {
+                const context = await browser!.newContext({ viewport: { width: 390, height: 844 } });
+                try {
+                  const mobilePage = await context.newPage();
+                  await mobilePage.goto(`${origin}/history`, { waitUntil: "networkidle" });
+
+                  const mobileNav = mobilePage.getByRole("navigation", { name: "Mobile Studio navigation" });
+                  await mobileNav.waitFor({ state: "visible", timeout: 5000 });
+                  const [navBox, mainBox] = await Promise.all([
+                    mobileNav.boundingBox(),
+                    mobilePage.locator("#main-content").boundingBox()
+                  ]);
+
+                  expect(navBox).not.toBeNull();
+                  expect(mainBox).not.toBeNull();
+                  expect(navBox!.y).toBeLessThan(mainBox!.y);
+                  await expect(
+                    mobileNav.getByRole("link", { name: "Readiness history" }).getAttribute("aria-current")
+                  ).resolves.toBe("page");
+                } finally {
+                  await context.close();
+                }
+              }, 15000);
+          });'''
+          )
+          PY
+
+          git diff --check
+
+      - name: Install dependencies and browser
+        shell: bash
+        run: |
+          corepack enable
+          corepack pnpm@9.15.4 install --frozen-lockfile
+          corepack pnpm@9.15.4 --filter @tracepilot/studio exec playwright install --with-deps chromium
+
+      - name: Verify repository
+        shell: bash
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"
+        run: |
+          corepack pnpm@9.15.4 run ci
+          corepack pnpm@9.15.4 run build
+
+      - name: Restore generated artifacts
+        if: always()
+        shell: bash
+        run: |
+          git restore -- apps/studio/next-env.d.ts runs/latest 2>/dev/null || true
+
+      - name: Commit verified review fixes
+        shell: bash
+        run: |
+          rm -f .github/workflows/pr26-finalize.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            apps/studio/components/StudioNav.tsx \
+            apps/studio/components/StudioShell.tsx \
+            apps/studio/components/StudioShell.module.css \
+            apps/studio/test/studio.test.ts \
+            packages/core/src/readiness-history.ts \
+            packages/core/test/readiness-history.test.ts
+          git add -u -- .github/workflows/pr26-finalize.yml
+          git diff --cached --check
+          test ! -e .github/workflows/pr26-finalize.yml
+          git diff --cached --name-only
+          git commit -m "fix: harden readiness trend and mobile navigation"
+          git push origin HEAD:feat/readiness-history
