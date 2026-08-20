@@ -130,6 +130,28 @@ describe("readiness history", () => {
     });
   });
 
+  test("keeps mixed sub-threshold movement stable instead of calling it improving", () => {
+    const previous = gate({
+      generatedAt: "2026-06-25T10:00:00.000Z",
+      providerRuns: 100,
+      providerSuccesses: 95,
+      providerStuckLoops: 0,
+      providerCostUsd: 0.2
+    });
+    const current = gate({
+      generatedAt: "2026-06-26T10:00:00.000Z",
+      providerRuns: 100,
+      providerSuccesses: 96,
+      providerStuckLoops: 1,
+      providerCostUsd: 0.2
+    });
+
+    const history = buildReadinessHistory([{ gate: previous }, { gate: current }]);
+
+    expect(history.regressions).toHaveLength(0);
+    expect(history.summary.trend).toBe("stable");
+  });
+
   test("renders a portable Markdown audit readout", () => {
     const history = buildReadinessHistory([
       { gate: gate({ generatedAt: "2026-06-25T10:00:00.000Z" }), revision: "abc123" }

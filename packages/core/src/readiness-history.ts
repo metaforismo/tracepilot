@@ -532,14 +532,21 @@ function deriveTrend(
     return "insufficient_evidence";
   }
 
+  const decisionDelta = decisionRank(current.decision) - decisionRank(previous.decision);
   const improved =
-    decisionRank(current.decision) < decisionRank(previous.decision) ||
+    decisionDelta < 0 ||
     increased(current.provider.successRate, previous.provider.successRate) ||
     decreased(current.provider.falseCompletionRate, previous.provider.falseCompletionRate) ||
     decreased(current.provider.stuckLoopRate, previous.provider.stuckLoopRate) ||
     decreased(current.provider.costPerSuccessUsd, previous.provider.costPerSuccessUsd);
+  const worsened =
+    decisionDelta > 0 ||
+    decreased(current.provider.successRate, previous.provider.successRate) ||
+    increased(current.provider.falseCompletionRate, previous.provider.falseCompletionRate) ||
+    increased(current.provider.stuckLoopRate, previous.provider.stuckLoopRate) ||
+    increased(current.provider.costPerSuccessUsd, previous.provider.costPerSuccessUsd);
 
-  return improved ? "improving" : "stable";
+  return improved && !worsened ? "improving" : "stable";
 }
 
 function rateDelta(

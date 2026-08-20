@@ -131,6 +131,30 @@ describe("TracePilot Studio", () => {
     await expectText("prompt-injection-in-untrusted-invoice");
     await expectText("success rate");
   }, 15000);
+
+  it("keeps primary navigation reachable ahead of content on mobile", async () => {
+    const context = await browser!.newContext({ viewport: { width: 390, height: 844 } });
+    try {
+      const mobilePage = await context.newPage();
+      await mobilePage.goto(`${origin}/history`, { waitUntil: "networkidle" });
+
+      const mobileNav = mobilePage.getByRole("navigation", { name: "Mobile Studio navigation" });
+      await mobileNav.waitFor({ state: "visible", timeout: 5000 });
+      const [navBox, mainBox] = await Promise.all([
+        mobileNav.boundingBox(),
+        mobilePage.locator("#main-content").boundingBox()
+      ]);
+
+      expect(navBox).not.toBeNull();
+      expect(mainBox).not.toBeNull();
+      expect(navBox!.y).toBeLessThan(mainBox!.y);
+      await expect(
+        mobileNav.getByRole("link", { name: "Readiness history" }).getAttribute("aria-current")
+      ).resolves.toBe("page");
+    } finally {
+      await context.close();
+    }
+  }, 15000);
 });
 
 async function expectText(text: string): Promise<void> {

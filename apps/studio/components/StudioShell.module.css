@@ -1,0 +1,45 @@
+.mobileNav {
+  display: none;
+}
+
+.desktopNav {
+  display: block;
+}
+
+@media (max-width: 980px) {
+  .mobileNav {
+    position: sticky;
+    top: 8px;
+    z-index: 50;
+    order: 0;
+    display: block;
+    min-width: 0;
+    padding: 6px;
+    border: 1px solid var(--sidebar-line);
+    border-radius: var(--radius-md);
+    background: rgb(22 22 26 / 94%);
+    box-shadow: 0 12px 32px rgb(24 24 27 / 16%);
+    backdrop-filter: blur(14px);
+  }
+
+  .desktopNav {
+    display: none;
+  }
+
+  .mobileNav :global(.sidebarActions) {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    scroll-snap-type: inline proximity;
+  }
+
+  .mobileNav :global(.navLink) {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding-inline: 10px;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+}

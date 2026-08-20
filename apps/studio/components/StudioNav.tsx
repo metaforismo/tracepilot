@@ -19,6 +19,10 @@ type NavItem = {
   exact?: boolean;
 };
 
+type StudioNavProps = {
+  ariaLabel?: string;
+};
+
 const navItems: NavItem[] = [
   { href: "/", label: "Overview", icon: Gauge, exact: true },
   { href: "/readiness", label: "Readiness", icon: ClipboardCheck },
@@ -33,11 +37,11 @@ function isActive(pathname: string, href: StudioRoute, exact?: boolean): boolean
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function StudioNav() {
+export function StudioNav({ ariaLabel = "Studio navigation" }: StudioNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="sidebarActions" aria-label="Studio navigation">
+    <nav className="sidebarActions" aria-label={ariaLabel}>
       {navItems.map(({ href, label, icon: Icon, exact }) => (
         <Link
           aria-current={isActive(pathname, href, exact) ? "page" : undefined}
